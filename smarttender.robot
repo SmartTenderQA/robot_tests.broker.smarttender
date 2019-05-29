@@ -3,44 +3,43 @@ Library  Selenium2Screenshots
 Library  String
 Library  DateTime
 
+
+*** Variables ***
+############LOADING#################
+# IT
+${loading 2016}						//*[contains(@id, 'LoadingPanel')]
+${loading rmd}						//div[contains(@class,'loading-panel')]
+${blocker}                          //*[@id="adorner"]
+#${weclient start}                   //*[@class="spinner"]
+${loading ITA}                      //img[contains(@class, "loadingImage")]
+${blocker}                          //*[@class="loading-panel"]
+${IT}                               ${loading 2016}|${loading rmd}|${blocker}|${loading ITA}|${blocker}
+
+# SMARTTENDER
+${loading}                          //div[@class='smt-load']
+${circle loading}                   //*[@class='loading_container']//*[@class='sk-circle']
+${skeleton loading}                 //*[contains(@class,'skeleton-wrapper')]
+${sales spin}                       //*[@class='ivu-spin']
+${docs spin}                        //div[contains(@style, "loading")]
+${loading bar}                      //div[@class="ivu-loading-bar"]   # полоса вверху страницы http://joxi.ru/Dr8xjNeT47v7Dr
+${sale web loading}                 //*[contains(@class,'disabled-block')]
+${povidomlennya loading}            //*[@class="loading-bar"]
+${SMART}                            ${loading}|${circle loading}|${skeleton loading}|${sales spin}|${docs spin}|${loading bar}|${sale web loading}|${povidomlennya loading}
+
+${loadings}                         ${SMART}|${IT}
+######################################
+
+
+
 *** Keywords ***
 Підготувати клієнт для користувача
 	[Arguments]   ${username}
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
-	log to console  Пошук тендера по ідентифікатору
-	debug
-#	Open Browser
-#	...      ${USERS.users['${username}'].homepage}
-#	...      ${USERS.users['${username}'].browser}
-#	...      alias=${username}
+	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
 #	Set Window Position   @{USERS.users['${username}'].position}
 #	Set Window Size       @{USERS.users['${username}'].size}
-#	Log Variables
+	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
 
-Пошук тендера по ідентифікатору
-	[Arguments]   @{ARGUMENTS}
-	[Documentation]
-	...      ${ARGUMENTS[0]} ==  username
-	...      ${ARGUMENTS[1]} ==  tenderId
-	...      ${ARGUMENTS[2]} ==  id
-	log to console  Пошук тендера по ідентифікатору
-	debug
-#	Switch browser   ${ARGUMENTS[0]}
-#	${current_location}=   Get Location
-#	${homepage}=  Set Variable  ${USERS.users['${ARGUMENTS[0]}'].homepage}
-#	Run Keyword If  '${homepage}/#/tenderDetailes/${ARGUMENTS[2]}'=='${current_location}'  Reload Page
-#	Go To  ${homepage}
-#	Wait Until Page Contains   Офіційний майданчик державних закупівель України   10
-#	sleep  1
-#	Input Text   id=j_idt18:datalist:j_idt67  ${ARGUMENTS[1]}
-#	sleep  2
-#	${last_note_id}=  Add pointy note   jquery=a[href^="#/tenderDetailes"]   Found tender with tenderID "${ARGUMENTS[1]}"   width=200  position=bottom
-#	sleep  1
-#	Remove element   ${last_note_id}
-#	Click Link    jquery=a[href^="#/tenderDetailes"]
-#	Wait Until Page Contains    ${ARGUMENTS[1]}   10
-#	sleep  1
-#	Capture Page Screenshot
 
 Підготувати дані для оголошення тендера
 	[Arguments]   ${username}  ${tender_data}  ${role_name}
@@ -51,8 +50,8 @@ Library  DateTime
 	...  Це ключове слово викликається в циклі для кожної ролі, яка бере участь в поточному сценарії.
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
-	log to console  Підготувати дані для оголошення тендера
-	debug
+	comment  Дані міняемо тільки за необхідністю. Можуть буті проблеми з одиницями виміру.
+	no operation
 	[Return]  ${tender_data}
 
 
@@ -67,25 +66,85 @@ Library  DateTime
 Пошук тендера по ідентифікатору
 	[Arguments]   ${username}  ${tender_uaid}
 	[Documentation]   Знайти тендер з uaid рівним tender_uaid.
-	log to console  Пошук тендера по ідентифікатору
-	debug
+	smarttender.перейти до тестових торгів
+	smarttender.сторінка_торгів ввести текст в поле пошуку  ${tender_uaid}
+	smarttender.сторінка_торгів виконати пошук
+	smarttender.сторінка_торгів перейти за першим результатом пошуку
+	${taken_tender_uaid}  smarttender.сторінка_детальної_інформації отримати tender_uaid  tender_uaid
+	should be equal as strings  ${taken_tender_uaid}  ${tender_uaid}
 
 
 Оновити сторінку з тендером
 	[Arguments]   ${username}  ${tender_uaid}
     [Documentation]   Оновити сторінку з тендером для отримання потенційно оновлених даних.
-	log to console  Оновити сторінку з тендером
-	debug
+	Wait Until Keyword Succeeds  10m  5s  smarttender.Дочекатись синхронізації
 
 
+###############################################
+###############################################
 Отримати інформацію із тендера
     [Arguments]  ${username}  ${tender_uaid}  ${field_name}
     [Documentation]  Отримати значення поля field_name для тендера tender_uaid.
-	log to console  Отримати інформацію із тендера
-	debug
+    ${field_name_splited}  set variable  ${field_name.split('[')[0]}
+#    log to console  Отримати інформацію із тендера
+#    debug
+    ${field_value}  run keyword  smarttender.сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
     [Return]  ${field_value}
-    
-    
+
+сторінка_детальної_інформації отримати tender_uaid
+	[Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa='prozorro-number']//*[@href]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати title
+	[Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa='title']
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати description
+	[Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa='description']
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати milestones
+	[Arguments]  ${field_name}
+	${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
+	${number}  	evaluate  '${reg.group('number')}'
+	${field}  	evaluate  '${reg.group('field')}'
+
+	${item_selector}  set variable  xpath=(//*[@data-qa='paymentTerms-block']//*[@class="delimeter ivu-row"])[${number}+1]
+
+	${milestones_all_values}  get text  ${item_selector}
+	${text}  set variable  ${milestones_all_values.replace('\n', '|')}
+	${reg}  evaluate  re.search(ur'(?P<title>.*)\\|(?P<duration_days>\\d*) (?P<duration_type>.*)\\|(?P<code>.*)\\: (?P<percentage>[\\d\\.\\,]*)', u'${text}')  re
+
+	${title}  			evaluate  u'${reg.group('title')}'
+	${days}  			evaluate  int(u'${reg.group('duration_days')}')
+	${type}  			evaluate  u'${reg.group('duration_type')}'
+	${code}  			evaluate  u'${reg.group('code')}'
+	${percentage}  		evaluate  int(u'${reg.group('percentage')}')
+	####################################
+	#  WORK HERE
+
+	${code_dict}  		create dictionary  Аванс=prepayment  Пiсляоплата=postpayment
+	${title_dict}  		create dictionary  Дата виставлення рахунку=dateOfInvoicing  Поставка товару=deliveryOfGoods  Інша подія=anotherEvent  Дата закінчення звітного періоду=endDateOfTheReportingPeriod  Виконання робіт=executionOfWorks
+	${type_dict}  		create dictionary  календарних днів=calendar  робочих днів=working  банківських днів=banking
+	${list_of_dict}		create list  code  title  type
+	####################################
+
+	${milestones_field_name}  set variable  ${field_name.split('.')[-1]}
+	${field_value}  run keyword if  '${milestones_field_name}' in ${list_of_dict}	Get From Dictionary  ${${milestones_field_name}_dict}  ${${milestones_field_name}}  ELSE  set variable  ${${milestones_field_name}}
+	[Return]  ${field_value}
+###############################################
+###############################################
+
+
 Внести зміни в тендер
     [Arguments]  ${username}  ${tender_uaid}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінити значення поля fieldname на fieldvalue для тендера tender_uaid.
@@ -145,7 +204,7 @@ Library  DateTime
 	
 	
 Додати предмет закупівлі в лот
-    [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  {item}
+    [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${item}
     [Documentation]  Додати предмет item в лот з lot_id в описі для тендера tender_uaid.   
 	log to console  Додати предмет закупівлі в лот
 	debug
@@ -312,7 +371,7 @@ Library  DateTime
 	
 
 Скасувати вимогу про виправлення визначення переможця
-    [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data} ${award_index}
+    [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data}  ${award_index}
     [Documentation]  Перевести вимогу complaintID про виправлення визначення переможця під номером award_index для тендера tender_uaid у статус cancelled, використовуючи при цьому дані confirmation_data.  
 	log to console  Скасувати вимогу про виправлення визначення переможця
 	debug
@@ -570,7 +629,121 @@ Library  DateTime
 
 
 Видалити предмет закупівлі плану
-    [Arguments]  ${username}  ${tender_uaid} ${item_id}  ${lot_id}=${Empty}
+    [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${lot_id}=${Empty}
     [Documentation]  Видалити з плану tender_uaid предмет з item_id в описі (предмет може бути прив'язаним до лоту з lot_id в описі, якщо lot_id != Empty).
 	log to console  Видалити предмет закупівлі плану
 	debug
+
+
+########################################################################################################
+########################################################################################################
+###########################################KEYWORDS#####################################################
+########################################################################################################
+########################################################################################################
+Авторизуватися
+	[Arguments]  ${username}
+	log to console  Авторизуватися
+	${login}  set variable  ${USERS.users['${username}']['login']}
+	${password}  set variable  ${USERS.users['${username}']['password']}
+	сторінка_стартова натиснути вхід
+	ввести логін  ${login}
+	ввести пароль  ${password}
+	натиснути Увійти
+
+
+сторінка_стартова натиснути вхід
+	${selector}  set variable  //*[@data-qa="title-btn-modal-login"]
+	loading дочекатися відображення елемента на сторінці  ${selector}
+	click element  ${selector}
+
+
+ввести логін
+	[Arguments]  ${login}
+	${login_field}  set variable  //*[@data-qa="form-login-login"]//input
+	loading дочекатися відображення елемента на сторінці  ${login_field}
+	input text  ${login_field}  ${login}
+
+
+ввести пароль
+	[Arguments]  ${password}
+	${pass_field}  set variable  //*[@data-qa="form-login-password"]//input
+	loading дочекатися відображення елемента на сторінці  ${pass_field}
+	input text  ${pass_field}  ${password}
+
+
+натиснути Увійти
+	${login_btn}  set variable  //*[@data-qa="form-login-success"]
+	loading дочекатися відображення елемента на сторінці  ${login_btn}
+	click element  ${login_btn}
+	loading дочекатися зникнення елемента зі сторінки  ${login_btn}
+
+
+перейти до тестових торгів
+	go to  https://test.smarttender.biz/test-tenders/
+
+
+сторінка_торгів ввести текст в поле пошуку
+	[Arguments]  ${text}
+	input text  //input[@name="filter"]  ${text}
+
+
+сторінка_торгів виконати пошук
+	click element  //div[text()='Пошук']/..
+	loading дочекатись закінчення загрузки сторінки
+
+
+сторінка_торгів перейти за першим результатом пошуку
+	${tender_number}  set variable  1
+	${link}  get element attribute  //*[@id="tenders"]//*[@class="head"][${tender_number}]//*[@href]@href
+	log  tender_link: ${link}  WARN
+	go to  ${link}
+
+
+loading дочекатись закінчення загрузки сторінки
+    [Arguments]  ${time_to_wait}=120
+    ${current_locationa}  Get Location
+	Run Keyword And Ignore Error  loading дочекатися відображення елемента на сторінці  ${loadings}  1
+	loading дочекатися зникнення елемента зі сторінки  ${loadings}  ${time_to_wait}
+	${is visible}  Run Keyword And Return Status  loading дочекатися відображення елемента на сторінці  ${loadings}  0.5
+	Run Keyword If  ${is visible}  loading дочекатись закінчення загрузки сторінки
+
+
+loading дочекатися відображення елемента на сторінці
+	[Documentation]  timeout=...s/...m
+	[Arguments]  ${locator}  ${timeout}=10s
+	Log  Element Should Be Visible "${locator}" after ${timeout}
+	Register Keyword To Run On Failure  No Operation
+	Run Keyword And Continue On Failure  Wait Until Keyword Succeeds  ${timeout}  .5  Element Should Be Visible  ${locator}
+	Register Keyword To Run On Failure  Capture Page Screenshot
+	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"
+	...  Element Should Be Visible  ${locator}  Oops!${\n}Element "${locator}" is not visible after ${timeout} (s/m).
+
+
+loading дочекатися зникнення елемента зі сторінки
+	[Documentation]  timeout=...s/...m
+	[Arguments]  ${locator}  ${timeout}=10s
+	Log  Element Should Not Be Visible "${locator}" after ${timeout}
+	Register Keyword To Run On Failure  No Operation
+	Run Keyword And Continue On Failure  Wait Until Keyword Succeeds  ${timeout}  .5  Element Should Not Be Visible  ${locator}
+	Register Keyword To Run On Failure  Capture Page Screenshot
+	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"
+	...  Element Should Not Be Visible  ${locator}  Oops!${\n}Element "${locator}" is visible after ${timeout} (s/m).
+
+
+Дочекатись синхронізації
+	${url}  Set Variable  http://test.smarttender.biz/ws/webservice.asmx/Execute?calcId=_QA.GET.LAST.SYNCHRONIZATION&args={"SEGMENT":3}
+	${response}  evaluate  requests.get('${url}').content  requests
+	${a}  Replace String  ${response}   \n  ${Empty}
+	${content}  Get Regexp Matches  ${a}  {(?P<content>.*)}  content
+	${reg}  evaluate  re.search(r'"DateStart":"(?P<DateStart>.*)","DateEnd":"(?P<DateEnd>.*)","WorkStatus":"(?P<WorkStatus>.*)","Success":(?P<Success>.*)', '${content[0]}')  re
+
+	${DateStart}  evaluate  "${reg.group('DateStart')}"
+	${DateEnd}  evaluate  "${reg.group('DateEnd')}"
+	${WorkStatus}  evaluate  "${reg.group('WorkStatus')}"
+	${Success}  evaluate  "${reg.group('Success')}"
+
+	${result}  Subtract Date From Date  ${DateStart}  ${TENDER['LAST_MODIFICATION_DATE']}  date1_format=%d.%m.%Y %H:%M:%S  date2_format=%Y-%m-%d %H:%M:%S.%f
+	${status}  set variable if  ${result} > 0  ${True}
+	${status}  Run Keyword if  ${status} and '${DateEnd}' != '${EMPTY}' and '${WorkStatus}' != 'working' and '${WorkStatus}' != 'fail' and '${Success}' == 'true'
+	...  Set Variable  Pass
+	Should Be Equal  ${status}  Pass
