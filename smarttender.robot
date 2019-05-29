@@ -2,6 +2,7 @@
 Library  Selenium2Screenshots
 Library  String
 Library  DateTime
+Library  smarttender_service.py
 
 
 *** Variables ***
@@ -77,6 +78,13 @@ ${loadings}                         ${SMART}|${IT}
 Оновити сторінку з тендером
 	[Arguments]   ${username}  ${tender_uaid}
     [Documentation]   Оновити сторінку з тендером для отримання потенційно оновлених даних.
+    ##########################################################
+    #todo  убрать вывод в консоль
+    log to console                ${\n}
+    log to console      zzzzzZZZZZZZZZZZZZZzzzzz
+    log to console  Чекаємо пока пройде синхронізація
+    log to console            .............
+    ##########################################################
 	Wait Until Keyword Succeeds  10m  5s  smarttender.Дочекатись синхронізації
 
 
@@ -85,11 +93,20 @@ ${loadings}                         ${SMART}|${IT}
 Отримати інформацію із тендера
     [Arguments]  ${username}  ${tender_uaid}  ${field_name}
     [Documentation]  Отримати значення поля field_name для тендера tender_uaid.
-    ${field_name_splited}  set variable  ${field_name.split('[')[0]}
-#    log to console  Отримати інформацію із тендера
-#    debug
+    ${field_name_splited}  set variable if
+    ...  "[" in "${field_name}"    ${field_name.split('[')[0]}
+    ...  "." in "${field_name}"    ${field_name.split('.')[0]}
+    ...  ELSE    ${field_name}
+    #todo  убрать вывод в консоль
+    ##########################################################
+    log to console  ............................................
+    log to console  Отримати інформацію із тендера
+    log to console  по полю: ${field_name}
+    log to console  field_name_splited: ${field_name_splited}
+    ##########################################################
     ${field_value}  run keyword  smarttender.сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
     [Return]  ${field_value}
+
 
 сторінка_детальної_інформації отримати tender_uaid
 	[Arguments]  ${field_name}
@@ -156,6 +173,41 @@ ${loadings}                         ${SMART}|${IT}
 	[Return]  ${field_value}
 ###############################################
 ###############################################
+
+сторінка_детальної_інформації отримати mainProcurementCategory
+    [Arguments]  ${field_name}
+    log to console  поля ${field_name} пока что нет на странице
+    ${field_value}  set variable  ${empty}
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати value
+    [Arguments]  ${field_name}
+    ${reg}    evaluate  re.search(r'\\.(?P<field>\\D+)', '${field_name}')  re
+    ${field}  evaluate  '${reg.group('field')}'
+
+	${selector}  set variable if
+	...  "${field}" == "amount"                 //*[@data-qa="budget-amount"]
+	...  "${field}" == "currency"               //*[@data-qa="budget-currency"]
+	...  "${field}" == "valueAddedTaxIncluded"  //*[@data-qa="budget-vat-title"]
+
+	${field_value}  get text  ${selector}
+    ${field_value}  convert_page_values  ${field}  ${field_value}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати tenderID
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="prozorro-number"]//a
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати procuringEntity.name
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="contactPerson-block"]//*[@data-qa="name"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
 
 
 Внести зміни в тендер
