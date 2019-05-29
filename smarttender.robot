@@ -132,9 +132,22 @@ ${loadings}                         ${SMART}|${IT}
 	####################################
 	#  WORK HERE
 
-	${code_dict}  		create dictionary  Аванс=prepayment  Пiсляоплата=postpayment
-	${title_dict}  		create dictionary  Дата виставлення рахунку=dateOfInvoicing  Поставка товару=deliveryOfGoods  Інша подія=anotherEvent  Дата закінчення звітного періоду=endDateOfTheReportingPeriod  Виконання робіт=executionOfWorks
-	${type_dict}  		create dictionary  календарних днів=calendar  робочих днів=working  банківських днів=banking
+	${code_dict}  		create dictionary
+	...  Аванс=prepayment
+	...  Пiсляоплата=postpayment
+	${title_dict}  		create dictionary
+	...  Виконання робіт=executionOfWorks
+	...  Поставка товару=deliveryOfGoods
+	...  Надання послуг=submittingServices
+	...  Підписання договору=signingTheContract
+	...  Дата подання заявки=submissionDateOfApplications
+	...  Дата виставлення рахунку=dateOfInvoicing
+	...  Дата закінчення звітного періоду=endDateOfTheReportingPeriod
+	...  Інша подія=anotherEvent
+	${type_dict}  		create dictionary
+	...  календарних днів=calendar
+	...  робочих днів=working
+	...  банківських днів=banking
 	${list_of_dict}		create list  code  title  type
 	####################################
 
