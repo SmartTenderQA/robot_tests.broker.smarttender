@@ -65,3 +65,44 @@ def convert_unit(value):
     else:
         result = value
     return result
+
+
+def convert_procurementMethodType(value ):
+    method_types = {
+        u'belowThreshold': u'Допорогові закупівлі',
+        u'aboveThresholdUA': u'Відкриті торги',
+        u'aboveThresholdEU': u'Відкриті торги з публікацією англійською мовою',
+        u'reporting': u'Звіт про укладений договір',
+        u'negotiation':	u'Переговорна процедура',
+        u'negotiation.quick': u'Переговорна процедура (скорочена)',
+        u'aboveThresholdUA.defense': u'Переговорна процедура для потреб оборони',
+        u'esco': u'Відкриті торги для закупівлі енергосервісу',
+        u'belowThresholdRFP': u'Запит цінових пропозицій',
+        u'aboveThresholdTS': u'Двохетапний тендер',
+        u'competitiveDialogueUA.stage2': u'Конкурентний діалог 2-ий етап',
+        u'competitiveDialogueEU.stage2': u'Конкурентний діалог з публікацією англійською мовою 2-ий етап',
+        u'competitiveDialogueUA': u'Конкурентний діалог 1-ий етап',
+        u'competitiveDialogueEU': u'Конкурентний діалог з публікацією англійською мовою 1-ий етап',
+        u'closeFrameworkAgreementUA': u'Укладання рамкової угоди',
+        u'closeFrameworkAgreementSelectionUA': u'Відбір для закупівлі за рамковою угодою',
+    }
+    if value in method_types.values():
+        result = method_types.keys()[method_types.values().index(value)]
+    else:
+        result = value
+    return result
+
+
+def convert_currency(value):
+    currency_types = {
+        u'грн': u'UAH',
+        u'руб': u'RUB',
+        u'£': u'GBP',
+        u'$': u'USD',
+        u'€': u'EUR',
+    }
+    if value in currency_types:
+        result = currency_types[value]
+    else:
+        result = value
+    return result
