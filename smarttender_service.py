@@ -18,12 +18,16 @@ def convert_page_values(field, value):
         elif 'streetAddress' in field:
             ret = list.group('street')
     elif 'unit' in field or 'quantity' in field:
-        list = re.search(u'(?P<quantity>\d+) (?P<unit>.+)', value)
+        list = re.search(u'(?P<quantity>\d+.\d+) (?P<unit>.+)', value)
         if 'unit' in field:
             unit = list.group('unit')
             ret = convert_unit_code(unit)
         elif 'quantity' in field:
-            ret = int(list.group('quantity'))
+            ret = list.group('quantity')
+            if '.' in ret:
+                ret = float(ret)
+            else:
+                ret = int(ret)
     elif 'amount' in field:
         ret = re.search(u'(?P<amount>[\d\s.?,]+).*', value).group('amount')
         ret = ret.replace(' ', '')
@@ -32,7 +36,7 @@ def convert_page_values(field, value):
     elif 'agreementDuration' in field or 'Number' in field:
         ret = get_only_numbers(value)
     elif 'valueAddedTaxIncluded' in field:
-        if 'з ПДВ' in value:
+        if u'з ПДВ' in value:
             ret = True
         else:
             ret = False
@@ -113,7 +117,7 @@ def convert_procurementMethodType(value):
         u'aboveThresholdUA': u'Відкриті торги',
         u'aboveThresholdEU': u'Відкриті торги з публікацією англійською мовою',
         u'reporting': u'Звіт про укладений договір',
-        u'negotiation':	u'Переговорна процедура',
+        u'negotiation': u'Переговорна процедура',
         u'negotiation.quick': u'Переговорна процедура (скорочена)',
         u'aboveThresholdUA.defense': u'Переговорна процедура для потреб оборони',
         u'esco': u'Відкриті торги для закупівлі енергосервісу',
@@ -143,6 +147,19 @@ def convert_currency(value):
     }
     if value in currency_types:
         result = currency_types[value]
+    else:
+        result = value
+    return result
+
+
+def convert_mainProcurementCategory(value):
+    map = {
+        u'Товари': u'goods',
+        u'Послуги': u'services',
+        u'Роботи': u'works'
+    }
+    if value in map:
+        result = map[value]
     else:
         result = value
     return result
