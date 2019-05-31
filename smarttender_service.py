@@ -21,7 +21,7 @@ def convert_page_values(field, value):
         list = re.search(u'(?P<quantity>\d+) (?P<unit>.+)', value)
         if 'unit' in field:
             unit = list.group('unit')
-            ret = convert_unit(unit)
+            ret = convert_unit_code(unit)
         elif 'quantity' in field:
             ret = int(list.group('quantity'))
     elif 'amount' in field:
@@ -41,12 +41,35 @@ def convert_page_values(field, value):
     return ret
 
 
+def convert_plan_page_values(field, value):
+    global ret
+    if 'unit' in field or 'quantity' in field:
+        text = re.search(u'(?P<quantity>\d+.\d+) (?P<unit>.+)', value)
+        if 'unit' in field:
+            unit = text.group('unit')
+            if 'unit.code' in field:
+                ret = convert_unit_code(unit)
+            elif 'unit.name' in field:
+                ret = convert_unit_name(unit)
+        elif 'quantity' in field:
+            quantity = text.group('quantity')
+            if "." in quantity:
+                ret = float(text.group('quantity'))
+            else:
+                ret = int(text.group('quantity'))
+    elif 'classification.scheme' in field:
+        ret = re.search(u'(\W+\d+)', value).group(0)
+    else:
+        ret = value
+    return ret
+
+
 def get_only_numbers(value):
     date = re.sub(r"\D", "", value)
     return date
 
 
-def convert_unit(value):
+def convert_unit_code(value):
     units_map = {
         u'Гектар': u'га',
         u'час': u'квар - час',
@@ -58,7 +81,11 @@ def convert_unit(value):
         u'Квадратный сантиметр': u'см2',
         u'Тысяча килограмм': u'тыс. кг',
         u'Декалитр': u'дал',
-        u'Метр квадратный': u'м.кв.'
+        u'Метр квадратный': u'м.кв.',
+        u'Штука': u'H87',
+        u'Упаковка': u'PK',
+        u'Флакон': u'VI',
+        u'Набір(товару)': u'SET'
     }
     if value in units_map:
         result = units_map[value]
@@ -66,8 +93,21 @@ def convert_unit(value):
         result = value
     return result
 
+def convert_unit_name(value):
+    units_map = {
+        u'Штука': u'штуки',
+        u'Упаковка': u'упаковка',
+        u'Флакон': u'Флакон',
+        u'Набір(товару)': u'набір'
+    }
+    if value in units_map:
+        result = units_map[value]
+    else:
+        result = value.lower()
+    return result
 
-def convert_procurementMethodType(value ):
+
+def convert_procurementMethodType(value):
     method_types = {
         u'belowThreshold': u'Допорогові закупівлі',
         u'aboveThresholdUA': u'Відкриті торги',

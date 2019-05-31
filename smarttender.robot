@@ -667,30 +667,31 @@ ${loadings}                         ${SMART}|${IT}
     [Arguments]  ${username}  ${tender_data}
     [Documentation]  Створити план з початковими даними tender_data. Повернути uaid створеного плану.
 	log to console  Створити план
-	debug
     [Return]  ${planID}
 
 
 Пошук плану по ідентифікатору
-    [Arguments]  ${username}  ${tender_uaid}
+    [Arguments]  ${username}  ${planID}
     [Documentation]  Знайти план з uaid рівним tender_uaid.
-	log to console  Пошук плану по ідентифікатору
-	debug
+	smarttender.перейти до сторінки планів
+	smarttender.сторінка_планів ввести текст в поле пошуку  ${planID}
+    smarttender.сторінка_планів виконати пошук
+	smarttender.сторінка_планів перейти за першим результатом пошуку
+	${taken_planID}  smarttender.план_сторінка_детальної_інформації отримати planID  planID
+	should be equal as strings  ${taken_planID}  ${planID}
+
+
+перейти до сторінки планів
+    go to  https://test.smarttender.biz/plans/
 
 
 Отримати інформацію із плану
-    [Arguments]  ${username}  ${tender_uaid}  ${field_name}
-    [Documentation]  Отримати значення поля field_name для плану tender_uaid.
-	log to console  Отримати інформацію із плану
-	debug
-    [Return]  ${plan_field_name}
+    [Arguments]  ${username}  ${plan_uaid}  ${field_name}
+    [Documentation]  Отримати значення поля field_name для плану plan_uaid.
+	${field_name_splited}  set variable  ${field_name.split('[')[0]}
+    ${field_value}  run keyword  smarttender.план_сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
+    [Return]  ${field_value}
 
-
-Додати предмет закупівлі в план
-    [Arguments]  ${username}  ${tender_uaid}  ${item}
-    [Documentation]  Додати дані про предмет item до плану tender_uaid.
-	log to console  Додати предмет закупівлі в план
-	debug
 
 
 Видалити предмет закупівлі плану
@@ -700,6 +701,168 @@ ${loadings}                         ${SMART}|${IT}
 	debug
 
 
+Оновити сторінку з планом
+    [Arguments]   ${username}  ${plan_uaid}
+    [Documentation]   Оновити сторінку з тендером для отримання потенційно оновлених даних.
+    Wait Until Keyword Succeeds  10m  5s  smarttender.Дочекатись синхронізації
+
+
+########################################################################################################
+########################################################################################################
+сторінка_планів ввести текст в поле пошуку
+    [Arguments]  ${text}
+    input text  //*[@data-qa="search-phrase"]/input  ${text}
+
+
+сторінка_планів виконати пошук
+    click element  //*[@id="btnFind"]
+    loading дочекатись закінчення загрузки сторінки
+
+
+сторінка_планів перейти за першим результатом пошуку
+	${plan_number}  set variable  1
+	${link}  get element attribute  xpath=(//*[@id="plan"])[${plan_number}]//*[@data-qa="plan-title"]@href
+	log  plan_link: ${link}  WARN
+	go to  ${link}
+
+план_сторінка_детальної_інформації отримати planID
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="plan-cdb-number-link"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати tender.procurementMethodType
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="plan-bidding-type-info"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	${field value}  convert_procurementMethodType  ${field value}
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати budget.amount
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="plan-initialValue"]
+	${field_value}  get text  ${selector}
+	${field_value}  evaluate  float(${field_value.replace(" ", "")})
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати budget.description
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="plan-title"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати budget.currency
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="plan-currency-name"]
+	${field_value}  get text  ${selector}
+	${field_value}  set variable  ${field_value.replace(" ", "").replace(".", "")}
+	${field_value}  convert_currency  ${field_value}
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати budget.id
+    [Arguments]  ${field_name}
+    log to console  Поле не отображается на странице
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати budget.project.id
+    [Arguments]  ${field_name}
+    log to console  Поле не отображается на странице
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати budget.project.name
+    [Arguments]  ${field_name}
+    log to console  Поле не отображается на странице
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати procuringEntity.name
+    [Arguments]  ${field_name}
+    log to console  Поле не отображается на странице
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати procuringEntity.identifier.scheme
+    [Arguments]  ${field_name}
+    log to console  Поле не отображается на странице
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати procuringEntity.identifier.id
+    [Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="plan-usreou"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати procuringEntity.identifier.legalName
+    [Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="plan-organizer"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати classification.description
+    [Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="plan-main-classification"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	${field_value}  Evaluate  re.search(r' (?P<description>\\D+)', u'${field_value}').group('description')  re
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати classification.scheme
+    [Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="plan-main-classification"]//*[contains(@class, "key-value")]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value.split(" ")[1]}
+
+
+план_сторінка_детальної_інформації отримати classification.id
+    [Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="plan-main-classification"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value.split(" ")[0]}
+
+
+план_сторінка_детальної_інформації отримати tender.tenderPeriod.startDate
+    [Arguments]  ${field_name}
+    log to console  Поле не отображается на странице
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати items
+	[Arguments]  ${field_name}
+	${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
+	${number}  	evaluate  '${reg.group('number')}'
+	${field}  	evaluate  '${reg.group('field')}'
+	${item_selector}  set variable  xpath=(//*[@data-qa="value-list"])[${number}+1]
+    ${field_selector}      set variable if
+    ...  '${field}' == 'description'                    //*[@data-qa="nomenclature-title"]
+    ...  '${field}' == 'quantity'                       //*[@data-qa="nomenclature-count"]
+    ...  '${field}' == 'unit.code'                      //*[@data-qa="nomenclature-count"]
+    ...  '${field}' == 'unit.name'                      //*[@data-qa="nomenclature-count"]
+    ...  '${field}' == 'deliveryDate.endDate'           //*[@data-qa="date-end"]
+    ...  '${field}' == 'classification.description'     //*[@data-qa="nomenclature-main-classification-title"]
+    ...  '${field}' == 'classification.scheme'          //*[@data-qa="nomenclature-main-classification-scheme"]
+    ...  '${field}' == 'classification.id'              //*[@data-qa="nomenclature-main-classification-code"]
+    ${field_value}  get text  ${item_selector}${field_selector}
+    ${converted_field_value}  convert_plan_page_values  ${field}  ${field_value}
+    ${converted_field_value}  run keyword if  '${field}' == 'deliveryDate.endDate'
+    ...  date convertation  ${converted_field_value}
+    ...  ELSE  return from keyword  ${converted_field_value}
+    [Return]  ${converted_field_value}
+
+date convertation
+#   TODO нати способ не хардкодить часовой пояс
+    [Arguments]  ${raw_date}
+    ${converted_date}  convert date  ${raw_date}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT%H:%M:%S+03:00
+    [Return]  ${converted_date}
 ########################################################################################################
 ########################################################################################################
 ###########################################KEYWORDS#####################################################
