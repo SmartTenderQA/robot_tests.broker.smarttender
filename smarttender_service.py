@@ -2,6 +2,7 @@
 
 
 import re
+import requests
 
 
 def convert_page_values(field, value):
@@ -163,3 +164,9 @@ def convert_mainProcurementCategory(value):
     else:
         result = value
     return result
+
+
+def download_file_to_my_path(url, path):
+    r = requests.get(url)
+    with open(path, 'wb') as f:
+        f.write(r.content)
