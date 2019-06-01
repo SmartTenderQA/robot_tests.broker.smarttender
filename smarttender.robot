@@ -2,7 +2,7 @@
 Library  Selenium2Screenshots
 Library  String
 Library  DateTime
-
+Resource  webclient.robot
 
 *** Variables ***
 ############LOADING#################
@@ -28,7 +28,6 @@ ${SMART}                            ${loading}|${circle loading}|${skeleton load
 
 ${loadings}                         ${SMART}|${IT}
 ######################################
-
 
 
 *** Keywords ***
@@ -58,10 +57,116 @@ ${loadings}                         ${SMART}|${IT}
 Створити тендер
 	[Arguments]   ${username}  ${tender_data}
 	[Documentation]   Створити тендер з початковими даними tender_data. Повернути uaid створеного тендера.
-	log to console  Створити тендер
-	debug
+	${tender_data}  Get From Dictionary  ${tender_data}  data
+	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати
+	run keyword  Створити тендер ${mode}  ${tender_data}
 	[Return]  ${tender_uaid}
 
+
+Створити тендер belowThreshold		#Допорог
+	[Arguments]  ${tender_data}
+	# JCYJDYS
+	${enquiryPeriod.startDate}  set variable  ${tender_data['enquiryPeriod']['startDate']}
+	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
+	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
+	${value.amount}  set variable  ${tender_data['value']['amount']}
+	${value.valueAddedTaxIncluded}  set variable  ${tender_data['value']['valueAddedTaxIncluded']}
+	${minimalStep.amount}  set variable  ${tender_data['minimalStep']['amount']}
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+	:FOR  ${field}  in
+	...  enquiryPeriod.startDate
+	...  tenderPeriod.startDate
+	...  tenderPeriod.endDate
+	...  value.amount
+	...  value.valueAddedTaxIncluded
+	...  minimalStep.amount
+	...  title
+	...  description
+	...  mainProcurementCategory
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+	${count_item}  set variable  1
+	:FOR  ${item}  IN  @{tender_data['items']}
+	\  Заповнити поля лоту  ${item}
+	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
+
+	${count_milestone}  set variable  1
+	:FOR  ${milestone}  IN  @{tender_data['milestones']}
+	\  run keyword if  '${count_milestone}' == '1'  webclient.активувати вкладку умови оплати
+	\  Заповнити умови оплати  ${milestone}
+
+	debug
+
+
+Заповнити поля лоту
+  	[Arguments]  ${item}
+	${description}  set variable  ${item['description']}
+	${quantity}  set variable  ${item['quantity']}
+	${unit.name}  set variable  ${item['unit']['name']}
+	${classification.id}  set variable  ${item['classification']['id']}
+	# мені причудилось що іноді additionalClassifications не присутні в item
+	${additionalClassifications.scheme}  set variable  ${item['additionalClassifications'][0]['scheme']}
+	${additionalClassifications.description}  set variable  ${item['additionalClassifications'][0]['description']}
+	${deliveryAddress.postalCode}  set variable  ${item['deliveryAddress']['postalCode']}
+	${deliveryAddress.streetAddress}  set variable  ${item['deliveryAddress']['streetAddress']}
+	${deliveryAddress.locality}  set variable  ${item['deliveryAddress']['locality']}
+	${deliveryDate.startDate}  set variable  ${item['deliveryDate']['startDate']}
+	${deliveryDate.endDate}  set variable  ${item['deliveryDate']['endDate']}
+	:FOR  ${field}  in
+	...  description
+	...  quantity
+	...  unit.name
+	...  classification.id
+	...  additionalClassifications.scheme
+	...  additionalClassifications.description
+	...  deliveryAddress.postalCode
+	...  deliveryAddress.streetAddress
+	...  deliveryAddress.locality
+	...  deliveryDate.startDate
+	...  deliveryDate.endDate
+	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}
+
+
+Заповнити умови оплати
+  	[Arguments]  ${milestone}
+  	${code_dict}  		create dictionary
+	...  prepayment=Аванс
+	...  postpayment=Пiсляоплата
+	${title_dict}  		create dictionary
+	...  executionOfWorks=Виконання робіт
+	...  deliveryOfGoods=Поставка товару
+	...  submittingServices=Надання послуг
+	...  signingTheContract=Підписання договору
+	...  submissionDateOfApplications=Дата подання заявки
+	...  dateOfInvoicing=Дата виставлення рахунку
+	...  endDateOfTheReportingPeriod=Дата закінчення звітного періоду
+	...  anotherEvent=Інша подія
+	${type_dict}  		create dictionary
+	...  calendar=Календарний
+	...  working=Робочий
+	...  banking=Банківський
+	${code_cdb}  set variable  ${milestone['code']}
+	${title_cdb}  set variable  ${milestone['title']}
+	${duration.type_cdb}  set variable  ${milestone['duration']['type']}
+
+	${code}  set variable  ${code_dict['${code_cdb}']}
+	${title}  set variable  ${title_dict['${title_cdb}']}
+	${duration.type}  set variable  ${type_dict['${duration.type_cdb}']}
+	${duration.days}  set variable  ${milestone['duration']['days']}
+	${percentage}  set variable  ${milestone['percentage']}
+
+  	додати item бланк  index=2
+  	:FOR  ${field}  IN
+  	...  code
+  	...  title
+  	...  duration.type
+  	...  duration.days
+  	...  percentage
+  	\  run keyword  заповнити поле для milestone ${field}  ${${field}}
 
 Пошук тендера по ідентифікатору
 	[Arguments]   ${username}  ${tender_uaid}
@@ -90,6 +195,7 @@ ${loadings}                         ${SMART}|${IT}
 #    debug
     ${field_value}  run keyword  smarttender.сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
     [Return]  ${field_value}
+
 
 сторінка_детальної_інформації отримати tender_uaid
 	[Arguments]  ${field_name}
@@ -688,7 +794,7 @@ ${loadings}                         ${SMART}|${IT}
 	${login_btn}  set variable  //*[@data-qa="form-login-success"]
 	loading дочекатися відображення елемента на сторінці  ${login_btn}
 	click element  ${login_btn}
-	loading дочекатися зникнення елемента зі сторінки  ${login_btn}
+	loading дочекатися зникнення елемента зі сторінки  ${login_btn}  timeout=120
 
 
 перейти до тестових торгів
