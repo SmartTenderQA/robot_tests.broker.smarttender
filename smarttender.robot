@@ -3,6 +3,8 @@ Library  Selenium2Screenshots
 Library  String
 Library  DateTime
 Resource  webclient.robot
+Library  smarttender_service.py
+
 
 *** Variables ***
 ############LOADING#################
@@ -182,6 +184,13 @@ ${loadings}                         ${SMART}|${IT}
 Оновити сторінку з тендером
 	[Arguments]   ${username}  ${tender_uaid}
     [Documentation]   Оновити сторінку з тендером для отримання потенційно оновлених даних.
+    ##########################################################
+    #todo  убрать вывод в консоль
+    log to console                ${\n}
+    log to console      zzzzzZZZZZZZZZZZZZZzzzzz
+    log to console  Чекаємо пока пройде синхронізація
+    log to console            .............
+    ##########################################################
 	Wait Until Keyword Succeeds  10m  5s  smarttender.Дочекатись синхронізації
 
 
@@ -191,9 +200,7 @@ ${loadings}                         ${SMART}|${IT}
     [Arguments]  ${username}  ${tender_uaid}  ${field_name}
     [Documentation]  Отримати значення поля field_name для тендера tender_uaid.
     ${field_name_splited}  set variable  ${field_name.split('[')[0]}
-#    log to console  Отримати інформацію із тендера
-#    debug
-    ${field_value}  run keyword  smarttender.сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
+    ${field_value}  smarttender.сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
     [Return]  ${field_value}
 
 
@@ -214,6 +221,13 @@ ${loadings}                         ${SMART}|${IT}
 сторінка_детальної_інформації отримати description
 	[Arguments]  ${field_name}
 	${selector}  set variable  //*[@data-qa='description']
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати status
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa='status']
 	${field_value}  get text  ${selector}
 	[Return]  ${field_value}
 
@@ -264,6 +278,90 @@ ${loadings}                         ${SMART}|${IT}
 ###############################################
 
 
+сторінка_детальної_інформації отримати mainProcurementCategory
+    [Arguments]  ${field_name}
+	${selector}  set variable  xpath=//*[@data-qa="main-procurement-category-title"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	${field_value}  convert_mainProcurementCategory  ${field_value}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати value.amount
+    [Arguments]  ${field_name}
+	${selector}  set variable  xpath=//*[@data-qa="budget-amount"]
+	${field_value}  get text  ${selector}
+	${field_value}  convert_page_values  ${field_name}  ${field_value}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати value.currency
+    [Arguments]  ${field_name}
+	${selector}     set variable  xpath=//*[@data-qa="budget-currency"]
+	${field_value}  get text  ${selector}
+	${field_value}  evaluate  str('${field_value}'.replace(" ", "")).replace(".", "")
+	${field_value}  evaluate  '${field_value}'.decode('utf-8')
+    ${field_value}  convert_currency  ${field_value}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати value.valueAddedTaxIncluded
+    [Arguments]  ${field_name}
+	${selector}  set variable  xpath=//*[@data-qa="budget-vat-title"]
+	${field_value}  get text  ${selector}
+	${field_value}  convert_page_values  ${field_name}  '${field_value}'
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати tenderID
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="prozorro-number"]//a
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати procuringEntity.name
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="organizer-block"]//*[@data-qa="name"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати enquiryPeriod.startDate
+    [Arguments]  ${field_name}
+	${selector}  set variable  xpath=//*[@data-qa="enquiry-period"]//*[@data-qa="date-start"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати enquiryPeriod.endDate
+    [Arguments]  ${field_name}
+	${selector}  set variable  xpath=//*[@data-qa="enquiry-period"]//*[@data-qa="date-end"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати tenderPeriod.startDate
+    [Arguments]  ${field_name}
+	${selector}  set variable  xpath=//*[@data-qa="tendering-period"]//*[@data-qa="date-start"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати tenderPeriod.endDate
+    [Arguments]  ${field_name}
+	${selector}  set variable  xpath=//*[@data-qa="tendering-period"]//*[@data-qa="date-end"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати minimalStep.amount
+    [Arguments]  ${field_name}
+	${selector}  set variable  xpath=//*[@data-qa="budget-min-step"]//span[4]
+	${field_value}  get text  ${selector}
+	${field_value}  convert_page_values  ${field_name}  ${field_value}
+	[Return]  ${field_value}
+
+
 Внести зміни в тендер
     [Arguments]  ${username}  ${tender_uaid}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінити значення поля fieldname на fieldvalue для тендера tender_uaid.
@@ -280,12 +378,141 @@ ${loadings}                         ${SMART}|${IT}
 
 Отримати інформацію із предмету
     [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${field_name}
-    [Documentation]  Отримати значення поля field_name з предмету з item_id в описі для тендера tender_uaid.    
-	log to console  Отримати інформацію із предмету
-	debug
+    [Documentation]  Отримати значення поля field_name з предмету з item_id в описі для тендера tender_uaid.
+    ${item_block}        set variable  //*[@data-qa="nomenclature-title"][contains(text(),"${item_id}")]/ancestor::div[@class="ivu-row"][1]
+	${item_field_value}  smarttender.предмети_сторінка_детальної_інформації отримати ${field_name}  ${item_block}
     [Return]  ${item_field_value}
-    
-    
+
+
+предмети_сторінка_детальної_інформації отримати description
+    [Arguments]  ${item_block}
+	${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-title"]
+	${item_field_value}  get text  ${selector}
+	[Return]  ${item_field_value}
+
+
+предмети_сторінка_детальної_інформації отримати deliveryDate.startDate
+    [Arguments]  ${item_block}
+	${selector}  set variable  xpath=${item_block}//*[@data-qa="date-start"]
+	${item_field_value}  get text  ${selector}
+	[Return]  ${item_field_value}
+
+
+предмети_сторінка_детальної_інформації отримати deliveryDate.endDate
+    [Arguments]  ${item_block}
+	${selector}  set variable  xpath=${item_block}//*[@data-qa="date-end"]
+	${item_field_value}  get text  ${selector}
+	${item_field_value}  convert date  ${item_field_value}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT%H:%M:%S+03:00
+	[Return]  ${item_field_value}
+
+
+предмети_сторінка_детальної_інформації отримати deliveryLocation.latitude
+    [Arguments]  ${item_block}
+	${selector}  set variable  xpath=${item_block}//a
+	${item_field_value}  get element attribute  ${selector}@href
+	${reg}  evaluate  re.search(u'(?P<lat>\\d+.\\d+),(?P<lon>\\d+.\\d+)', u"""${item_field_value}""")  re
+	${lat}	evaluate  float(${reg.group('lat')})
+	[Return]  ${lat}
+
+
+предмети_сторінка_детальної_інформації отримати deliveryLocation.longitude
+    [Arguments]  ${item_block}
+    ${selector}  set variable  xpath=${item_block}//a
+	${item_field_value}  get element attribute  ${selector}@href
+	${reg}  evaluate  re.search(u'(?P<lat>\\d+.\\d+),(?P<lon>\\d+.\\d+)', u"""${item_field_value}""")  re
+	${lon}	evaluate  float(${reg.group('lon')})
+	[Return]  ${lon}
+
+
+###########################################################################
+###########################################################################
+предмети_сторінка_детальної_інформації отримати deliveryAddress.countryName
+    [Arguments]  ${item_block}
+	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  countryName
+	[Return]  ${item_field_value}
+
+
+предмети_сторінка_детальної_інформації отримати deliveryAddress.postalCode
+    [Arguments]  ${item_block}
+    ${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  postalCode
+	[Return]  ${item_field_value}
+
+
+предмети_сторінка_детальної_інформації отримати deliveryAddress.region
+    [Arguments]  ${item_block}
+	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  region
+	[Return]  ${item_field_value}
+
+
+предмети_сторінка_детальної_інформації отримати deliveryAddress.locality
+    [Arguments]  ${item_block}
+	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  locality
+	[Return]  ${item_field_value}
+
+
+предмети_сторінка_детальної_інформації отримати deliveryAddress.streetAddress
+    [Arguments]  ${item_block}
+	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  streetAddress
+	[Return]  ${item_field_value}
+
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^#
+get_item_deliveryAddress_value
+    [Arguments]  ${item_block}  ${group}
+    ${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-delivery-address"]
+	${item_field_value}  get text  ${selector}
+    ${reg}  evaluate  re.search(u'(?P<postalCode>\\d+), (?P<countryName>\\D+.\\D+), (?P<region>\\D+.\\D+.), (?P<locality>\\D+.\\s\\D+), (?P<streetAddress>\\D+.+)', u"""${item_field_value}""")  re
+	${group_value}	evaluate  u'${reg.group('${group}')}'
+	[Return]  ${group_value}
+###########################################################################
+
+
+предмети_сторінка_детальної_інформації отримати classification.scheme
+    [Arguments]  ${item_block}
+	${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-main-classification-scheme"]
+	${item_field_value}  get text  ${selector}
+	${item_field_value}  evaluate  u'${item_field_value}'.replace(":", "")
+	[Return]  ${item_field_value}
+
+
+предмети_сторінка_детальної_інформації отримати classification.id
+    [Arguments]  ${item_block}
+	${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-main-classification-code"]
+	${item_field_value}  get text  ${selector}
+	[Return]  ${item_field_value}
+
+
+предмети_сторінка_детальної_інформації отримати classification.description
+    [Arguments]  ${item_block}
+	${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-main-classification-title"]
+	${item_field_value}  get text  ${selector}
+	[Return]  ${item_field_value}
+
+
+предмети_сторінка_детальної_інформації отримати unit.name
+    [Arguments]  ${item_block}
+	${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-count"]
+	${item_field_value}  get text  ${selector}
+	${item_field_value}  convert_page_values  unit.name  ${item_field_value}
+	[Return]  ${item_field_value}
+
+
+предмети_сторінка_детальної_інформації отримати unit.code
+    [Arguments]  ${item_block}
+	#${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-count"]
+	#${item_field_value}  get text  ${selector}
+	log to console  !!! поле "unit.code" не відображається на сторінці !!!
+	[Return]  ${item_field_value}
+
+
+предмети_сторінка_детальної_інформації отримати quantity
+    [Arguments]  ${item_block}
+	${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-count"]
+	${item_field_value}  get text  ${selector}
+	${item_field_value}  convert_page_values  quantity  ${item_field_value}
+	[Return]  ${item_field_value}
+
+
 Видалити предмет закупівлі
     [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${lot_id}=${Empty}
     [Documentation]  Видалити з тендера tender_uaid предмет з item_id в описі (предмет може бути прив'язаним до лоту з lot_id в описі, якщо lot_id != Empty).    
@@ -348,6 +575,41 @@ ${loadings}                         ${SMART}|${IT}
     [Documentation]  Отримати значення поля field документа з doc_id в назві для тендера tender_uaid.   
 	log to console  Отримати інформацію з документа до лоту
 	debug
+
+###################################################################
+###################################################################
+Отримати документ
+    [Arguments]  ${username}  ${tender_uaid}  ${doc_id}
+	${file_name}  get text  xpath=//*[@data-qa="file-name"][contains(text(),"${doc_id}")]
+    smarttender.документи скачати файл на сторінці  ${file_name}
+    [Return]  ${file_name}
+
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^#
+документи скачати файл на сторінці
+    [Arguments]  ${file_name}
+    ${link}  smarttender.документи отримати посилання на перегляд файлу  ${file_name}
+    ${link}  Evaluate  re.search(u'src=(?P<href>\\S+)', u"""${link}""").group('href')  re
+    ${download_link}  Evaluate  urllib.parse.unquote('${link}')  urllib
+    download_file_to_my_path  ${download_link}  ${OUTPUTDIR}/${file_name}
+    Sleep  3
+
+
+документи отримати посилання на перегляд файлу
+    [Arguments]  ${file_name}
+    ${selector}  Set Variable  xpath=//*[@data-qa="file-name"][text()="${file_name}"]
+    Wait Until Keyword Succeeds  20  .5  Run Keywords
+    ...  Mouse Over  ${selector}/preceding-sibling::i  AND
+    ...  Wait Until Element Is Visible  ${selector}/ancestor::div[@class="ivu-poptip"]//a[@data-qa="file-preview"]
+    ${link}  Get Element Attribute  ${selector}/ancestor::div[@class="ivu-poptip"]//a[@data-qa="file-preview"]@href
+    [Return]  ${link}
+
+
+документи переглянути файл за іменем
+    [Arguments]  ${file_name}
+    ${link}  smarttender.документи отримати посилання на перегляд файлу  ${file_name}
+    Go To  ${link}
+###################################################################
 
 
 Отримати документ до лоту
@@ -416,12 +678,34 @@ ${loadings}                         ${SMART}|${IT}
 	
 Отримати інформацію із запитання
     [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field_name}
-    [Documentation]  Отримати значення поля field_name із запитання з question_id в описі для тендера tender_uaid.  
-	log to console  Отримати інформацію із запитання
-	debug
+    [Documentation]  Отримати значення поля field_name із запитання з question_id в описі для тендера tender_uaid.
+	smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
+	${doc_block}  set variable  //*[contains(text(),"${question_id}")]/ancestor::div[@class="ivu-card-body"][1]
+	${question_field_name}  smarttender.запитання_сторінка_детальної отримати ${field_name}  ${doc_block}
     [Return]  ${question_field_name}
     
-    
+
+запитання_сторінка_детальної отримати title
+    [Arguments]  ${doc_block}
+    ${selector}  set variable  xpath=${doc_block}//*[@class="bold break-word"][1]
+    ${question_field_name}  get text  ${selector}
+    [Return]  ${question_field_name}
+
+
+запитання_сторінка_детальної отримати description
+    [Arguments]  ${doc_block}
+    ${selector}  set variable  xpath=${doc_block}//*[@class="break-word"][1]
+    ${question_field_name}  get text  ${selector}
+    [Return]  ${question_field_name}
+
+
+запитання_сторінка_детальної отримати answer
+    [Arguments]  ${doc_block}
+    ${selector}  set variable  xpath=${doc_block}//*[@class="break-word card-padding"][1]
+    ${question_field_name}  get text  ${selector}
+    [Return]  ${question_field_name}
+
+
 Відповісти на запитання
     [Arguments]  ${username}  ${tender_uaid}  ${answer_data}  ${question_id}
     [Documentation]  Дати відповідь answer_data на запитання з question_id в описі для тендера tender_uaid.  
@@ -519,10 +803,32 @@ ${loadings}                         ${SMART}|${IT}
 
 Отримати інформацію із документа
     [Arguments]  ${username}  ${tender_uaid}  ${doc_id}  ${field}
-    [Documentation]  Отримати значення поля field документа doc_id з тендера tender_uaid для перевірки правильності відображення цього поля.  
-	log to console  Отримати інформацію із документа
-	debug
+    [Documentation]  Отримати значення поля field документа doc_id з тендера tender_uaid для перевірки правильності відображення цього поля.
+	reload page
+	${doc_block}  set variable  //*[@data-qa="file-name"][contains(text(),"${doc_id}")]/ancestor::div[contains(@class,"filename")]
+	loading дочекатися відображення елемента на сторінці  ${doc_block}
+    ${document_field}  smarttender.документи_сторінка_детальної_інформації отримати ${field}  ${doc_block}
     [Return]  ${document_field}
+
+
+документи_сторінка_детальної_інформації отримати title
+    [Arguments]  ${doc_block}
+    log to console  документи_сторінка_детальної_інформації отримати title
+    debug
+    ${selector}  set variable  xpath=${doc_block}//*[@data-qa="file-name"]
+    ${document_field}  get text  ${selector}
+    [Return]  ${document_field}
+
+
+документи_сторінка_детальної_інформації отримати description
+    [Arguments]  ${doc_block}
+    log to console  документи_сторінка_детальної_інформації отримати description
+    debug
+    ${selector}  set variable  xpath=${doc_block}
+    ${document_field}  get text  ${selector}
+    [Return]  ${document_field}
+
+
     
 
 Подати цінову пропозицію
@@ -721,30 +1027,31 @@ ${loadings}                         ${SMART}|${IT}
     [Arguments]  ${username}  ${tender_data}
     [Documentation]  Створити план з початковими даними tender_data. Повернути uaid створеного плану.
 	log to console  Створити план
-	debug
     [Return]  ${planID}
 
 
 Пошук плану по ідентифікатору
-    [Arguments]  ${username}  ${tender_uaid}
+    [Arguments]  ${username}  ${planID}
     [Documentation]  Знайти план з uaid рівним tender_uaid.
-	log to console  Пошук плану по ідентифікатору
-	debug
+	smarttender.перейти до сторінки планів
+	smarttender.сторінка_планів ввести текст в поле пошуку  ${planID}
+    smarttender.сторінка_планів виконати пошук
+	smarttender.сторінка_планів перейти за першим результатом пошуку
+	${taken_planID}  smarttender.план_сторінка_детальної_інформації отримати planID  planID
+	should be equal as strings  ${taken_planID}  ${planID}
+
+
+перейти до сторінки планів
+    go to  https://test.smarttender.biz/plans/
 
 
 Отримати інформацію із плану
-    [Arguments]  ${username}  ${tender_uaid}  ${field_name}
-    [Documentation]  Отримати значення поля field_name для плану tender_uaid.
-	log to console  Отримати інформацію із плану
-	debug
-    [Return]  ${plan_field_name}
+    [Arguments]  ${username}  ${plan_uaid}  ${field_name}
+    [Documentation]  Отримати значення поля field_name для плану plan_uaid.
+	${field_name_splited}  set variable  ${field_name.split('[')[0]}
+    ${field_value}  smarttender.план_сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
+    [Return]  ${field_value}
 
-
-Додати предмет закупівлі в план
-    [Arguments]  ${username}  ${tender_uaid}  ${item}
-    [Documentation]  Додати дані про предмет item до плану tender_uaid.
-	log to console  Додати предмет закупівлі в план
-	debug
 
 
 Видалити предмет закупівлі плану
@@ -754,6 +1061,168 @@ ${loadings}                         ${SMART}|${IT}
 	debug
 
 
+Оновити сторінку з планом
+    [Arguments]   ${username}  ${plan_uaid}
+    [Documentation]   Оновити сторінку з тендером для отримання потенційно оновлених даних.
+    Wait Until Keyword Succeeds  10m  5s  smarttender.Дочекатись синхронізації
+
+
+########################################################################################################
+########################################################################################################
+сторінка_планів ввести текст в поле пошуку
+    [Arguments]  ${text}
+    input text  //*[@data-qa="search-phrase"]/input  ${text}
+
+
+сторінка_планів виконати пошук
+    click element  //*[@id="btnFind"]
+    loading дочекатись закінчення загрузки сторінки
+
+
+сторінка_планів перейти за першим результатом пошуку
+	${plan_number}  set variable  1
+	${link}  get element attribute  xpath=(//*[@id="plan"])[${plan_number}]//*[@data-qa="plan-title"]@href
+	log  plan_link: ${link}  WARN
+	go to  ${link}
+
+план_сторінка_детальної_інформації отримати planID
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="plan-cdb-number-link"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати tender.procurementMethodType
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="plan-bidding-type-info"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	${field value}  convert_procurementMethodType  ${field value}
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати budget.amount
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="plan-initialValue"]
+	${field_value}  get text  ${selector}
+	${field_value}  evaluate  float(${field_value.replace(" ", "")})
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати budget.description
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="plan-title"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати budget.currency
+    [Arguments]  ${field_name}
+	${selector}  set variable  //*[@data-qa="plan-currency-name"]
+	${field_value}  get text  ${selector}
+	${field_value}  set variable  ${field_value.replace(" ", "").replace(".", "")}
+	${field_value}  convert_currency  ${field_value}
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати budget.id
+    [Arguments]  ${field_name}
+    log to console  Поле не отображается на странице
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати budget.project.id
+    [Arguments]  ${field_name}
+    log to console  Поле не отображается на странице
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати budget.project.name
+    [Arguments]  ${field_name}
+    log to console  Поле не отображается на странице
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати procuringEntity.name
+    [Arguments]  ${field_name}
+    log to console  Поле не отображается на странице
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати procuringEntity.identifier.scheme
+    [Arguments]  ${field_name}
+    log to console  Поле не отображается на странице
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати procuringEntity.identifier.id
+    [Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="plan-usreou"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати procuringEntity.identifier.legalName
+    [Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="plan-organizer"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати classification.description
+    [Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="plan-main-classification"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	${field_value}  Evaluate  re.search(r' (?P<description>\\D+)', u'${field_value}').group('description')  re
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати classification.scheme
+    [Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="plan-main-classification"]//*[contains(@class, "key-value")]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value.split(" ")[1]}
+
+
+план_сторінка_детальної_інформації отримати classification.id
+    [Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="plan-main-classification"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value.split(" ")[0]}
+
+
+план_сторінка_детальної_інформації отримати tender.tenderPeriod.startDate
+    [Arguments]  ${field_name}
+    log to console  Поле не отображается на странице
+	[Return]  ${field_value}
+
+
+план_сторінка_детальної_інформації отримати items
+	[Arguments]  ${field_name}
+	${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
+	${number}  	evaluate  '${reg.group('number')}'
+	${field}  	evaluate  '${reg.group('field')}'
+	${item_selector}  set variable  xpath=(//*[@data-qa="value-list"])[${number}+1]
+    ${field_selector}      set variable if
+    ...  '${field}' == 'description'                    //*[@data-qa="nomenclature-title"]
+    ...  '${field}' == 'quantity'                       //*[@data-qa="nomenclature-count"]
+    ...  '${field}' == 'unit.code'                      //*[@data-qa="nomenclature-count"]
+    ...  '${field}' == 'unit.name'                      //*[@data-qa="nomenclature-count"]
+    ...  '${field}' == 'deliveryDate.endDate'           //*[@data-qa="date-end"]
+    ...  '${field}' == 'classification.description'     //*[@data-qa="nomenclature-main-classification-title"]
+    ...  '${field}' == 'classification.scheme'          //*[@data-qa="nomenclature-main-classification-scheme"]
+    ...  '${field}' == 'classification.id'              //*[@data-qa="nomenclature-main-classification-code"]
+    ${field_value}  get text  ${item_selector}${field_selector}
+    ${converted_field_value}  convert_plan_page_values  ${field}  ${field_value}
+    ${converted_field_value}  run keyword if  '${field}' == 'deliveryDate.endDate'
+    ...  date convertation  ${converted_field_value}
+    ...  ELSE  return from keyword  ${converted_field_value}
+    [Return]  ${converted_field_value}
+
+date convertation
+#   TODO нати способ не хардкодить часовой пояс
+    [Arguments]  ${raw_date}
+    ${converted_date}  convert date  ${raw_date}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT%H:%M:%S+03:00
+    [Return]  ${converted_date}
 ########################################################################################################
 ########################################################################################################
 ###########################################KEYWORDS#####################################################
@@ -866,3 +1335,13 @@ loading дочекатися зникнення елемента зі сторі
 	${status}  Run Keyword if  ${status} and '${DateEnd}' != '${EMPTY}' and '${WorkStatus}' != 'working' and '${WorkStatus}' != 'fail' and '${Success}' == 'true'
 	...  Set Variable  Pass
 	Should Be Equal  ${status}  Pass
+
+
+сторінка_детальної_інформації активувати вкладку
+    [Arguments]  ${tab_name}
+    ${tab_selector}  Set Variable  //*[@data-qa="tabs"]//*[text()="${tab_name}"]
+    Wait Until Keyword Succeeds  10  2  Click Element  ${tab_selector}
+    loading дочекатись закінчення загрузки сторінки
+    ${status}  Run Keyword And Return Status
+    ...  Element Should Be Visible  ${tab_selector}/ancestor::div[contains(@class,"tab-active")]
+    Run Keyword If  '${status}' == 'False'  Click Element  ${tab_selector}
