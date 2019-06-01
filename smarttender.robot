@@ -95,7 +95,7 @@ ${loadings}                         ${SMART}|${IT}
     [Arguments]  ${username}  ${tender_uaid}  ${field_name}
     [Documentation]  Отримати значення поля field_name для тендера tender_uaid.
     ${field_name_splited}  set variable  ${field_name.split('[')[0]}
-    ${field_value}  smarttender.сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
+    ${field_value}  run keyword  smarttender.сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
     [Return]  ${field_value}
 
 
@@ -275,7 +275,7 @@ ${loadings}                         ${SMART}|${IT}
     [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name з предмету з item_id в описі для тендера tender_uaid.
     ${item_block}        set variable  //*[@data-qa="nomenclature-title"][contains(text(),"${item_id}")]/ancestor::div[@class="ivu-row"][1]
-	${item_field_value}  smarttender.предмети_сторінка_детальної_інформації отримати ${field_name}  ${item_block}
+	${item_field_value}  run keyword  smarttender.предмети_сторінка_детальної_інформації отримати ${field_name}  ${item_block}
     [Return]  ${item_field_value}
 
 
@@ -576,7 +576,7 @@ get_item_deliveryAddress_value
     [Documentation]  Отримати значення поля field_name із запитання з question_id в описі для тендера tender_uaid.
 	smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
 	${doc_block}  set variable  //*[contains(text(),"${question_id}")]/ancestor::div[@class="ivu-card-body"][1]
-	${question_field_name}  smarttender.запитання_сторінка_детальної отримати ${field_name}  ${doc_block}
+	${question_field_name}  run keyword  smarttender.запитання_сторінка_детальної отримати ${field_name}  ${doc_block}
     [Return]  ${question_field_name}
     
 
@@ -702,7 +702,7 @@ get_item_deliveryAddress_value
 	reload page
 	${doc_block}  set variable  //*[@data-qa="file-name"][contains(text(),"${doc_id}")]/ancestor::div[contains(@class,"filename")]
 	loading дочекатися відображення елемента на сторінці  ${doc_block}
-    ${document_field}  smarttender.документи_сторінка_детальної_інформації отримати ${field}  ${doc_block}
+    ${document_field}  run keyword  smarttender.документи_сторінка_детальної_інформації отримати ${field}  ${doc_block}
     [Return]  ${document_field}
 
 
@@ -944,7 +944,7 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${plan_uaid}  ${field_name}
     [Documentation]  Отримати значення поля field_name для плану plan_uaid.
 	${field_name_splited}  set variable  ${field_name.split('[')[0]}
-    ${field_value}  smarttender.план_сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
+    ${field_value}  run keyword  smarttender.план_сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
     [Return]  ${field_value}
 
 
