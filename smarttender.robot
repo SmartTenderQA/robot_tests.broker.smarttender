@@ -38,6 +38,7 @@ ${loadings}                         ${SMART}|${IT}
 	[Arguments]   ${username}
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
 	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
+	maximize browser window
 #	Set Window Position   @{USERS.users['${username}'].position}
 #	Set Window Size       @{USERS.users['${username}'].size}
 	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
@@ -124,6 +125,7 @@ ${loadings}                         ${SMART}|${IT}
     [Arguments]  ${field_name}
 	${selector}  set variable  //*[@data-qa='status']
 	${field_value}  get text  ${selector}
+	${field_value}  convert_status  ${field_value}
 	[Return]  ${field_value}
 
 
@@ -225,6 +227,7 @@ ${loadings}                         ${SMART}|${IT}
     [Arguments]  ${field_name}
 	${selector}  set variable  xpath=//*[@data-qa="enquiry-period"]//*[@data-qa="date-start"]
 	${field_value}  get text  ${selector}
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S+03:00
 	[Return]  ${field_value}
 
 
@@ -232,6 +235,7 @@ ${loadings}                         ${SMART}|${IT}
     [Arguments]  ${field_name}
 	${selector}  set variable  xpath=//*[@data-qa="enquiry-period"]//*[@data-qa="date-end"]
 	${field_value}  get text  ${selector}
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S+03:00
 	[Return]  ${field_value}
 
 
@@ -239,6 +243,7 @@ ${loadings}                         ${SMART}|${IT}
     [Arguments]  ${field_name}
 	${selector}  set variable  xpath=//*[@data-qa="tendering-period"]//*[@data-qa="date-start"]
 	${field_value}  get text  ${selector}
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S+03:00
 	[Return]  ${field_value}
 
 
@@ -246,6 +251,7 @@ ${loadings}                         ${SMART}|${IT}
     [Arguments]  ${field_name}
 	${selector}  set variable  xpath=//*[@data-qa="tendering-period"]//*[@data-qa="date-end"]
 	${field_value}  get text  ${selector}
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S+03:00
 	[Return]  ${field_value}
 
 
@@ -355,8 +361,8 @@ ${loadings}                         ${SMART}|${IT}
 get_item_deliveryAddress_value
     [Arguments]  ${item_block}  ${group}
     ${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-delivery-address"]
-	${item_field_value}  get text  ${selector}
-    ${reg}  evaluate  re.search(u'(?P<postalCode>\\d+), (?P<countryName>\\D+.\\D+), (?P<region>\\D+.\\D+.), (?P<locality>\\D+.\\s\\D+), (?P<streetAddress>\\D+.+)', u"""${item_field_value}""")  re
+	${item_field_value}  get text by JS  ${selector}
+    ${reg}  evaluate  re.search(u'(?P<postalCode>\\d+),.{2}(?P<countryName>\\D+),.{2}(?P<region>\\D+.\\D+.),.{2}(?P<locality>\\D+),.{2}(?P<streetAddress>\\D+.+)', u"""${item_field_value}""")  re
 	${group_value}	evaluate  u'${reg.group('${group}')}'
 	[Return]  ${group_value}
 ###########################################################################
@@ -394,9 +400,9 @@ get_item_deliveryAddress_value
 
 предмети_сторінка_детальної_інформації отримати unit.code
     [Arguments]  ${item_block}
-	#${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-count"]
-	#${item_field_value}  get text  ${selector}
-	log to console  !!! поле "unit.code" не відображається на сторінці !!!
+    ${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-count"]
+	${item_field_value}  get text  ${selector}
+	${item_field_value}  convert_page_values  unit.code  ${item_field_value}
 	[Return]  ${item_field_value}
 
 
@@ -485,7 +491,10 @@ get_item_deliveryAddress_value
     [Arguments]  ${file_name}
     ${link}  smarttender.документи отримати посилання на перегляд файлу  ${file_name}
     ${link}  Evaluate  re.search(u'src=(?P<href>\\S+)', u"""${link}""").group('href')  re
-    ${download_link}  Evaluate  urllib.parse.unquote('${link}')  urllib
+    ${link}  run keyword if  '${link}' == 'None'
+    ...  evaluate  re.search(u'url=(?P<href>\\S+)', u"""${link}""").group('href')  re
+    ...  ELSE  set variable  ${link}
+    ${download_link}  Evaluate  urllib.unquote('${link}')  urllib
     download_file_to_my_path  ${download_link}  ${OUTPUTDIR}/${file_name}
     Sleep  3
 
@@ -569,8 +578,16 @@ get_item_deliveryAddress_value
     [Documentation]  Створити запитання з даними question для тендера tender_uaid.   
 	log to console  Задати запитання на тендер
 	debug
-	
-	
+	${tender_title}  сторінка_детальної_інформації отримати title
+	smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
+	запитання_вибрати тип запитання      ${tender_title}
+	запитання_натиснути кнопку "Поставити запитання"
+	запитання_заповнити тему             ${question['data']['title']}
+	запитання_заповнити текст запитання  ${question['data']['description']}
+	запитання_натиснути кнопку "Подати"
+
+
+
 Отримати інформацію із запитання
     [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name із запитання з question_id в описі для тендера tender_uaid.
@@ -708,8 +725,6 @@ get_item_deliveryAddress_value
 
 документи_сторінка_детальної_інформації отримати title
     [Arguments]  ${doc_block}
-    log to console  документи_сторінка_детальної_інформації отримати title
-    debug
     ${selector}  set variable  xpath=${doc_block}//*[@data-qa="file-name"]
     ${document_field}  get text  ${selector}
     [Return]  ${document_field}
@@ -724,13 +739,15 @@ get_item_deliveryAddress_value
     [Return]  ${document_field}
 
 
-    
-
 Подати цінову пропозицію
     [Arguments]  ${username}  ${tender_uaid}  ${bid}  ${lots_ids}=${None}  ${features_ids}=${None}
     [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_ids (якщо features_ids != None).  
 	log to console  Подати цінову пропозицію
 	debug
+
+
+
+
 
 
 Отримати інформацію із пропозиції
@@ -959,6 +976,13 @@ get_item_deliveryAddress_value
 Оновити сторінку з планом
     [Arguments]   ${username}  ${plan_uaid}
     [Documentation]   Оновити сторінку з тендером для отримання потенційно оновлених даних.
+    ##########################################################
+    #todo  убрать вывод в консоль
+    log to console                ${\n}
+    log to console      zzzzzZZZZZZZZZZZZZZzzzzz
+    log to console  Чекаємо пока пройде синхронізація
+    log to console            .............
+    ##########################################################
     Wait Until Keyword Succeeds  10m  5s  smarttender.Дочекатись синхронізації
 
 
@@ -1160,6 +1184,21 @@ date convertation
 	click element  ${login_btn}
 	loading дочекатися зникнення елемента зі сторінки  ${login_btn}
 
+Open button
+	[Documentation]   відкривае лінку з локатора у поточному вікні
+	[Arguments]  ${selector}
+	${href}=  Get Element Attribute  ${selector}  href
+	${href}  Поправити лінку для IP  ${href}
+	Go To  ${href}
+
+get text by JS
+	[Arguments]    ${xpath}
+	${xpath}  Set Variable  ${xpath.replace("'", '"')}
+	${xpath}  Set Variable  ${xpath.replace('xpath=', '')}
+	${text_is}  Execute JavaScript
+	...  return document.evaluate('${xpath}', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.textContent
+	[Return]  ${text_is}
+
 
 перейти до тестових торгів
 	go to  https://test.smarttender.biz/test-tenders/
@@ -1230,6 +1269,9 @@ loading дочекатися зникнення елемента зі сторі
 	${status}  Run Keyword if  ${status} and '${DateEnd}' != '${EMPTY}' and '${WorkStatus}' != 'working' and '${WorkStatus}' != 'fail' and '${Success}' == 'true'
 	...  Set Variable  Pass
 	Should Be Equal  ${status}  Pass
+	reload page
+	loading дочекатись закінчення загрузки сторінки
+
 
 
 сторінка_детальної_інформації активувати вкладку
@@ -1240,3 +1282,64 @@ loading дочекатися зникнення елемента зі сторі
     ${status}  Run Keyword And Return Status
     ...  Element Should Be Visible  ${tab_selector}/ancestor::div[contains(@class,"tab-active")]
     Run Keyword If  '${status}' == 'False'  Click Element  ${tab_selector}
+
+
+################################################################################
+#                           ПОДАТИ ПРОПОЗИЦІЮ                                  #
+################################################################################
+
+
+Перевірити кнопку подачі пропозиції
+    ${button}  Set Variable  xpath=//*[@class='show-control button-lot']|//*[@data-qa="bid-button"]
+    loading дочекатися відображення елемента на сторінці  ${button}
+    smarttender.Open button  ${button}
+    Location Should Contain  /edit/
+    Wait Until Keyword Succeeds  5m  3  Run Keywords
+    ...  Reload Page  AND
+    ...  Element Should Not Be Visible  //*[@class='modal-dialog ']//h4
+
+
+################################################################################
+#                                                             #
+################################################################################
+запитання_вибрати тип запитання
+    [Arguments]  ${type}
+    ${selector}       set variable  xparh=//*[@data-qa="questions"]//*[@class="ivu-select-selection"]
+    ${type_selector}  set variable  xpath=//*[@class="ivu-select-dropdown-list"]/li[contains(text(),"${type}")]
+    loading дочекатися відображення елемента на сторінці  ${type_selector}
+    click element  ${type_selector}
+    wait until element contains  ${selector}//*[@class="ivu-select-selected-value"]  ${type}
+
+
+запитання_натиснути кнопку "Поставити запитання"
+    ${question button}    Set Variable  //*[@data-qa="questions"]//button[contains(@class,"question-button")]
+    ${question send btn}  Set Variable  //*[@data-qa="questions"]//button[contains(@class,"btn-success")]
+    loading дочекатися відображення елемента на сторінці  ${question button}
+    #Scroll Page To Element XPATH   ${question button}
+    Click Element                  ${question button}
+    Wait Until Element Is Visible  ${question send btn}
+
+
+запитання_заповнити тему
+    [Arguments]  ${text}
+    ${question theme}  Set Variable  //*[@data-qa="questions"]//label[text()="Тема"]/following-sibling::div//input
+    loading дочекатися відображення елемента на сторінці  ${question theme}
+    Input Text  ${question theme}  ${text}
+    Sleep  .5
+    ${get}  Get Element Attribute  ${question theme}  value
+    Should Be Equal  ${get}  ${text}
+
+
+запитання_заповнити текст запитання
+    [Arguments]  ${text}
+    ${question text}  Set Variable  //*[@data-qa="questions"]//label[text()="Запитання"]/following-sibling::div//textarea
+    Input Text  ${question text}  ${text}
+    Sleep  .5
+    ${get}  Get Element Attribute  ${question text}  value
+    Should Be Equal  ${get}  ${text}
+
+
+запитання_натиснути кнопку "Подати"
+    ${question send btn}  Set Variable  //*[@data-qa="questions"]//button[contains(@class,"btn-success")]
+    Click Element  ${question send btn}
+    Run Keyword And Ignore Error  Wait Until Element Is Not Visible  ${question send btn}  30
