@@ -2,6 +2,8 @@
 ${active_tab_in_screen}  			//*[@id="pcModalMode_PW-1"]//*[@class="dxtc-content"]/div[@style="" or (not(@style) and @id)]
 ${milestone_active_row}				xpath=(//*[contains(@class, "rowselected")])[last()]
 ${milestone_dropdown_list}			//*[@class="dhxcombolist_material" and not(contains(@style, 'display: none;'))]
+${screen_root_selector}             //*[(@id="pcCustomDialog_PW-1" or @id="pcModalMode_PW-1") and contains(@style, "visibility: visible;")]
+${locator_for_click_tab_tbsk}	    //*[contains(@class, "dxtc-tab")]
 
 
 *** Keywords ***
@@ -13,7 +15,8 @@ ${milestone_dropdown_list}			//*[@class="dhxcombolist_material" and not(contains
 
 header натиснути на елемент за назвою
 	[Arguments]  ${button_name}
-	${btn locator}  set variable  //*[contains(@title, "${button_name}")]
+	${root}  check for open screen
+	${btn locator}  set variable  ${root}//*[contains(@title, "${button_name}")]
 	Wait Until Element Is Visible  ${btn locator}
 	Click Element  ${btn locator}
 	loading дочекатись закінчення загрузки сторінки
@@ -76,7 +79,12 @@ header натиснути на елемент за назвою
 заповнити поле mainProcurementCategory
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="IDCATGROUP"]
-	заповнити фіксований випадаючий список  ${locator}  ${text}
+	${dict}  create dictionary
+	...  goods=Товари
+	...  services=Послуги
+	...  works=Роботи
+	заповнити фіксований випадаючий список  ${locator}  ${dict['${text}']}
+
 
 ##################################################
 ######################ITEMS#######################
@@ -95,6 +103,24 @@ header натиснути на елемент за назвою
 
 заповнити поле для item unit.name
 	[Arguments]  ${unit.name}
+	${unit.name}  set variable if
+	...  '${unit.name}' == 'кілограми'  кг
+	...  '${unit.name}' == 'літр'  л
+	...  '${unit.name}' == 'пачок'  пач.
+	...  '${unit.name}' == 'метри'  м
+	...  '${unit.name}' == 'послуга'  умов.
+	...  '${unit.name}' == 'метри кубічні'  м3
+	...  '${unit.name}' == 'ящик'  ящ
+	...  '${unit.name}' == 'тони'  т
+	...  '${unit.name}' == 'кілометри'  км
+	...  '${unit.name}' == 'місяць'  міс
+	...  '${unit.name}' == 'пачка'  пач
+	...  '${unit.name}' == 'пачка'  пач
+	...  '${unit.name}' == 'упаковка'  упаков
+	...  '${unit.name}' == 'гектар'  га
+	...  '${unit.name}' == 'кілограми'  кг
+	...  '${unit.name}' == 'Флакон'  флак
+	...  ${unit.name}
 	${locator}  set variable  //*[@data-name="EDI"]//input
 	заповнити simple input  ${locator}  ${unit.name}
 
@@ -102,7 +128,7 @@ header натиснути на елемент за назвою
 заповнити поле для item classification.id
 	[Arguments]  ${classification.id}
 	${locator}  set variable  //*[@data-name="MAINCLASSIFICATION"]//input
-	заповнити simple input  ${locator}  ${classification.id}
+	заповнити simple input  ${locator}  ${classification.id}  check=${False}
 
 
 заповнити поле для item additionalClassifications.scheme
@@ -133,7 +159,7 @@ header натиснути на елемент за назвою
 заповнити поле для item deliveryAddress.locality
 	[Arguments]  ${deliveryAddress.locality}
 	${locator}  set variable  //*[@data-name="CITY_KOD"]//input
-	заповнити simple input  ${locator}  ${deliveryAddress.locality}
+	заповнити simple input  ${locator}  ${deliveryAddress.locality}  check=${False}
 
 
 заповнити поле для item deliveryDate.startDate
@@ -150,6 +176,9 @@ header натиснути на елемент за назвою
 	заповнити поле з датою  ${locator}  ${formated_date}
 
 
+##################################################
+###################MILESTONES#####################
+##################################################
 заповнити поле для milestone code
 	[Arguments]  ${code}
 	${locator}  set variable  ${milestone_active_row}/td[2]
@@ -180,6 +209,12 @@ header натиснути на елемент за назвою
 	ввести значення в поле в гріді  ${locator}  ${percentage}
 
 
+заповнити поле для milestone description
+	[Arguments]  ${description}
+	${locator}  set variable  ${milestone_active_row}/td[4]
+	ввести значення в поле в гріді  ${locator}  ${description}
+
+
 
 
 
@@ -187,18 +222,21 @@ header натиснути на елемент за назвою
 
 вибрати значення з випадаючого списку в гріді
 	[Arguments]  ${locator}  ${text}
-	wait until keyword succeeds  5x  1s  run keywords
+	wait until keyword succeeds  10x  1s  run keywords
 	...  click element  ${locator}  AND
-	...  loading дочекатися відображення елемента на сторінці  ${milestone_dropdown_list}  timeout=3  AND
+	...  sleep  .5
+	...  click element  ${locator}  AND
+#	...  loading дочекатися відображення елемента на сторінці  ${milestone_dropdown_list}  timeout=1s  AND
 	...  click element  ${milestone_dropdown_list}//*[text()="${text}"]  AND
 	...  loading дочекатись закінчення загрузки сторінки
 
 
 ввести значення в поле в гріді
 	[Arguments]  ${locator}  ${text}
-	wait until keyword succeeds  5x  1s  run keywords
+	wait until keyword succeeds  10x  1s  run keywords
 	...  click element  ${locator}  AND
-	...  loading дочекатися відображення елемента на сторінці  ${locator}//input  timeout=3  AND
+	...  click element  ${locator}  AND
+#	...  loading дочекатися відображення елемента на сторінці  ${locator}//input  timeout=1s  AND
 	...  input text  ${locator}//input  ${text}  AND
 	...  press key  //body  \\09  AND
 	...  loading дочекатись закінчення загрузки сторінки
@@ -213,12 +251,10 @@ header натиснути на елемент за назвою
 	[Arguments]  ${locator}  ${text}
 	click element  ${locator}//td[3]
 	input text  ${locator}//td[2]//input  ${text}
-#	click screen header
-	press key  //body  \\13
+	click screen header
 	loading дочекатись закінчення загрузки сторінки
-	${get}  get element attribute  ${locator}@value
+	${get}  get element attribute  ${locator}//td[2]//input@value
 	should be equal  "${get}"  "${text}"
-
 
 
 заповнити simple input
@@ -271,7 +307,109 @@ click screen header
 	loading дочекатись закінчення загрузки сторінки
 
 
-активувати вкладку умови оплати
-	${selector}  set variable  //*[@class="dx-vam" and contains(., "Умови оплати")]
-	click element  ${selector}
+активувати вкладку
+	[Arguments]  ${tab_name}
+	[Documentation]  Активирует вкладку по содержащую _tab_name_ в имени.
+#	http://joxi.ru/1A5Bjd9cn9WO6r
+#	там два элемента для каждой вкладки
+#	они перекрывают друг друга в зависимости от того вкладка активна или нет, соответственно один из элементов всегда не кликабельный
+#	итого у нас 3 варианта:
+#		- вкладка не активна, не зависимо активный вид или нет
+#		- вкладка активна в неактивном виде: нужно кликать по активной части
+#		- вкладка уже активна в активном виде: ничего не делаем
+	${tab}  webclient.get tab selector by name  ${tab_name}
+	${view_status}  webclient.get view status  ${tab}
+	${tab_status}  webclient.get tab status  ${tab}
+	Run Keyword If
+	...  "${tab_status}" == "none"  											run keywords
+	...  		click element  ${tab}											AND
+	...  		loading дочекатись закінчення загрузки сторінки  						ELSE IF
+	...  "${tab_status}" == "active" and "${view_status}" == "none"  			run keywords
+	...  		click element  ${tab}/following-sibling::*						AND
+	...  		loading дочекатись закінчення загрузки сторінки
+	wait until keyword succeeds  10  .5  run keywords
+	...  element attribute should contains value  ${tab}  style  display:		AND
+	...  element attribute should contains value  ${tab}  style  none
+
+
+get tab selector by name
+	[Arguments]  ${name}
+	${root}  check for open screen
+	[Return]  ${root}${locator_for_click_tab_tbsk}\[contains(., "${name}")]
+
+
+get view status
+	[Arguments]  ${tab}
+	# return 'active" if screen is open
+	return from keyword if  """${screen_root_selector}""" in """${tab}"""  active
+	###################################
+	${class_value}  get element attribute  ${tab}/ancestor::*[@data-placeid]  class
+	${view_status}  set variable if  "active-dxtc-frame" in "${class_value}"  active  none
+	[Return]  ${view_status}
+
+
+get tab status
+	[Arguments]  ${tab}
+	${style_value}  get element attribute  ${tab}  style
+	${tab_status}  set variable if  "display:none" in "${style_value.replace(" ", "")}"  active  none
+	[Return]  ${tab_status}
+
+
+check for open screen
+	${status}  run keyword and return status  element should be visible  ${screen_root_selector}
+	${screen}  set variable if  ${status} == ${True}  ${screen_root_selector}  ${EMPTY}
+	[Return]  ${screen}
+
+
+dialog box натиснути кнопку
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@class='message-box']//*[text()="${text}"]
+	loading дочекатися відображення елемента на сторінці  ${locator}
+	click element  ${locator}
+	loading дочекатись закінчення загрузки сторінки
+	loading дочекатися зникнення елемента зі сторінки  ${locator}
+
+
+dialog box заголовок повинен містити
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@id="IMMessageBox_PWH-1"]//*[@class="dxpc-headerContent"]
+	${title}  get text  ${locator}
+	should contain  ${title}  ${text}
+
+
+натиснути додати документ
+	${locator}  set variable  //*[@data-name="BTADDATTACHMENT"]
+	click element  ${locator}
+
+
+отримати номер тендера
+	${locator}  set variable  xpath=(//*[contains(@class, "rowselected")]/td/a)[1]
+	${UAID}  get text  ${locator}
+	[Return]  ${UAID}
+
+
+screen заголовок повинен містити
+	[Arguments]  ${text}
+	${selector}  set variable  ${screen_root_selector}//*[@id="pcModalMode_PWH-1T" or @id="pcCustomDialog_PWH-1T"]
+	loading дочекатися відображення елемента на сторінці  ${selector}
+	${title}  get text  ${selector}
+	should contain  ${title}  ${text}
+
+
+додати тендерну документацію
+	${list_of_file_args}  create_fake_doc
+	${file_path}  set variable  ${list_of_file_args[0]}
+	${file_name}  set variable  ${list_of_file_args[1]}
+	${file_content}  set variable  ${list_of_file_args[2]}
+	webclient.активувати вкладку  Документи  index=2
+	загрузити документ  ${file_path}
+
+
+загрузити документ
+	[Arguments]  ${file_path}
+	webclient.натиснути додати документ
+	loading дочекатись закінчення загрузки сторінки
+	choose file  //*[@id="pcModalMode_PW-1"]//input  ${file_path}
+	loading дочекатись закінчення загрузки сторінки
+	click element  //*[@id="pcModalMode_PW-1"]//*[text()="ОК"]
 	loading дочекатись закінчення загрузки сторінки

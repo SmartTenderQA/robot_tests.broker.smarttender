@@ -63,13 +63,23 @@ ${loadings}                         ${SMART}|${IT}
 	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
 	webclient.header натиснути на елемент за назвою  OK
 	webclient.header натиснути на елемент за назвою  Додати
-	run keyword  Створити тендер ${mode}  ${tender_data}
+	run keyword  Заповнити поля для ${mode}  ${tender_data}
+	webclient.додати тендерну документацію
+	webclient.header натиснути на елемент за назвою  Додати
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
+	run keyword and ignore error  dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+	webclient.screen заголовок повинен містити  Завантаження документації
+	click element   ${screen_root_selector}//*[@alt="Close"]
+	loading дочекатись закінчення загрузки сторінки
+	${tender_uaid}  webclient.отримати номер тендера
 	[Return]  ${tender_uaid}
 
 
-Створити тендер belowThreshold		#Допорог
+Заповнити поля для belowThreshold		#Допорог
 	[Arguments]  ${tender_data}
-	# JCYJDYS
+	# ОСНОВНІ ПОЛЯ
 	${enquiryPeriod.startDate}  set variable  ${tender_data['enquiryPeriod']['startDate']}
 	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
 	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
@@ -91,17 +101,19 @@ ${loadings}                         ${SMART}|${IT}
 	...  mainProcurementCategory
 	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
 
+	# ЛОТИ
 	${count_item}  set variable  1
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  Заповнити поля лоту  ${item}
 	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
+	\  Заповнити поля лоту  ${item}
+	\  ${count_item}  evaluate  ${count_item} + 1
 
+	# УМОВИ ОПЛАТИ
 	${count_milestone}  set variable  1
 	:FOR  ${milestone}  IN  @{tender_data['milestones']}
-	\  run keyword if  '${count_milestone}' == '1'  webclient.активувати вкладку умови оплати
+	\  run keyword if  '${count_milestone}' == '1'  webclient.активувати вкладку  Умови оплати
 	\  Заповнити умови оплати  ${milestone}
-
-	debug
+	\  ${count_milestone}  evaluate  ${count_milestone} + 1
 
 
 Заповнити поля лоту
@@ -110,27 +122,30 @@ ${loadings}                         ${SMART}|${IT}
 	${quantity}  set variable  ${item['quantity']}
 	${unit.name}  set variable  ${item['unit']['name']}
 	${classification.id}  set variable  ${item['classification']['id']}
-	# мені причудилось що іноді additionalClassifications не присутні в item
-	${additionalClassifications.scheme}  set variable  ${item['additionalClassifications'][0]['scheme']}
-	${additionalClassifications.description}  set variable  ${item['additionalClassifications'][0]['description']}
+	${additionalClassifications.scheme}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['scheme']}
+	${additionalClassifications.description}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['description']}
 	${deliveryAddress.postalCode}  set variable  ${item['deliveryAddress']['postalCode']}
 	${deliveryAddress.streetAddress}  set variable  ${item['deliveryAddress']['streetAddress']}
 	${deliveryAddress.locality}  set variable  ${item['deliveryAddress']['locality']}
 	${deliveryDate.startDate}  set variable  ${item['deliveryDate']['startDate']}
 	${deliveryDate.endDate}  set variable  ${item['deliveryDate']['endDate']}
-	:FOR  ${field}  in
+
+	${field_list}  create list
 	...  description
 	...  quantity
 	...  unit.name
 	...  classification.id
-	...  additionalClassifications.scheme
-	...  additionalClassifications.description
 	...  deliveryAddress.postalCode
 	...  deliveryAddress.streetAddress
 	...  deliveryAddress.locality
 	...  deliveryDate.startDate
 	...  deliveryDate.endDate
-	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}
+
+	${status}  run keyword and return status  dictionary should contain key  ${item}  additionalClassifications
+	run keyword if  ${status}  append to list  ${field_list}  additionalClassifications.scheme  additionalClassifications.description
+
+	:FOR  ${field}  in  @{field_list}
+	\  run keyword  run keyword and ignore error  webclient.заповнити поле для item ${field}  ${${field}}
 
 
 Заповнити умови оплати
@@ -160,15 +175,22 @@ ${loadings}                         ${SMART}|${IT}
 	${duration.type}  set variable  ${type_dict['${duration.type_cdb}']}
 	${duration.days}  set variable  ${milestone['duration']['days']}
 	${percentage}  set variable  ${milestone['percentage']}
+	${description}  run keyword and ignore error  set variable  ${milestone['description']}
 
-  	додати item бланк  index=2
-  	:FOR  ${field}  IN
+	${field_list}  create list
   	...  code
   	...  title
   	...  duration.type
   	...  duration.days
   	...  percentage
+
+	${status}  run keyword and return status  dictionary should contain key  ${milestone}  description
+	run keyword if  ${status}  append to list  ${field_list}  description
+
+  	додати item бланк  index=2
+  	:FOR  ${field}  IN  @{field_list}
   	\  run keyword  заповнити поле для milestone ${field}  ${${field}}
+
 
 Пошук тендера по ідентифікатору
 	[Arguments]   ${username}  ${tender_uaid}
@@ -365,8 +387,11 @@ ${loadings}                         ${SMART}|${IT}
 Внести зміни в тендер
     [Arguments]  ${username}  ${tender_uaid}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінити значення поля fieldname на fieldvalue для тендера tender_uaid.
-	log to console  Внести зміни в тендер
-	debug
+	header натиснути на елемент за назвою  Змінити
+	run keyword  webclient.заповнити поле ${fieldname}  ${fieldvalue}
+	header натиснути на елемент за назвою  Зберегти
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
 	
 	
 Додати предмет закупівлі
@@ -710,7 +735,17 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${answer_data}  ${question_id}
     [Documentation]  Дати відповідь answer_data на запитання з question_id в описі для тендера tender_uaid.  
 	log to console  Відповісти на запитання
-	debug
+	webclient.активувати вкладку  Обговорення закупівлі
+	click element  //*[contains(text(), "${question_id}")]
+	webclient.header натиснути на елемент за назвою  Змінити
+	${answer field}  set variable  //*[@data-name="ANSWER"]//textarea
+	заповнити simple input  ${answer field}  ${answer_data['data']['answer']}
+	${save answer locator}  set variable  //*[@data-name="READYFL"]//input
+	операція над чекбоксом  ${True}  ${save answer locator}
+	webclient.header натиснути на елемент за назвою  Зберегти
+	dialog box заголовок повинен містити  Надіслати відповідь на сервер ProZorro?
+	dialog box натиснути кнопку  Так
+	webclient.активувати вкладку  Тестові публічні закупівлі
 	
 	
 Створити вимогу про виправлення умов закупівлі
@@ -799,6 +834,19 @@ get_item_deliveryAddress_value
     [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до тендера tender_uaid.  
 	log to console  Завантажити документ
 	debug
+	go to  http://test.smarttender.biz/webclient/?proj=it_uk&tz=3
+	loading дочекатись закінчення загрузки сторінки
+	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
+	webclient.header натиснути на елемент за назвою  OK
+	#  Нужно добавить поиск по номеру тундера
+	webclient.header натиснути на елемент за назвою  Изменить
+	webclient.активувати вкладку  Документы
+	webclient.загрузити документ  ${filepath}
+	webclient.header натиснути на елемент за назвою  Сохранить
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
+	webclient.screen заголовок повинен містити  Завантаження документації
+	click element   ${screen_root_selector}//*[@alt="Close"]
 
 
 Отримати інформацію із документа
@@ -1297,7 +1345,6 @@ loading дочекатись закінчення загрузки сторін�
 
 
 loading дочекатися відображення елемента на сторінці
-	[Documentation]  timeout=...s/...m
 	[Arguments]  ${locator}  ${timeout}=10s
 	Log  Element Should Be Visible "${locator}" after ${timeout}
 	Register Keyword To Run On Failure  No Operation
@@ -1345,3 +1392,4 @@ loading дочекатися зникнення елемента зі сторі
     ${status}  Run Keyword And Return Status
     ...  Element Should Be Visible  ${tab_selector}/ancestor::div[contains(@class,"tab-active")]
     Run Keyword If  '${status}' == 'False'  Click Element  ${tab_selector}
+
