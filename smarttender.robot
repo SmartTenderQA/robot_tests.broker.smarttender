@@ -74,7 +74,7 @@ ${loadings}                         ${SMART}|${IT}
 	smarttender.сторінка_торгів виконати пошук
 	smarttender.сторінка_торгів перейти за першим результатом пошуку
 	${taken_tender_uaid}  smarttender.сторінка_детальної_інформації отримати tender_uaid  tender_uaid
-	should be equal as strings  ${taken_tender_uaid}
+	should be equal as strings  ${taken_tender_uaid}  ${tender_uaid}
 	set global variable  ${tender_uaid}
 
 
@@ -147,6 +147,9 @@ ${loadings}                         ${SMART}|${IT}
 	${type}  			evaluate  u'${reg.group('duration_type')}'
 	${code}  			evaluate  u'${reg.group('code')}'
 	${percentage}  		evaluate  int(u'${reg.group('percentage')}')
+	${is_anotherEvent}  run keyword and return status  should contain  ${title}  Інша подія  #чтобы тянуло без описания
+	${title}  run keyword if  ${is_anotherEvent} == ${True}  fetch from right  ${title}  |
+	...  ELSE  set variable  ${title}
 	####################################
 	#  WORK HERE
 
@@ -170,7 +173,8 @@ ${loadings}                         ${SMART}|${IT}
 	####################################
 
 	${milestones_field_name}  set variable  ${field_name.split('.')[-1]}
-	${field_value}  run keyword if  '${milestones_field_name}' in ${list_of_dict}	Get From Dictionary  ${${milestones_field_name}_dict}  ${${milestones_field_name}}  ELSE  set variable  ${${milestones_field_name}}
+	${field_value}  run keyword if  '${milestones_field_name}' == 'Інша подія'
+	...  ELSE IF  '${milestones_field_name}' in ${list_of_dict}	Get From Dictionary  ${${milestones_field_name}_dict}  ${${milestones_field_name}}  ELSE  set variable  ${${milestones_field_name}}
 	[Return]  ${field_value}
 ###############################################
 ###############################################
@@ -1343,3 +1347,4 @@ loading дочекатися зникнення елемента зі сторі
     ${question send btn}  Set Variable  //*[@data-qa="questions"]//button[contains(@class,"btn-success")]
     Click Element  ${question send btn}
     Run Keyword And Ignore Error  Wait Until Element Is Not Visible  ${question send btn}  30
+
