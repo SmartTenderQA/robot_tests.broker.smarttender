@@ -20,12 +20,11 @@ def convert_page_values(field, value):
             ret = list.group('street')
     elif 'unit' in field or 'quantity' in field:
         list = re.search(u'(?P<quantity>\d+.\d+) (?P<unit>.+)', value)
-        if 'unit' in field:
-            unit = list.group('unit')
-            if 'unit.code' in field:
-                ret = convert_unit_code(unit)
-            elif 'unit.name' in field:
-                ret = convert_unit_name(unit)
+        unit = list.group('unit')
+        if 'unit.code' in field:
+            ret = convert_unit_code(unit)
+        elif 'unit.name' in field:
+            ret = convert_unit_name(unit)
         elif 'quantity' in field:
             ret = list.group('quantity')
             if '.' in ret:

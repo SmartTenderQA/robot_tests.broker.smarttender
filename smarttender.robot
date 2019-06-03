@@ -74,7 +74,8 @@ ${loadings}                         ${SMART}|${IT}
 	smarttender.сторінка_торгів виконати пошук
 	smarttender.сторінка_торгів перейти за першим результатом пошуку
 	${taken_tender_uaid}  smarttender.сторінка_детальної_інформації отримати tender_uaid  tender_uaid
-	should be equal as strings  ${taken_tender_uaid}  ${tender_uaid}
+	should be equal as strings  ${taken_tender_uaid}
+	set global variable  ${tender_uaid}
 
 
 Оновити сторінку з тендером
@@ -108,14 +109,14 @@ ${loadings}                         ${SMART}|${IT}
 
 
 сторінка_детальної_інформації отримати title
-	[Arguments]  ${field_name}
+    [Arguments]  ${field_name}
 	${selector}  set variable  //*[@data-qa='title']
 	${field_value}  get text  ${selector}
 	[Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати description
-	[Arguments]  ${field_name}
+    [Arguments]  ${field_name}
 	${selector}  set variable  //*[@data-qa='description']
 	${field_value}  get text  ${selector}
 	[Return]  ${field_value}
@@ -361,6 +362,7 @@ ${loadings}                         ${SMART}|${IT}
 get_item_deliveryAddress_value
     [Arguments]  ${item_block}  ${group}
     ${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-delivery-address"]
+    debug
 	${item_field_value}  get text by JS  ${selector}
     ${reg}  evaluate  re.search(u'(?P<postalCode>\\d+),.{2}(?P<countryName>\\D+),.{2}(?P<region>\\D+.\\D+.),.{2}(?P<locality>\\D+),.{2}(?P<streetAddress>\\D+.+)', u"""${item_field_value}""")  re
 	${group_value}	evaluate  u'${reg.group('${group}')}'
@@ -490,10 +492,10 @@ get_item_deliveryAddress_value
 документи скачати файл на сторінці
     [Arguments]  ${file_name}
     ${link}  smarttender.документи отримати посилання на перегляд файлу  ${file_name}
-    ${link}  Evaluate  re.search(u'src=(?P<href>\\S+)', u"""${link}""").group('href')  re
-    ${link}  run keyword if  '${link}' == 'None'
-    ...  evaluate  re.search(u'url=(?P<href>\\S+)', u"""${link}""").group('href')  re
-    ...  ELSE  set variable  ${link}
+    ${link}  run keyword if  "src=" in "${link}"
+    ...  evaluate  re.search(u'src=(?P<href>.+)', u"""${link}""").group('href')  re
+    ...  ELSE
+    ...  evaluate  re.search(u'url=(?P<href>.+)', u"""${link}""").group('href')  re
     ${download_link}  Evaluate  urllib.unquote('${link}')  urllib
     download_file_to_my_path  ${download_link}  ${OUTPUTDIR}/${file_name}
     Sleep  3
@@ -575,10 +577,8 @@ get_item_deliveryAddress_value
 	
 Задати запитання на тендер
     [Arguments]  ${username}  ${tender_uaid}  ${question}
-    [Documentation]  Створити запитання з даними question для тендера tender_uaid.   
-	log to console  Задати запитання на тендер
-	debug
-	${tender_title}  сторінка_детальної_інформації отримати title
+    [Documentation]  Створити запитання з даними question для тендера tender_uaid.
+	${tender_title}  сторінка_детальної_інформації отримати title  ${tender_uaid}
 	smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
 	запитання_вибрати тип запитання      ${tender_title}
 	запитання_натиснути кнопку "Поставити запитання"
@@ -744,7 +744,7 @@ get_item_deliveryAddress_value
     [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_ids (якщо features_ids != None).  
 	log to console  Подати цінову пропозицію
 	debug
-
+    smarttender.пропозиція_перевірити кнопку подачі пропозиції
 
 
 
@@ -1289,7 +1289,7 @@ loading дочекатися зникнення елемента зі сторі
 ################################################################################
 
 
-Перевірити кнопку подачі пропозиції
+пропозиція_перевірити кнопку подачі пропозиції
     ${button}  Set Variable  xpath=//*[@class='show-control button-lot']|//*[@data-qa="bid-button"]
     loading дочекатися відображення елемента на сторінці  ${button}
     smarttender.Open button  ${button}
@@ -1300,7 +1300,7 @@ loading дочекатися зникнення елемента зі сторі
 
 
 ################################################################################
-#                                                             #
+#                               ЗАПИТАННЯ                                      #
 ################################################################################
 запитання_вибрати тип запитання
     [Arguments]  ${type}
