@@ -439,3 +439,14 @@ screen заголовок повинен містити
 	loading дочекатись закінчення загрузки сторінки
 	click element  //*[@id="pcModalMode_PW-1"]//*[text()="ОК"]
 	loading дочекатись закінчення загрузки сторінки
+
+
+знайти тендер у webclient
+	[Arguments]  ${tender_uaid}
+	${location}  get location
+	run keyword if  '/webclient/' not in '${location}'  run keywords
+	...  go to  http://test.smarttender.biz/webclient/?proj=it_uk&tz=3  AND
+	...  loading дочекатись закінчення загрузки сторінки  AND
+	...  webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)  AND
+	...  webclient.header натиснути на елемент за назвою  OK
+	#  Нужно добавить поиск по номеру тундера

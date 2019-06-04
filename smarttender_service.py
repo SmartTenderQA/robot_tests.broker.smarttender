@@ -20,9 +20,11 @@ def convert_page_values(field, value):
             ret = list.group('street')
     elif 'unit' in field or 'quantity' in field:
         list = re.search(u'(?P<quantity>\d+.\d+) (?P<unit>.+)', value)
-        if 'unit' in field:
-            unit = list.group('unit')
+        unit = list.group('unit')
+        if 'unit.code' in field:
             ret = convert_unit_code(unit)
+        elif 'unit.name' in field:
+            ret = convert_unit_name(unit)
         elif 'quantity' in field:
             ret = list.group('quantity')
             if '.' in ret:
@@ -88,6 +90,7 @@ def convert_unit_code(value):
         u'Декалитр': u'дал',
         u'Метр квадратный': u'м.кв.',
         u'Штука': u'H87',
+        u'штука': u'H87',
         u'Упаковка': u'PK',
         u'Флакон': u'VI',
         u'Набір(товару)': u'SET'
@@ -159,6 +162,17 @@ def convert_mainProcurementCategory(value):
         u'Товари': u'goods',
         u'Послуги': u'services',
         u'Роботи': u'works'
+    }
+    if value in map:
+        result = map[value]
+    else:
+        result = value
+    return result
+
+
+def convert_status(value):
+    map = {
+        u'Період уточнень': u'active.enquiries'
     }
     if value in map:
         result = map[value]
