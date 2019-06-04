@@ -2,6 +2,7 @@
 Library  Selenium2Screenshots
 Library  String
 Library  DateTime
+Resource  webclient.robot
 Library  smarttender_service.py
 
 
@@ -59,16 +60,146 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
 	comment  Дані міняемо тільки за необхідністю. Можуть буті проблеми з одиницями виміру.
-	no operation
+	${tender_data}  replace_delivery_address  ${tender_data}
+	${tender_data}  run keyword if
+	...  'tender_owner' in '${username.lower()}'  adapt_data  ${tender_data}
+	...  ELSE  set variable  ${tender_data}
 	[Return]  ${tender_data}
 
 
 Створити тендер
 	[Arguments]   ${username}  ${tender_data}
 	[Documentation]   Створити тендер з початковими даними tender_data. Повернути uaid створеного тендера.
-	log to console  Створити тендер
-	debug
+	${tender_data}  Get From Dictionary  ${tender_data}  data
+	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати
+	run keyword  Заповнити поля для ${mode}  ${tender_data}
+	webclient.додати тендерну документацію
+	webclient.header натиснути на елемент за назвою  Додати
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+	webclient.screen заголовок повинен містити  Завантаження документації
+	click element   ${screen_root_selector}//*[@alt="Close"]
+	loading дочекатись закінчення загрузки сторінки
+	${tender_uaid}  webclient.отримати номер тендера
 	[Return]  ${tender_uaid}
+
+
+Заповнити поля для belowThreshold		#Допорог
+	[Arguments]  ${tender_data}
+	# ОСНОВНІ ПОЛЯ
+	${enquiryPeriod.startDate}  set variable  ${tender_data['enquiryPeriod']['startDate']}
+	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
+	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
+	${value.amount}  set variable  ${tender_data['value']['amount']}
+	${value.valueAddedTaxIncluded}  set variable  ${tender_data['value']['valueAddedTaxIncluded']}
+	${minimalStep.amount}  set variable  ${tender_data['minimalStep']['amount']}
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+	:FOR  ${field}  in
+	...  enquiryPeriod.startDate
+	...  tenderPeriod.startDate
+	...  tenderPeriod.endDate
+	...  value.amount
+	...  value.valueAddedTaxIncluded
+	...  minimalStep.amount
+	...  title
+	...  description
+	...  mainProcurementCategory
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+	# ЛОТИ
+	${count_item}  set variable  1
+	:FOR  ${item}  IN  @{tender_data['items']}
+	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
+	\  Заповнити поля лоту  ${item}
+	\  ${count_item}  evaluate  ${count_item} + 1
+
+	# УМОВИ ОПЛАТИ
+	${count_milestone}  set variable  1
+	:FOR  ${milestone}  IN  @{tender_data['milestones']}
+	\  run keyword if  '${count_milestone}' == '1'  webclient.активувати вкладку  Умови оплати
+	\  Заповнити умови оплати  ${milestone}
+	\  ${count_milestone}  evaluate  ${count_milestone} + 1
+
+
+
+Заповнити поля лоту
+  	[Arguments]  ${item}
+	${description}  set variable  ${item['description']}
+	${quantity}  set variable  ${item['quantity']}
+	${unit.name}  set variable  ${item['unit']['name']}
+	${classification.id}  set variable  ${item['classification']['id']}
+	${additionalClassifications_status}  ${additionalClassifications.scheme}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['scheme']}
+	${additionalClassifications_status}  ${additionalClassifications.description}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['description']}
+	${deliveryAddress.postalCode}  set variable  ${item['deliveryAddress']['postalCode']}
+	${deliveryAddress.streetAddress}  set variable  ${item['deliveryAddress']['streetAddress']}
+	${deliveryAddress.locality}  set variable  ${item['deliveryAddress']['locality']}
+	${deliveryDate.startDate}  set variable  ${item['deliveryDate']['startDate']}
+	${deliveryDate.endDate}  set variable  ${item['deliveryDate']['endDate']}
+
+	${field_list}  create list
+	...  description
+	...  quantity
+	...  unit.name
+	...  classification.id
+	...  deliveryAddress.postalCode
+	...  deliveryAddress.streetAddress
+	...  deliveryAddress.locality
+	...  deliveryDate.startDate
+	...  deliveryDate.endDate
+
+	run keyword if  '${additionalClassifications_status}' == 'PASS'  append to list  ${field_list}  additionalClassifications.scheme  additionalClassifications.description
+
+	:FOR  ${field}  in  @{field_list}
+	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}
+
+
+Заповнити умови оплати
+  	[Arguments]  ${milestone}
+  	${code_dict}  		create dictionary
+	...  prepayment=Аванс
+	...  postpayment=Пiсляоплата
+	${title_dict}  		create dictionary
+	...  executionOfWorks=Виконання робіт
+	...  deliveryOfGoods=Поставка товару
+	...  submittingServices=Надання послуг
+	...  signingTheContract=Підписання договору
+	...  submissionDateOfApplications=Дата подання заявки
+	...  dateOfInvoicing=Дата виставлення рахунку
+	...  endDateOfTheReportingPeriod=Дата закінчення звітного періоду
+	...  anotherEvent=Інша подія
+	${type_dict}  		create dictionary
+	...  calendar=Календарний
+	...  working=Робочий
+	...  banking=Банківський
+	${code_cdb}  set variable  ${milestone['code']}
+	${title_cdb}  set variable  ${milestone['title']}
+	${duration.type_cdb}  set variable  ${milestone['duration']['type']}
+
+	${code}  set variable  ${code_dict['${code_cdb}']}
+	${title}  set variable  ${title_dict['${title_cdb}']}
+	${duration.type}  set variable  ${type_dict['${duration.type_cdb}']}
+	${duration.days}  set variable  ${milestone['duration']['days']}
+	${percentage}  set variable  ${milestone['percentage']}
+	${description_status}  ${description}  run keyword and ignore error  set variable  ${milestone['description']}
+
+	${field_list}  create list
+  	...  code
+  	...  title
+  	...  duration.type
+  	...  duration.days
+  	...  percentage
+
+	run keyword if  '${description_status}' == 'PASS'  append to list  ${field_list}  description
+
+  	додати item бланк  index=2
+  	:FOR  ${field}  IN  @{field_list}
+  	\  run keyword  заповнити поле для milestone ${field}  ${${field}}
 
 
 Пошук тендера по ідентифікатору
@@ -152,6 +283,9 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${type}  			evaluate  u'${reg.group('duration_type')}'
 	${code}  			evaluate  u'${reg.group('code')}'
 	${percentage}  		evaluate  int(u'${reg.group('percentage')}')
+	${is_anotherEvent}  run keyword and return status  should contain  ${title}  Інша подія  #чтобы тянуло без описания
+	${title}  run keyword if  ${is_anotherEvent} == ${True}  fetch from right  ${title}  |
+	...  ELSE  set variable  ${title}
 	####################################
 	#  WORK HERE
 
@@ -175,7 +309,6 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	####################################
 
 	${milestones_field_name}  set variable  ${field_name.split('.')[-1]}
-	${field_value}  run keyword if  '${milestones_field_name}' in ${list_of_dict}	Get From Dictionary  ${${milestones_field_name}_dict}  ${${milestones_field_name}}  ELSE  set variable  ${${milestones_field_name}}
 	[Return]  ${field_value}
 ###############################################
 ###############################################
@@ -272,8 +405,12 @@ ${view auction link}                       //*[@data-qa="link-view"]
 Внести зміни в тендер
     [Arguments]  ${username}  ${tender_uaid}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінити значення поля fieldname на fieldvalue для тендера tender_uaid.
-	log to console  Внести зміни в тендер
-	debug
+	знайти тендер у webclient  ${tender_uaid}
+	header натиснути на елемент за назвою  Змінити
+	run keyword  webclient.заповнити поле ${fieldname}  ${fieldvalue}
+	header натиснути на елемент за назвою  Зберегти
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
 	
 	
 Додати предмет закупівлі
@@ -626,7 +763,17 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${answer_data}  ${question_id}
     [Documentation]  Дати відповідь answer_data на запитання з question_id в описі для тендера tender_uaid.  
 	log to console  Відповісти на запитання
-	debug
+	webclient.активувати вкладку  Обговорення закупівлі
+	click element  //*[contains(text(), "${question_id}")]
+	webclient.header натиснути на елемент за назвою  Змінити
+	${answer field}  set variable  //*[@data-name="ANSWER"]//textarea
+	заповнити simple input  ${answer field}  ${answer_data['data']['answer']}
+	${save answer locator}  set variable  //*[@data-name="READYFL"]//input
+	операція над чекбоксом  ${True}  ${save answer locator}
+	webclient.header натиснути на елемент за назвою  Зберегти
+	dialog box заголовок повинен містити  Надіслати відповідь на сервер ProZorro?
+	dialog box натиснути кнопку  Так
+	webclient.активувати вкладку  Тестові публічні закупівлі
 	
 	
 Створити вимогу про виправлення умов закупівлі
@@ -712,9 +859,16 @@ get_item_deliveryAddress_value
 
 Завантажити документ
     [Arguments]  ${username}  ${filepath}  ${tender_uaid}
-    [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до тендера tender_uaid.  
-	log to console  Завантажити документ
-	debug
+    [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до тендера tender_uaid.
+	знайти тендер у webclient  ${tender_uaid}
+	webclient.header натиснути на елемент за назвою  Змінити
+	webclient.активувати вкладку  Документы
+	webclient.загрузити документ  ${filepath}
+	webclient.header натиснути на елемент за назвою  Сохранить
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
+	webclient.screen заголовок повинен містити  Завантаження документації
+	click element   ${screen_root_selector}//*[@alt="Close"]
 
 
 Отримати інформацію із документа
@@ -1194,14 +1348,13 @@ date convertation
 	${login_btn}  set variable  //*[@data-qa="form-login-success"]
 	loading дочекатися відображення елемента на сторінці  ${login_btn}
 	click element  ${login_btn}
-	loading дочекатися зникнення елемента зі сторінки  ${login_btn}
+	loading дочекатися зникнення елемента зі сторінки  ${login_btn}  timeout=120
 
 Open button
 	[Documentation]   відкривае лінку з локатора у поточному вікні
 	[Arguments]  ${selector}
 	${href}=  Get Element Attribute  ${selector}@href
 	Go To  ${href}
-
 
 get text by JS
 	[Arguments]    ${xpath}
@@ -1259,7 +1412,6 @@ loading дочекатись закінчення загрузки сторін�
 
 
 loading дочекатися відображення елемента на сторінці
-	[Documentation]  timeout=...s/...m
 	[Arguments]  ${locator}  ${timeout}=10s
 	Log  Element Should Be Visible "${locator}" after ${timeout}
 	Register Keyword To Run On Failure  No Operation
