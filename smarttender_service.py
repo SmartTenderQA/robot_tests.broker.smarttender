@@ -93,7 +93,8 @@ def convert_unit_code(value):
         u'штука': u'H87',
         u'Упаковка': u'PK',
         u'Флакон': u'VI',
-        u'Набір(товару)': u'SET'
+        u'Набір(товару)': u'SET',
+        u'лот': u'LO'
     }
     if value in units_map:
         result = units_map[value]
@@ -172,7 +173,13 @@ def convert_mainProcurementCategory(value):
 
 def convert_status(value):
     map = {
-        u'Період уточнень': u'active.enquiries'
+        u'Період уточнень': u'active.enquiries',
+        u'Прийом пропозицій': u'active.tendering',
+        u'Аукціон': u'active.auction',
+        u'Прекваліфікація': u'active.pre-qualification',
+        u'Кваліфікація': u'active.qualification',
+        u'Пропозиції розглянуті': u'active.awarded',
+        u'Завершено': u'complete'
     }
     if value in map:
         result = map[value]

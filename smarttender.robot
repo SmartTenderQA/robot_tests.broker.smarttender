@@ -30,7 +30,12 @@ ${SMART}                            ${loading}|${circle loading}|${skeleton load
 ${loadings}                         ${SMART}|${IT}
 ######################################
 
-
+#############GET AUCTION HREF#########
+${go to auction btn}                       //*[@data-qa="button-poptip-participate-view"]
+${view auction btn}                        //*[@data-qa="button-poptip-view"]
+${participate in auction link}             //*[@data-qa="link-participate"]
+${view auction link}                       //*[@data-qa="link-view"]
+######################################
 
 
 *** Keywords ***
@@ -73,8 +78,8 @@ ${loadings}                         ${SMART}|${IT}
 	smarttender.сторінка_торгів ввести текст в поле пошуку  ${tender_uaid}
 	smarttender.сторінка_торгів виконати пошук
 	smarttender.сторінка_торгів перейти за першим результатом пошуку
-	${taken_tender_uaid}  smarttender.сторінка_детальної_інформації отримати tender_uaid  tender_uaid
-	should be equal as strings  ${taken_tender_uaid}
+	${taken_tender_uaid}  smarttender.сторінка_детальної_інформації отримати tender_uaid
+	should be equal as strings  ${taken_tender_uaid}  ${tender_uaid}
 	set global variable  ${tender_uaid}
 
 
@@ -102,28 +107,28 @@ ${loadings}                         ${SMART}|${IT}
 
 
 сторінка_детальної_інформації отримати tender_uaid
-	[Arguments]  ${field_name}
+	[Arguments]  ${field_name}=None
 	${selector}  set variable  //*[@data-qa='prozorro-number']//*[@href]
 	${field_value}  get text  ${selector}
 	[Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати title
-    [Arguments]  ${field_name}
+    [Arguments]  ${field_name}=None
 	${selector}  set variable  //*[@data-qa='title']
 	${field_value}  get text  ${selector}
 	[Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати description
-    [Arguments]  ${field_name}
+    [Arguments]  ${field_name}=None
 	${selector}  set variable  //*[@data-qa='description']
 	${field_value}  get text  ${selector}
 	[Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати status
-    [Arguments]  ${field_name}
+    [Arguments]  ${field_name}=None
 	${selector}  set variable  //*[@data-qa='status']
 	${field_value}  get text  ${selector}
 	${field_value}  convert_status  ${field_value}
@@ -362,7 +367,6 @@ ${loadings}                         ${SMART}|${IT}
 get_item_deliveryAddress_value
     [Arguments]  ${item_block}  ${group}
     ${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-delivery-address"]
-    debug
 	${item_field_value}  get text by JS  ${selector}
     ${reg}  evaluate  re.search(u'(?P<postalCode>\\d+),.{2}(?P<countryName>\\D+),.{2}(?P<region>\\D+.\\D+.),.{2}(?P<locality>\\D+),.{2}(?P<streetAddress>\\D+.+)', u"""${item_field_value}""")  re
 	${group_value}	evaluate  u'${reg.group('${group}')}'
@@ -578,13 +582,13 @@ get_item_deliveryAddress_value
 Задати запитання на тендер
     [Arguments]  ${username}  ${tender_uaid}  ${question}
     [Documentation]  Створити запитання з даними question для тендера tender_uaid.
-	${tender_title}  сторінка_детальної_інформації отримати title  ${tender_uaid}
+	${tender_title}  smarttender.сторінка_детальної_інформації отримати title
 	smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
-	запитання_вибрати тип запитання      ${tender_title}
-	запитання_натиснути кнопку "Поставити запитання"
-	запитання_заповнити тему             ${question['data']['title']}
-	запитання_заповнити текст запитання  ${question['data']['description']}
-	запитання_натиснути кнопку "Подати"
+	smarttender.запитання_вибрати тип запитання      ${tender_title}
+	smarttender.запитання_натиснути кнопку "Поставити запитання"
+	smarttender.запитання_заповнити тему             ${question['data']['title']}
+	smarttender.запитання_заповнити текст запитання  ${question['data']['description']}
+	smarttender.запитання_натиснути кнопку "Подати"
 
 
 
@@ -592,28 +596,28 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name із запитання з question_id в описі для тендера tender_uaid.
 	smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
-	${doc_block}  set variable  //*[contains(text(),"${question_id}")]/ancestor::div[@class="ivu-card-body"][1]
-	${question_field_name}  run keyword  smarttender.запитання_сторінка_детальної отримати ${field_name}  ${doc_block}
+	${question_block}  set variable  //*[contains(text(),"${question_id}")]/ancestor::div[@class="ivu-card-body"][1]
+	${question_field_name}  run keyword  smarttender.запитання_сторінка_детальної отримати ${field_name}  ${question_block}
     [Return]  ${question_field_name}
     
 
 запитання_сторінка_детальної отримати title
-    [Arguments]  ${doc_block}
-    ${selector}  set variable  xpath=${doc_block}//*[@class="bold break-word"][1]
+    [Arguments]  ${question_block}
+    ${selector}  set variable  xpath=${question_block}//*[@class="bold break-word"][1]
     ${question_field_name}  get text  ${selector}
     [Return]  ${question_field_name}
 
 
 запитання_сторінка_детальної отримати description
-    [Arguments]  ${doc_block}
-    ${selector}  set variable  xpath=${doc_block}//*[@class="break-word"][1]
+    [Arguments]  ${question_block}
+    ${selector}  set variable  xpath=${question_block}//*[@class="break-word"][1]
     ${question_field_name}  get text  ${selector}
     [Return]  ${question_field_name}
 
 
 запитання_сторінка_детальної отримати answer
-    [Arguments]  ${doc_block}
-    ${selector}  set variable  xpath=${doc_block}//*[@class="break-word card-padding"][1]
+    [Arguments]  ${question_block}
+    ${selector}  set variable  xpath=${question_block}//*[@class="break-word card-padding"][1]
     ${question_field_name}  get text  ${selector}
     [Return]  ${question_field_name}
 
@@ -741,42 +745,52 @@ get_item_deliveryAddress_value
 
 Подати цінову пропозицію
     [Arguments]  ${username}  ${tender_uaid}  ${bid}  ${lots_ids}=${None}  ${features_ids}=${None}
-    [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_ids (якщо features_ids != None).  
-	log to console  Подати цінову пропозицію
-	debug
+    [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_ids (якщо features_ids != None).
+    smarttender.дочекатися статусу тендера  active.tendering
     smarttender.пропозиція_перевірити кнопку подачі пропозиції
-
-
-
+    smarttender.пропозиція_заповнити поле з ціною  1  1
+    smarttender.пропозиція_відмітити чекбокси за необхідністю
+    smarttender.пропозиція_подати пропозицію
 
 
 Отримати інформацію із пропозиції
     [Arguments]  ${username}  ${tender_uaid}  ${field}
     [Documentation]  Отримати значення поля field пропозиції користувача username для тендера tender_uaid.  
 	log to console  Отримати інформацію із пропозиції
-	debug
+	${bid_field}  run keyword  smarttender.пропозиція_отримати інформацію по полю ${field}
+    [Return]  ${bid_field}
+
+
+пропозиція_отримати інформацію по полю value.amount
+    ${selector}  set variable  //*[@id="lotAmount0"]//input
+    ${bid_field}  get element attribute  ${selector}@value
+    ${bid_field}  evaluate  float(str('${bid_field}'.replace(" ", "")))
     [Return]  ${bid_field}
 
 
 Змінити цінову пропозицію
     [Arguments]  ${username}  ${tender_uaid}  ${fieldname}  ${fieldvalue}
-    [Documentation]  Змінити поле fieldname на fieldvalue цінової пропозиції користувача username для тендера tender_uaid.  
-	log to console  Змінити цінову пропозицію
-	debug
+    [Documentation]  Змінити поле fieldname на fieldvalue цінової пропозиції користувача username для тендера tender_uaid.
+	${selector}  set variable if
+	...  "${fieldname}" == "value.amount"    //*[@id="lotAmount0"]//input
+	input text  ${selector}  "${fieldvalue}"
+	smarttender.пропозиція_подати пропозицію
 
 
 Завантажити документ в ставку
-    [Arguments]  ${username}  ${path}  ${tender_uaid}  ${doc_type}=${documents}
-    [Documentation]  Завантажити документ типу doc_type, який знаходиться за шляхом path, до цінової пропозиції користувача username для тендера tender_uaid.  
-	log to console  Завантажити документ в ставку
-	debug
+    [Arguments]  ${username}  ${path}  ${tender_uaid}  ${doc_type}=None     #=${documents}
+    [Documentation]  Завантажити документ типу doc_type, який знаходиться за шляхом path, до цінової пропозиції користувача username для тендера tender_uaid.
+	Choose File  xpath=(//input[@type="file"][1])[1]  ${path}
+	smarttender.пропозиція_подати пропозицію
 
 
 Змінити документ в ставці
     [Arguments]  ${username}  ${tender_uaid}  ${path}  ${docid}
     [Documentation]  Змінити документ з doc_id в описі в пропозиції користувача username для тендера tender_uaid на документ, який знаходиться по шляху path.  
 	log to console  Змінити документ в ставці
-	debug
+	smarttender.пропозиція_видалити файл  ${docid}
+	Choose File  xpath=(//input[@type="file"][1])[1]  ${path}
+	smarttender.пропозиція_подати пропозицію
 
 
 Змінити документацію в ставці
@@ -830,17 +844,15 @@ get_item_deliveryAddress_value
 
 Отримати посилання на аукціон для глядача
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}=${Empty}
-    [Documentation]  Отримати посилання на аукціон для тендера tender_uaid (або для лоту з lot_id в описі для тендера tender_uaid, якщо lot_id != Empty).  
-	log to console  Отримати посилання на аукціон для глядача
-	debug
+    [Documentation]  Отримати посилання на аукціон для тендера tender_uaid (або для лоту з lot_id в описі для тендера tender_uaid, якщо lot_id != Empty).
+	${auctionUrl}  smarttender.отримати посилання на прегляд аукціону не учасником
     [Return]  ${auctionUrl}
 
 
 Отримати посилання на аукціон для учасника
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}=${Empty}
     [Documentation]  Отримати посилання на участь в аукціоні для користувача username для тендера tender_uaid (або для лоту з lot_id в описі для тендера tender_uaid, якщо lot_id != Empty).  
-	log to console  Отримати посилання на аукціон для учасника
-	debug
+	${participationUrl}  ${auction_href}  отримати посилання на участь та прегляд аукціону для учасника
     [Return]  ${participationUrl}
 
 
@@ -1187,9 +1199,9 @@ date convertation
 Open button
 	[Documentation]   відкривае лінку з локатора у поточному вікні
 	[Arguments]  ${selector}
-	${href}=  Get Element Attribute  ${selector}  href
-	${href}  Поправити лінку для IP  ${href}
+	${href}=  Get Element Attribute  ${selector}@href
 	Go To  ${href}
+
 
 get text by JS
 	[Arguments]    ${xpath}
@@ -1198,6 +1210,22 @@ get text by JS
 	${text_is}  Execute JavaScript
 	...  return document.evaluate('${xpath}', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.textContent
 	[Return]  ${text_is}
+
+
+#################################################
+#################################################
+дочекатися статусу тендера
+    [Arguments]  ${tender status}  ${time}=20m
+    Wait Until Keyword Succeeds  ${time}  30s  Run Keywords
+    ...  Reload Page
+    ...  AND  smarttender.cтатус тендера повинен бути  ${tender status}
+
+
+cтатус тендера повинен бути
+    [Arguments]  ${status should}
+    ${status is}  smarttender.сторінка_детальної_інформації отримати status
+    Should Be Equal  '${status should}'  '${status is}'
+#################################################
 
 
 перейти до тестових торгів
@@ -1299,16 +1327,101 @@ loading дочекатися зникнення елемента зі сторі
     ...  Element Should Not Be Visible  //*[@class='modal-dialog ']//h4
 
 
+пропозиція_заповнити поле з ціною
+    [Documentation]  takes lot number and coefficient
+    ...  fill bid field with max available price
+    [Arguments]  ${lot number}  ${coefficient}
+    ${block}  set variable  //*[@class="ivu-card ivu-card-bordered"]
+    ${block number}  Set Variable  ${lot number}+1
+    ##############################################
+    #   Визначаємо мінімальний крок з даних на сторінці
+    ${a}  Get Text  xpath=(${block})\[${block number}]//div[@class="amount lead"][1]
+    ${a}  evaluate  re.search(u'(?P<amount>[\\d].+\\d\\s)', "${a}").group("amount")  re
+    ${a}  evaluate  float(str('${a}'.replace(" ", "")).replace(",", "."))
+    ${amount}=  Evaluate  int(${a}*${coefficient})
+    ##############################################
+    #${amount}  Run Keyword If  ${amount} == 0  Set Variable  1  ELSE
+    #...  Set Variable  ${amount}
+    ${field number}=  Evaluate  ${lot number}-1
+    Input Text  xpath=//*[@id="lotAmount${field number}"]/input[1]  ${amount}
+
+
+пропозиція_відмітити чекбокси за необхідністю
+    ${checkbox1}   set variable         //*[@id="SelfEligible"]//input
+    ${checkbox2}   set variable         //*[@id="SelfQualified"]//input
+    ${is visible}  run keyword and return status  element should be visible  ${checkbox1}
+    run keyword if  ${is visible}  run keywords
+    ...  Click Element  ${checkbox1}            AND
+	...  Click Element  ${checkbox2}
+
+
+пропозиція_подати пропозицію
+	${message}  smarttender.натиснути надіслати пропозицію та вичитати відповідь
+	smarttender.виконати дії відповідно повідомленню  ${message}
+
+
+натиснути надіслати пропозицію та вичитати відповідь
+    ${send offer button}   set variable  css=button#submitBidPlease
+    ${validation message}  set variable  //*[@class="ivu-modal-content"]//*[@class="ivu-modal-confirm-body"]//div[text()]
+    Click Element  ${send offer button}
+	smarttender.закрити валідаційне вікно (Так/Ні)  Рекомендуємо Вам для файлів з ціновою пропозицією обрати тип  Ні
+	loading дочекатись закінчення загрузки сторінки
+	${status}  ${message}  Run Keyword And Ignore Error  Get Text  ${validation message}
+	capture page screenshot  ${OUTPUTDIR}/my_screen{index}.png
+	[Return]  ${message}
+
+
+виконати дії відповідно повідомленню
+    [Arguments]  ${message}
+    ${succeed}       set variable                   Пропозицію прийнято
+    ${succeed2}      set variable                   Не вдалося зчитати пропозицію з ЦБД!
+    ${empty error}   set variable                   ValueError: Element locator
+    ${error1}        set variable                   Не вдалося подати пропозицію
+    ${error2}        set variable                   Виникла помилка при збереженні пропозиції.
+    ${error3}        set variable                   Непередбачувана ситуація
+    ${error4}        set variable                   В даний момент вже йде подача/зміна пропозиції по тендеру від Вашої організації!
+    ${ok button}     set variable                   //div[@class="ivu-modal-body"]/div[@class="ivu-modal-confirm"]//button
+
+	Run Keyword If  "${empty error}" in """${message}"""  smarttender.пропозиція_подати пропозицію
+	...  ELSE IF  "${error1}" in """${message}"""  Ignore error
+	...  ELSE IF  "${error2}" in """${message}"""  Ignore error
+	...  ELSE IF  "${error3}" in """${message}"""  Ignore error
+	...  ELSE IF  "${error4}" in """${message}"""  Ignore error
+	...  ELSE IF  "${succeed}" in """${message}"""  Click Element  ${ok button}
+	...  ELSE IF  "${succeed2}" in """${message}"""  Click Element  ${ok button}
+	...  ELSE  Fail  Look to message above
+	loading дочекатися зникнення елемента зі сторінки  ${ok button}
+
+
+закрити валідаційне вікно (Так/Ні)
+	[Arguments]  ${title}  ${action}
+	${button1}  Set Variable  xpath=//div[contains(text(),'${title}')]/ancestor::div[@class="ivu-modal-confirm"]//button/span[text()="${action}"]
+	${button2}  Set Variable  xpath=//div[contains(text(),'${title}')]/ancestor::div[@class="ivu-poptip-inner"]//button/span[text()="${action}"]
+	${button}   Set Variable  ${button1}|${button2}
+	${status}  Run Keyword And Return Status  Wait Until Page Contains Element  ${button}  3
+	Run Keyword If  '${status}' == 'True'  Click Element  ${button}
+
+
+пропозиція_видалити файл
+    [Arguments]  ${doc_id}
+	${doc_block}  set variable  xpath=//*[@data-qa="file-name"][contains(text(),"${doc_id}")]/ancestor::div[@class="file ivu-row"]
+    click element  ${doc_block}//button[@outlined]
+    smarttender.закрити валідаційне вікно (Так/Ні)  Видалити файл?  Так
+
+
 ################################################################################
 #                               ЗАПИТАННЯ                                      #
 ################################################################################
 запитання_вибрати тип запитання
     [Arguments]  ${type}
-    ${selector}       set variable  xparh=//*[@data-qa="questions"]//*[@class="ivu-select-selection"]
-    ${type_selector}  set variable  xpath=//*[@class="ivu-select-dropdown-list"]/li[contains(text(),"${type}")]
+    ${dropdown_selector}  set variable  xpath=//*[@data-qa="questions"]//*[@class="ivu-select-selection"]
+    ${type_selector}      set variable  xpath=//*[@class="ivu-select-dropdown-list"]/li[contains(text(),"${type}")]
+    click element  ${dropdown_selector} /i[last()]
     loading дочекатися відображення елемента на сторінці  ${type_selector}
     click element  ${type_selector}
-    wait until element contains  ${selector}//*[@class="ivu-select-selected-value"]  ${type}
+    sleep  2
+    ${get}  get text by JS  ${dropdown_selector}
+    should contain  ${get}  ${type}
 
 
 запитання_натиснути кнопку "Поставити запитання"
@@ -1326,7 +1439,7 @@ loading дочекатися зникнення елемента зі сторі
     loading дочекатися відображення елемента на сторінці  ${question theme}
     Input Text  ${question theme}  ${text}
     Sleep  .5
-    ${get}  Get Element Attribute  ${question theme}  value
+    ${get}  Get Element Attribute  ${question theme}@value
     Should Be Equal  ${get}  ${text}
 
 
@@ -1335,7 +1448,7 @@ loading дочекатися зникнення елемента зі сторі
     ${question text}  Set Variable  //*[@data-qa="questions"]//label[text()="Запитання"]/following-sibling::div//textarea
     Input Text  ${question text}  ${text}
     Sleep  .5
-    ${get}  Get Element Attribute  ${question text}  value
+    ${get}  Get Element Attribute  ${question text}@value
     Should Be Equal  ${get}  ${text}
 
 
@@ -1343,3 +1456,50 @@ loading дочекатися зникнення елемента зі сторі
     ${question send btn}  Set Variable  //*[@data-qa="questions"]//button[contains(@class,"btn-success")]
     Click Element  ${question send btn}
     Run Keyword And Ignore Error  Wait Until Element Is Not Visible  ${question send btn}  30
+
+
+################################################################################
+#                               GET AUCTION HREF                               #
+################################################################################
+
+
+отримати посилання на участь та прегляд аукціону для учасника
+	Element Should Not Be Visible  ${view auction btn}   Ой! Що тут робить кнопка "Перегляд аукціону"
+	Wait Until Element Is Visible  ${go to auction btn}  10
+	Click Element                  ${go to auction btn}
+	smarttender.дочекатись формування посилань на аукціон
+	${auction_participate_href}    smarttender.отримати URL для участі в аукціоні
+	${auction_href}                smarttender.отримати URL на перегляд
+	[Return]                       ${auction_participate_href}  ${auction_href}
+
+
+отримати посилання на прегляд аукціону не учасником
+    Element Should Not Be Visible  ${go to auction btn}  Ой! Що тут робить кнопка "До аукціону"
+	Wait Until Element Is Visible  ${view auction btn}   10
+	Click Element                  ${view auction btn}
+	smarttender.дочекатись формування посилань на аукціон
+    ${auction_href}                smarttender.отримати URL на перегляд
+    [Return]                       ${auction_href}
+
+
+отримати URL для участі в аукціоні
+	${auction_participate_href}  Get Element Attribute  ${participate in auction link}@href
+	${status}  Run Keyword And Return Status  Page Should Contain Element  ${participate in auction link}\[@disabled="disabled"]
+    Run Keyword If  ${status}  Fail  Ой! Не вдалося отримати посилання. Кнопка взяти участь в аукціоні не активна.
+	Run Keyword If  '${auction_participate_href}' == 'None'  smarttender.отримати URL для участі в аукціоні
+	[Return]  ${auction_participate_href}
+
+
+отримати URL на перегляд
+	${auction_href}  Get Element Attribute  ${view auction link}@href
+	${status}  Run Keyword And Return Status  Page Should Contain Element  ${view auction link}\[@disabled="disabled"]
+    Run Keyword If  ${status}  Fail  Ой! Не вдалося отримати посилання. Кнопка до перегляду аукціону не активна.
+	Run Keyword If  '${auction_href}' == 'None'  smarttender.отримати URL на перегляд
+	[Return]  ${auction_href}
+
+
+дочекатись формування посилань на аукціон
+	${auction loading}  Set Variable  xpath=(//*[@class="ivu-load-loop ivu-icon ivu-icon-load-c"])[1]
+	Wait Until Page Does Not Contain Element  ${auction loading}  30
+	Sleep  1
+################################################################################
