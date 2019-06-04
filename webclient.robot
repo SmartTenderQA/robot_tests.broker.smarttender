@@ -122,26 +122,27 @@ header натиснути на елемент за назвою
 	...  '${unit.name}' == 'Флакон'  флак
 	...  ${unit.name}
 	${locator}  set variable  //*[@data-name="EDI"]//input
-	заповнити simple input  ${locator}  ${unit.name}
+	заповнити autocomplete field  ${locator}  ${unit.name}
 
 
 заповнити поле для item classification.id
 	[Arguments]  ${classification.id}
 	${locator}  set variable  //*[@data-name="MAINCLASSIFICATION"]//input
-	заповнити simple input  ${locator}  ${classification.id}  check=${False}
+	заповнити autocomplete field  ${locator}  ${classification.id}  check=${False}
 
 
 заповнити поле для item additionalClassifications.scheme
 	[Arguments]  ${additionalClassifications.scheme}
 	${locator}  set variable  //*[@data-name="CLASSIFICATIONSCHEME"]
 	${dict}  create dictionary  ДКПП=ДКПП (ДК 016:2010)  ДК003=Классификатор профессий (ДК 003:2010)  ДК015=Классификация видов научно-технической деятельности (ДК 015-97)  ДК018=Государственный классификатор зданий и сооружений (ДК 018-2000)  INN=Спеціальні норми та інше
-	заповнити фіксований випадаючий список  ${locator}  ${dict[u'${additionalClassifications.scheme}']}
+	${scheme_converted}  get from dictionary  ${dict}  ${additionalClassifications.scheme}
+	заповнити фіксований випадаючий список  ${locator}  ${scheme_converted}
 
 
 заповнити поле для item additionalClassifications.description
 	[Arguments]  ${additionalClassifications.description}
 	${locator}  set variable  //*[@data-name="IDCLASSIFICATION"]//input
-	заповнити simple input  ${locator}  ${additionalClassifications.description}
+	заповнити autocomplete field  ${locator}  ${additionalClassifications.description}  check=${False}
 
 
 заповнити поле для item deliveryAddress.postalCode
@@ -159,7 +160,7 @@ header натиснути на елемент за назвою
 заповнити поле для item deliveryAddress.locality
 	[Arguments]  ${deliveryAddress.locality}
 	${locator}  set variable  //*[@data-name="CITY_KOD"]//input
-	заповнити simple input  ${locator}  ${deliveryAddress.locality}  check=${False}
+	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${False}
 
 
 заповнити поле для item deliveryDate.startDate
@@ -224,7 +225,7 @@ header натиснути на елемент за назвою
 	[Arguments]  ${locator}  ${text}
 	wait until keyword succeeds  10x  1s  run keywords
 	...  click element  ${locator}  AND
-	...  sleep  .5
+	...  sleep  .5  AND
 	...  click element  ${locator}  AND
 #	...  loading дочекатися відображення елемента на сторінці  ${milestone_dropdown_list}  timeout=1s  AND
 	...  click element  ${milestone_dropdown_list}//*[text()="${text}"]  AND
@@ -268,6 +269,25 @@ header натиснути на елемент за назвою
 	input text  ${locator}  ${input_text}
 #	click screen header
 	press key  //body  \\13
+	loading дочекатись закінчення загрузки сторінки
+	${get}  get element attribute  ${locator}@value
+	run keyword if  ${check}  should be equal  "${get}"  "${input_text}"
+
+
+заповнити autocomplete field
+	[Arguments]  ${locator}  ${input_text}  ${check}=${True}
+	wait until keyword succeeds  5x  1s  заповнити autocomplete field continue  ${locator}  ${input_text}  ${check}
+
+
+заповнити autocomplete field continue
+	[Arguments]  ${locator}  ${input_text}  ${check}
+	${dropdown_list}  set variable  //*[@class="ade-list-back" and contains(@style, "left")]
+	${item_in_dropdown_list}  set variable  //*[@class="dhxcombo_option dhxcombo_option_selected"]
+	${input_text}  evaluate  u"""${input_text}"""
+	input text  ${locator}  ${input_text}
+	press key  //body  \\13
+	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=1
+	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
 	run keyword if  ${check}  should be equal  "${get}"  "${input_text}"
@@ -327,9 +347,15 @@ click screen header
 	...  "${tab_status}" == "active" and "${view_status}" == "none"  			run keywords
 	...  		click element  ${tab}/following-sibling::*						AND
 	...  		loading дочекатись закінчення загрузки сторінки
-	wait until keyword succeeds  10  .5  run keywords
-	...  element attribute should contains value  ${tab}  style  display:		AND
-	...  element attribute should contains value  ${tab}  style  none
+#	wait until keyword succeeds  10  .5  run keywords
+#	...  element attribute should contains value  ${tab}  style  display:		AND
+#	...  element attribute should contains value  ${tab}  style  none
+
+
+element attribute should contains value
+	[Arguments]  ${element}  ${attr}  ${value}
+	${class_value}  get element attribute  ${element}@${attr}
+	should contain  ${class_value}  ${value}
 
 
 get tab selector by name
@@ -343,14 +369,14 @@ get view status
 	# return 'active" if screen is open
 	return from keyword if  """${screen_root_selector}""" in """${tab}"""  active
 	###################################
-	${class_value}  get element attribute  ${tab}/ancestor::*[@data-placeid]  class
+	${class_value}  get element attribute  ${tab}/ancestor::*[@data-placeid]@class
 	${view_status}  set variable if  "active-dxtc-frame" in "${class_value}"  active  none
 	[Return]  ${view_status}
 
 
 get tab status
 	[Arguments]  ${tab}
-	${style_value}  get element attribute  ${tab}  style
+	${style_value}  get element attribute  ${tab}@style
 	${tab_status}  set variable if  "display:none" in "${style_value.replace(" ", "")}"  active  none
 	[Return]  ${tab_status}
 
@@ -401,7 +427,7 @@ screen заголовок повинен містити
 	${file_path}  set variable  ${list_of_file_args[0]}
 	${file_name}  set variable  ${list_of_file_args[1]}
 	${file_content}  set variable  ${list_of_file_args[2]}
-	webclient.активувати вкладку  Документи  index=2
+	webclient.активувати вкладку  Документи
 	загрузити документ  ${file_path}
 
 

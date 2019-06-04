@@ -171,3 +171,127 @@ def download_file_to_my_path(url, path):
     r = requests.get(url)
     with open(path, 'wb') as f:
         f.write(r.content)
+
+
+def adapt_data(tender_data):
+    tender_data.data.procuringEntity = {
+        "contactPoint": {
+            "telephone": "044 585 90 77",
+            "name": u"Иванов Иван Иванович",
+            "email": "ppr.bv.owner@gmail.com"
+        },
+        "identifier": {
+            "scheme": "UA-EDR",
+            "id": "111111111111111",
+            "legalName": u"Демо организатор (государственные торги)"
+        },
+        "name": u"Демо организатор (государственные торги)",
+        "kind": "defense",
+        "address": {
+            "postalCode": "",
+            "countryName": u"Україна",
+            "streetAddress": "",
+            "region": u"Київська обл.",
+            "locality": u"Київ"
+        }
+    }
+    return tender_data
+
+
+def replace_delivery_address(tender_data):
+    delivery_address_replace = {
+        u'Переяслав-Хмельницький': {
+            "region": u"Київська обл.",
+            "locality": u"Переяслав-Хмельницький"
+        },
+        u'Київ': {
+            "region": u"Київська обл.",
+            "locality": u"Київ"
+        },
+        u'Синельникове': {
+            "region": u"Дніпропетровська обл.",
+            "locality": u"Синельникове"
+        },
+        u'Дніпро': {
+            "region": u"Дніпропетровська обл.",
+            "locality": u"Дніпропетровськ"
+        },
+        u'Кривий Ріг': {
+            "region": u"Дніпропетровська обл.",
+            "locality": u"Кривий Ріг"
+        },
+        u'Чернігів': {
+            "region": u"Чернігівська обл.",
+            "locality": u"Чернігів"
+        },
+        u'Одеса': {
+            "region": u"Одеська обл.",
+            "locality": u"Одеса"
+        },
+        u'Перещепине': {
+            "region": u"Дніпропетровська обл.",
+            "locality": u"Перещепине"
+        },
+        u'Миколаїв': {
+            "region": u"Дніпропетровська обл.",
+            "locality": u"Перещепине"
+        },
+        u'Нікополь': {
+            "region": u"Дніпропетровська обл.",
+            "locality": u"Нікополь"
+        },
+        u'Вишгород': {
+            "region": u"Київська обл.",
+            "locality": u"Вишгород"
+        },
+        u"Кам'янське": {
+            "region": u"Київська обл.",
+            "locality": u"Вишгород"
+        },
+        u'Здолбунів': {
+            "region": u"Рівненська обл.",
+            "locality": u"Здолбунів"
+        },
+        u'Херсон': {
+            "region": u"Херсонська обл.",
+            "locality": u"Херсон"
+        },
+        u'Доманівка': {
+            "region": u"Миколаївська обл.",
+            "locality": u"Доманівка"
+        },
+        u'Олександрія': {
+            "region": u"Миколаївська обл.",
+            "locality": u"Доманівка"
+        },
+        u'Новий Буг': {
+            "region": u"Новий Буг",
+            "locality": u"Миколаївська обл."
+        },
+        u'Трикратне': {
+            "region": u"Миколаївська обл.",
+            "locality": u"Трикратне"
+        },
+        u'Гостомель': {
+            "region": u"Київська обл.",
+            "locality": u"Гостомель"
+        },
+        u'Яготин': {
+            "region": u"Київська обл.",
+            "locality": u"Яготин"
+        },
+        u'Олешки': {
+            "region": u"Харківська обл.",
+            "locality": u"Олешки"
+        }
+    }
+
+    list_of_keys = list(delivery_address_replace.keys())
+
+    for item in tender_data['data']['items']:
+        cdb_locality = item['deliveryAddress']['locality']
+        if cdb_locality in list_of_keys:
+            item['deliveryAddress']['locality'] = delivery_address_replace[cdb_locality]['locality']
+            item['deliveryAddress']['region'] = delivery_address_replace[cdb_locality]['region']
+
+    return tender_data

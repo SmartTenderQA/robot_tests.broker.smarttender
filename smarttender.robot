@@ -52,7 +52,10 @@ ${loadings}                         ${SMART}|${IT}
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
 	comment  Дані міняемо тільки за необхідністю. Можуть буті проблеми з одиницями виміру.
-	no operation
+	${tender_data}  replace_delivery_address  ${tender_data}
+	${tender_data}  run keyword if
+	...  'tender_owner' in '${username.lower()}'  adapt_data  ${tender_data}
+	...  ELSE  set variable  ${tender_data}
 	[Return]  ${tender_data}
 
 
@@ -68,7 +71,7 @@ ${loadings}                         ${SMART}|${IT}
 	webclient.header натиснути на елемент за назвою  Додати
 	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword and ignore error  dialog box натиснути кнопку  Так
-	run keyword and ignore error  dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
@@ -116,14 +119,15 @@ ${loadings}                         ${SMART}|${IT}
 	\  ${count_milestone}  evaluate  ${count_milestone} + 1
 
 
+
 Заповнити поля лоту
   	[Arguments]  ${item}
 	${description}  set variable  ${item['description']}
 	${quantity}  set variable  ${item['quantity']}
 	${unit.name}  set variable  ${item['unit']['name']}
 	${classification.id}  set variable  ${item['classification']['id']}
-	${additionalClassifications.scheme}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['scheme']}
-	${additionalClassifications.description}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['description']}
+	${additionalClassifications_status}  ${additionalClassifications.scheme}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['scheme']}
+	${additionalClassifications_status}  ${additionalClassifications.description}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['description']}
 	${deliveryAddress.postalCode}  set variable  ${item['deliveryAddress']['postalCode']}
 	${deliveryAddress.streetAddress}  set variable  ${item['deliveryAddress']['streetAddress']}
 	${deliveryAddress.locality}  set variable  ${item['deliveryAddress']['locality']}
@@ -141,11 +145,10 @@ ${loadings}                         ${SMART}|${IT}
 	...  deliveryDate.startDate
 	...  deliveryDate.endDate
 
-	${status}  run keyword and return status  dictionary should contain key  ${item}  additionalClassifications
-	run keyword if  ${status}  append to list  ${field_list}  additionalClassifications.scheme  additionalClassifications.description
+	run keyword if  '${additionalClassifications_status}' == 'PASS'  append to list  ${field_list}  additionalClassifications.scheme  additionalClassifications.description
 
 	:FOR  ${field}  in  @{field_list}
-	\  run keyword  run keyword and ignore error  webclient.заповнити поле для item ${field}  ${${field}}
+	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}
 
 
 Заповнити умови оплати
@@ -175,7 +178,7 @@ ${loadings}                         ${SMART}|${IT}
 	${duration.type}  set variable  ${type_dict['${duration.type_cdb}']}
 	${duration.days}  set variable  ${milestone['duration']['days']}
 	${percentage}  set variable  ${milestone['percentage']}
-	${description}  run keyword and ignore error  set variable  ${milestone['description']}
+	${description_status}  ${description}  run keyword and ignore error  set variable  ${milestone['description']}
 
 	${field_list}  create list
   	...  code
@@ -184,8 +187,7 @@ ${loadings}                         ${SMART}|${IT}
   	...  duration.days
   	...  percentage
 
-	${status}  run keyword and return status  dictionary should contain key  ${milestone}  description
-	run keyword if  ${status}  append to list  ${field_list}  description
+	run keyword if  '${description_status}' == 'PASS'  append to list  ${field_list}  description
 
   	додати item бланк  index=2
   	:FOR  ${field}  IN  @{field_list}
@@ -387,6 +389,7 @@ ${loadings}                         ${SMART}|${IT}
 Внести зміни в тендер
     [Arguments]  ${username}  ${tender_uaid}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінити значення поля fieldname на fieldvalue для тендера tender_uaid.
+	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	run keyword  webclient.заповнити поле ${fieldname}  ${fieldvalue}
 	header натиснути на елемент за назвою  Зберегти
@@ -831,15 +834,9 @@ get_item_deliveryAddress_value
 
 Завантажити документ
     [Arguments]  ${username}  ${filepath}  ${tender_uaid}
-    [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до тендера tender_uaid.  
-	log to console  Завантажити документ
-	debug
-	go to  http://test.smarttender.biz/webclient/?proj=it_uk&tz=3
-	loading дочекатись закінчення загрузки сторінки
-	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
-	webclient.header натиснути на елемент за назвою  OK
-	#  Нужно добавить поиск по номеру тундера
-	webclient.header натиснути на елемент за назвою  Изменить
+    [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до тендера tender_uaid.
+	знайти тендер у webclient  ${tender_uaid}
+	webclient.header натиснути на елемент за назвою  Змінити
 	webclient.активувати вкладку  Документы
 	webclient.загрузити документ  ${filepath}
 	webclient.header натиснути на елемент за назвою  Сохранить
@@ -876,8 +873,6 @@ get_item_deliveryAddress_value
     ${document_field}  get text  ${selector}
     [Return]  ${document_field}
 
-
-    
 
 Подати цінову пропозицію
     [Arguments]  ${username}  ${tender_uaid}  ${bid}  ${lots_ids}=${None}  ${features_ids}=${None}
@@ -1392,4 +1387,15 @@ loading дочекатися зникнення елемента зі сторі
     ${status}  Run Keyword And Return Status
     ...  Element Should Be Visible  ${tab_selector}/ancestor::div[contains(@class,"tab-active")]
     Run Keyword If  '${status}' == 'False'  Click Element  ${tab_selector}
+
+
+знайти тендер у webclient
+	[Arguments]  ${tender_uaid}
+	${location}  get location
+	run keyword if  '/webclient/' not in '${location}'  run keywords
+	...  go to  http://test.smarttender.biz/webclient/?proj=it_uk&tz=3  AND
+	...  loading дочекатись закінчення загрузки сторінки  AND
+	...  webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)  AND
+	...  webclient.header натиснути на елемент за назвою  OK
+	#  Нужно добавить поиск по номеру тундера
 
