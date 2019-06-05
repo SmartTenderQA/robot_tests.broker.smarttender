@@ -1305,11 +1305,28 @@ get_item_deliveryAddress_value
     ...  ELSE  return from keyword  ${converted_field_value}
     [Return]  ${converted_field_value}
 
-date convertation
-#   TODO нати способ не хардкодить часовой пояс
-    [Arguments]  ${raw_date}
-    ${converted_date}  convert date  ${raw_date}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT%H:%M:%S+03:00
-    [Return]  ${converted_date}
+
+сторінка_детальної_інформації отримати contracts
+    [Arguments]  ${field_name}
+    ${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
+	${number}  	evaluate  '${reg.group('number')}'
+	${field}  	evaluate  '${reg.group('field')}'
+    ###########################################
+	#   перейти на сторінку контракта
+	${contract_btn}  set variable  //*[@data-qa="contract"]/a
+	open button  ${contract_btn}
+	###########################################
+	${field_value}  run keyword  smarttender.контракт_сторінка_детальної_інформації отримати ${field}
+	[Return]  ${field_value}
+
+
+контракт_сторінка_детальної_інформації отримати status
+    ${selector}  set variable  //*[@data-qa="contract-status-info-title"]
+    ${field_value}  get text  ${selector}
+    ${field_value}  convert_contract_status  ${field_value}
+	[Return]  ${field_value}
+
+
 ########################################################################################################
 ########################################################################################################
 ###########################################KEYWORDS#####################################################
@@ -1357,6 +1374,14 @@ Open button
 	[Arguments]  ${selector}
 	${href}=  Get Element Attribute  ${selector}@href
 	Go To  ${href}
+
+
+date convertation
+#   TODO нати способ не хардкодить часовой пояс
+    [Arguments]  ${raw_date}
+    ${converted_date}  convert date  ${raw_date}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT%H:%M:%S+03:00
+    [Return]  ${converted_date}
+
 
 get text by JS
 	[Arguments]    ${xpath}

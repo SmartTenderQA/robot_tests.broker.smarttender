@@ -172,6 +172,19 @@ def convert_mainProcurementCategory(value):
     return result
 
 
+def convert_contract_status(value):
+    map = {
+        u'Діє': u'active',
+        u'Розірваний': u'terminated',
+        u'Виконано': u'terminated'
+    }
+    if value in map:
+        result = map[value]
+    else:
+        result = value
+    return result
+
+
 def convert_status(value):
     map = {
         u'Період уточнень': u'active.enquiries',
