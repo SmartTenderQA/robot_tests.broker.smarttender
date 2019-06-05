@@ -91,6 +91,7 @@ def convert_unit_code(value):
         u'Метр квадратный': u'м.кв.',
         u'Штука': u'H87',
         u'штука': u'H87',
+        u'штуки': u'H87',
         u'Упаковка': u'PK',
         u'Флакон': u'VI',
         u'Набір(товару)': u'SET',
@@ -163,6 +164,19 @@ def convert_mainProcurementCategory(value):
         u'Товари': u'goods',
         u'Послуги': u'services',
         u'Роботи': u'works'
+    }
+    if value in map:
+        result = map[value]
+    else:
+        result = value
+    return result
+
+
+def convert_contract_status(value):
+    map = {
+        u'Діє': u'active',
+        u'Розірваний': u'terminated',
+        u'Виконано': u'terminated'
     }
     if value in map:
         result = map[value]
