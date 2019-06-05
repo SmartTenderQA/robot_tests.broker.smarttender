@@ -4,6 +4,9 @@ ${milestone_active_row}				xpath=(//*[contains(@class, "rowselected")])[last()]
 ${milestone_dropdown_list}			//*[@class="dhxcombolist_material" and not(contains(@style, 'display: none;'))]
 ${screen_root_selector}             //*[(@id="pcCustomDialog_PW-1" or @id="pcModalMode_PW-1") and contains(@style, "visibility: visible;")]
 ${locator_for_click_tab_tbsk}	    //*[contains(@class, "dxtc-tab")]
+${row_sitfp}						//tr[contains(@class,"Row")]
+${grid}								//*[@data-type="GridView"]
+${active_view}						//*[contains(@class, "active-dxtc-frame")]
 
 
 *** Keywords ***
@@ -39,7 +42,8 @@ header натиснути на елемент за назвою
 заповнити поле tenderPeriod.endDate
 	[Arguments]  ${date}
 	${date_input}  set variable  //*[@data-name="D_SROK"]//input
-	${formated_date}  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S.%f+03:00
+	${status}  ${formated_date}  run keyword and ignore error  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S.%f+03:00
+	${formated_date}  run keyword if  '${status}' == 'FAIL'  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S+03:00  ELSE  set variable  ${formated_date}
 	заповнити поле з датою  ${date_input}  ${formated_date}
 
 
@@ -214,6 +218,30 @@ header натиснути на елемент за назвою
 	[Arguments]  ${description}
 	${locator}  set variable  ${milestone_active_row}/td[4]
 	ввести значення в поле в гріді  ${locator}  ${description}
+
+
+заповнити поле для угоди value.amountNet
+	[Arguments]  ${fieldvalue}
+	${amount_input}  set variable  //div/*[text()='Сума без ПДВ']/following-sibling::table//input
+	заповнити simple input  ${amount_input}  '${fieldvalue}'  check=${False}
+
+
+заповнити поле для угоди value.amount
+	[Arguments]  ${fieldvalue}
+	${amount_input}  set variable  //div/*[text()='Сума за договором, грн.:']/following-sibling::table//input
+	заповнити simple input  ${amount_input}  '${fieldvalue}'  check=${False}
+
+
+заповнити поле для угоди id
+	[Arguments]  ${fieldvalue}
+	${amount_input}  set variable  //div/*[text()='Номер договору']/following-sibling::table//input
+	заповнити simple input  ${amount_input}  ${fieldvalue}  check=${False}
+
+
+заповнити поле для угоди date
+	[Arguments]  ${fieldvalue}
+	${amount_input}  set variable  //div/*[text()='Дата підписання']/following-sibling::table//input
+	заповнити поле з датою  ${amount_input}  ${fieldvalue}
 
 
 
@@ -428,13 +456,13 @@ screen заголовок повинен містити
 	${file_name}  set variable  ${list_of_file_args[1]}
 	${file_content}  set variable  ${list_of_file_args[2]}
 	webclient.активувати вкладку  Документи
+	webclient.натиснути додати документ
+	loading дочекатись закінчення загрузки сторінки
 	загрузити документ  ${file_path}
 
 
 загрузити документ
 	[Arguments]  ${file_path}
-	webclient.натиснути додати документ
-	loading дочекатись закінчення загрузки сторінки
 	choose file  //*[@id="pcModalMode_PW-1"]//input  ${file_path}
 	loading дочекатись закінчення загрузки сторінки
 	click element  //*[@id="pcModalMode_PW-1"]//*[text()="ОК"]
@@ -444,9 +472,44 @@ screen заголовок повинен містити
 знайти тендер у webclient
 	[Arguments]  ${tender_uaid}
 	${location}  get location
+	${grid_search_field}  set variable  xpath=((//*[@data-type="GridView"])[1]//td//input)[4]
 	run keyword if  '/webclient/' not in '${location}'  run keywords
 	...  go to  http://test.smarttender.biz/webclient/?proj=it_uk&tz=3  AND
 	...  loading дочекатись закінчення загрузки сторінки  AND
 	...  webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)  AND
-	...  webclient.header натиснути на елемент за назвою  OK
-	#  Нужно добавить поиск по номеру тундера
+	...  webclient.header натиснути на елемент за назвою  Очистити  AND
+	...  webclient.header натиснути на елемент за назвою  OK  AND
+	...  loading дочекатися відображення елемента на сторінці  ${grid_search_field}  AND
+	...  input text  ${grid_search_field}  ${tender_uaid}  AND
+	...  press key  ${grid_search_field}  \\13  AND
+	...  loading дочекатись закінчення загрузки сторінки
+
+
+Заповнити текст рішення квалиіфікації
+	[Arguments]  ${text}
+	input text  ${screen_root_selector}//textarea  ${text}
+
+
+check for active tab
+	${screen}  check for open screen
+	${active_view_status}  run keyword and return status  element should be visible  ${screen}${active_view}
+	${tab}  set variable if  ${active_view_status}  ${active_view}//*[@class="dxtc-content"]/div[@style="" or (not(@style) and @id)]  //*[@class="dxtc-content"]/div[@style="" or (not(@style) and @id)]
+	${active_tab_exist_status}  run keyword and return status  element should be visible  ${screen}${tab}
+	${tab_selector}  set variable if  ${active_tab_exist_status}  ${tab}  ${EMPTY}
+	[Return]  ${tab_selector}
+
+
+отримати локатор для гріда
+	[Arguments]  ${grid_number}
+	${screen}  check for open screen
+	${tab}  check for active tab
+	[Return]  (${screen}${tab}${grid})\[${grid_number}]
+
+
+grid вибрати рядок за номером
+    [Arguments]  ${row_number}  ${grid_number}=1
+    ${grid_selector}  отримати локатор для гріда  ${grid_number}
+    loading дочекатися відображення елемента на сторінці  xpath=${grid_selector}${row_sitfp}\[${row_number}]
+    Wait Until Keyword Succeeds  5  .5  Click Element  xpath=${grid_selector}${row_sitfp}\[${row_number}]
+    loading дочекатись закінчення загрузки сторінки
+    loading дочекатися відображення елемента на сторінці  xpath=${grid_selector}${row_sitfp}\[${row_number}]\[contains(@class,"selected")]
