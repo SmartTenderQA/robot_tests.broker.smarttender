@@ -877,15 +877,17 @@ get_item_deliveryAddress_value
     [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до тендера tender_uaid.
 	знайти тендер у webclient  ${tender_uaid}
 	webclient.header натиснути на елемент за назвою  Змінити
-	webclient.активувати вкладку  Документы
-	webclient.натиснути додати документ
-	loading дочекатись закінчення загрузки сторінки
-	webclient.загрузити документ  ${filepath}
-	webclient.header натиснути на елемент за назвою  Сохранить
-	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword and ignore error  dialog box натиснути кнопку  Так
-	webclient.screen заголовок повинен містити  Завантаження документації
-	click element   ${screen_root_selector}//*[@alt="Close"]
+	log to console  Завантажити документ
+	debug
+#	webclient.активувати вкладку  Документы
+#	webclient.натиснути додати документ
+#	loading дочекатись закінчення загрузки сторінки
+#	webclient.загрузити документ  ${filepath}
+#	webclient.header натиснути на елемент за назвою  Сохранить
+#	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+#	run keyword and ignore error  dialog box натиснути кнопку  Так
+#	webclient.screen заголовок повинен містити  Завантаження документації
+#	click element   ${screen_root_selector}//*[@alt="Close"]
 
 
 Отримати інформацію із документа
@@ -1429,13 +1431,6 @@ Open button
 	[Arguments]  ${selector}
 	${href}=  Get Element Attribute  ${selector}@href
 	Go To  ${href}
-
-
-date convertation
-#   TODO нати способ не хардкодить часовой пояс
-    [Arguments]  ${raw_date}
-    ${converted_date}  convert date  ${raw_date}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT%H:%M:%S+03:00
-    [Return]  ${converted_date}
 
 
 get text by JS

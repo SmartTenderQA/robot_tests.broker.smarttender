@@ -330,6 +330,8 @@ header натиснути на елемент за назвою
 
 заповнити поле з датою
 	[Arguments]  ${locator}  ${date}
+  	${get}  get element attribute  ${locator}@value
+	run keyword if  '${get}' != ''  Очистити поле дати  ${locator}
 	wait until keyword succeeds  5x  1s  заповнити поле з датою continue  ${locator}  ${date}
 
 
@@ -342,6 +344,16 @@ header натиснути на елемент за назвою
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
 	should be equal  "${get}"  "${date}"
+
+
+Очистити поле дати
+  	[Arguments]  	${locator}
+	click element  ${locator}
+	loading дочекатися відображення елемента на сторінці  ${locator}/../..//img
+	click element  ${locator}/../..//img
+	${clear_date_button}  set variable  xpath=(//*[contains(@class, "Calendar") and text()="Очистити"])[last()]
+	loading дочекатися відображення елемента на сторінці  ${clear_date_button}
+	click element  ${clear_date_button}
 
 
 click screen header
