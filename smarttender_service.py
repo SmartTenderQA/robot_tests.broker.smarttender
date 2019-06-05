@@ -38,6 +38,9 @@ def convert_page_values(field, value):
         ret = float(ret)
     elif 'agreementDuration' in field or 'Number' in field:
         ret = get_only_numbers(value)
+    elif 'currency' in field:
+        ret = value.replace(' ', '').replace('.', '')
+        ret = convert_currency(ret)
     elif 'valueAddedTaxIncluded' in field:
         if u'з ПДВ' in value:
             ret = True
@@ -95,6 +98,7 @@ def convert_unit_code(value):
         u'Упаковка': u'PK',
         u'Флакон': u'VI',
         u'Набір(товару)': u'SET',
+        u'набір': u'SET',
         u'лот': u'LO'
     }
     if value in units_map:

@@ -290,7 +290,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${code}  			evaluate  u'${reg.group('code')}'
 	${percentage}  		evaluate  int(u'${reg.group('percentage')}')
 	${is_anotherEvent}  run keyword and return status  should contain  ${title}  Інша подія  #чтобы тянуло без описания
-	${title}  run keyword if  ${is_anotherEvent} == ${True}  fetch from right  ${title}  |
+	${title}  run keyword if  ${is_anotherEvent} == ${True}  fetch from left  ${title}  |
 	...  ELSE  set variable  ${title}
 	####################################
 	#  WORK HERE
@@ -407,6 +407,28 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${field_value}  get text  ${selector}
 	${field_value}  convert_page_values  ${field_name}  ${field_value}
 	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати funders
+    [Arguments]  ${field_name}
+    ${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
+	${number}  	evaluate  int(${reg.group('number')}) + 1
+	${field}  	evaluate  '${reg.group('field')}'
+	${funder_selector}  set variable  xpath=(//*[@data-qa="donor"])[${number}]
+    ${field_selector}      set variable if
+    ...  '${field}' == 'contactPoint.url'                    //*[@class="ivu-poptip-body-content"]//a
+    ...  '${field}' == 'identifier.id'                       //*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]/following-sibling::*
+    ...  '${field}' == 'identifier.legalName'                //div[@class="ivu-poptip-rel"]
+    ${field_is_visible}  run keyword and return status  element should be visible  ${funder_selector}${field_selector}
+    run keyword if  ${field_is_visible} == ${False}  run keywords
+    ...  click element  ${funder_selector}//div[@class="ivu-poptip-rel"]
+    ...  AND  wait until element is visible  ${funder_selector}${field_selector}
+    ${field_value}  get text  ${funder_selector}${field_selector}
+    ${converted_field_value}  convert_page_values  ${field}  ${field_value}
+    ${converted_field_value}  run keyword if  '${field}' == 'deliveryDate.endDate'
+    ...  date convertation  ${converted_field_value}
+    ...  ELSE  return from keyword  ${converted_field_value}
+    [Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати auctionPeriod.startDate
@@ -598,8 +620,18 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name з лоту з lot_id в описі для тендера tender_uaid.   
 	log to console  Отримати інформацію із лоту
-	debug
-    [Return]  ${lot_field_value}
+    ${field_selector}      set variable if
+    ...  '${field_name}' == 'description'                           //*[@data-qa="lot-description"]
+    ...  '${field_name}' == 'title'                                 //*[@data-qa="lot-title"]  # and contains(text(), "${lot_id}")
+    ...  '${field_name}' == 'value.amount'                          //*[@data-qa="budget-amount"]
+    ...  '${field_name}' == 'value.currency'                        //*[@data-qa="budget-currency"]
+    ...  '${field_name}' == 'value.valueAddedTaxIncluded'           //*[@data-qa="budget-vat-title"]
+    ...  '${field_name}' == 'minimalStep.amount'                    (//*[@data-qa="budget-min-step"]//span)[4]
+    ...  '${field_name}' == 'minimalStep.currency'                  (//*[@data-qa="budget-min-step"]//span)[last()]
+    ...  '${field_name}' == 'minimalStep.valueAddedTaxIncluded'     //*[@data-qa="budget-vat-title"]
+    ${field_value}  get text  xpath=${field_selector}
+    ${converted_field_value}  convert_page_values  ${field_name}  ${field_value}
+    [Return]  ${converted_field_value}
     
     
 Змінити лот
@@ -1354,13 +1386,6 @@ get_item_deliveryAddress_value
 	go back
 	loading дочекатись закінчення загрузки сторінки
 	[Return]  ${ret}
-
-
-date convertation
-#   TODO нати способ не хардкодить часовой пояс
-    [Arguments]  ${raw_date}
-    ${converted_date}  convert date  ${raw_date}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT%H:%M:%S+03:00
-    [Return]  ${converted_date}
 
 
 сторінка_детальної_інформації отримати contracts
