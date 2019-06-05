@@ -1386,13 +1386,6 @@ get_item_deliveryAddress_value
 	[Return]  ${ret}
 
 
-date convertation
-#   TODO нати способ не хардкодить часовой пояс
-    [Arguments]  ${raw_date}
-    ${converted_date}  convert date  ${raw_date}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT%H:%M:%S+03:00
-    [Return]  ${converted_date}
-
-
 сторінка_детальної_інформації отримати contracts
     [Arguments]  ${field_name}
     ${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
