@@ -780,7 +780,8 @@ get_item_deliveryAddress_value
 Отримати інформацію із запитання
     [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name із запитання з question_id в описі для тендера tender_uaid.
-	smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
+    перейти до сторінки детальної інформаціїї	
+    smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
 	${question_block}  set variable  //*[contains(text(),"${question_id}")]/ancestor::div[@class="ivu-card-body"][1]
 	${question_field_name}  run keyword  smarttender.запитання_сторінка_детальної отримати ${field_name}  ${question_block}
     [Return]  ${question_field_name}
@@ -810,6 +811,7 @@ get_item_deliveryAddress_value
 Відповісти на запитання
     [Arguments]  ${username}  ${tender_uaid}  ${answer_data}  ${question_id}
     [Documentation]  Дати відповідь answer_data на запитання з question_id в описі для тендера tender_uaid.
+    знайти тендер у webclient  ${tender_uaid}
 	webclient.активувати вкладку  Обговорення закупівлі
 	click element  //*[contains(text(), "${question_id}")]
 	webclient.header натиснути на елемент за назвою  Змінити
@@ -820,6 +822,7 @@ get_item_deliveryAddress_value
 	webclient.header натиснути на елемент за назвою  Зберегти
 	dialog box заголовок повинен містити  Надіслати відповідь на сервер ProZorro?
 	dialog box натиснути кнопку  Так
+    run keyword and ignore error  webclient.header натиснути на елемент за назвою  записати
 	webclient.активувати вкладку  Тестові публічні закупівлі
 	
 	
@@ -909,17 +912,16 @@ get_item_deliveryAddress_value
     [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до тендера tender_uaid.
 	знайти тендер у webclient  ${tender_uaid}
 	webclient.header натиснути на елемент за назвою  Змінити
-	log to console  Завантажити документ
-	debug
-#	webclient.активувати вкладку  Документы
-#	webclient.натиснути додати документ
-#	loading дочекатись закінчення загрузки сторінки
-#	webclient.загрузити документ  ${filepath}
-#	webclient.header натиснути на елемент за назвою  Сохранить
-#	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-#	run keyword and ignore error  dialog box натиснути кнопку  Так
-#	webclient.screen заголовок повинен містити  Завантаження документації
-#	click element   ${screen_root_selector}//*[@alt="Close"]
+	webclient.активувати вкладку  Документи
+	webclient.натиснути додати документ
+	loading дочекатись закінчення загрузки сторінки
+	webclient.загрузити документ  ${filepath}
+	webclient.header натиснути на елемент за назвою  Зберегти
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
+	webclient.screen заголовок повинен містити  Завантаження документації
+	click element   ${screen_root_selector}//*[@alt="Close"]
+    sleep  60
 
 
 Отримати інформацію із документа

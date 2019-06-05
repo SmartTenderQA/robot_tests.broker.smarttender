@@ -330,16 +330,16 @@ header натиснути на елемент за назвою
 
 заповнити поле з датою
 	[Arguments]  ${locator}  ${date}
-  	${get}  get element attribute  ${locator}@value
-	run keyword if  '${get}' != ''  Очистити поле дати  ${locator}
 	wait until keyword succeeds  5x  1s  заповнити поле з датою continue  ${locator}  ${date}
 
 
 заповнити поле з датою continue
   	[Arguments]  ${locator}  ${date}
+#  	${get}  get element attribute  ${locator}@value
+#	run keyword if  '${get}' != ''  Очистити поле дати  ${locator}
+#	input text  ${locator}  ${date.replace('.','').replace(' ','')}
 	input text  ${locator}  ${date}
 	sleep  .5
-#	click screen header
 	press key  //body  \\13
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
@@ -486,7 +486,7 @@ screen заголовок повинен містити
 	${location}  get location
 	${grid_search_field}  set variable  xpath=((//*[@data-type="GridView"])[1]//td//input)[4]
 	run keyword if  '/webclient/' not in '${location}'  run keywords
-	...  go to  http://test.smarttender.biz/webclient/?proj=it_uk&tz=3  AND
+	...  go to  http://test.smarttender.biz/webclient/?testmode=1&proj=it_uk&tz=3  AND
 	...  loading дочекатись закінчення загрузки сторінки  AND
 	...  webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)  AND
 	...  webclient.header натиснути на елемент за назвою  Очистити  AND
