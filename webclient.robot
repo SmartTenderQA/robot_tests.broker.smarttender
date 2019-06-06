@@ -107,24 +107,6 @@ header натиснути на елемент за назвою
 
 заповнити поле для item unit.name
 	[Arguments]  ${unit.name}
-	${unit.name}  set variable if
-	...  '${unit.name}' == 'кілограми'  кг
-	...  '${unit.name}' == 'літр'  л
-	...  '${unit.name}' == 'пачок'  пач.
-	...  '${unit.name}' == 'метри'  м
-	...  '${unit.name}' == 'послуга'  умов.
-	...  '${unit.name}' == 'метри кубічні'  м3
-	...  '${unit.name}' == 'ящик'  ящ
-	...  '${unit.name}' == 'тони'  т
-	...  '${unit.name}' == 'кілометри'  км
-	...  '${unit.name}' == 'місяць'  міс
-	...  '${unit.name}' == 'пачка'  пач
-	...  '${unit.name}' == 'пачка'  пач
-	...  '${unit.name}' == 'упаковка'  упаков
-	...  '${unit.name}' == 'гектар'  га
-	...  '${unit.name}' == 'кілограми'  кг
-	...  '${unit.name}' == 'Флакон'  флак
-	...  ${unit.name}
 	${locator}  set variable  //*[@data-name="EDI"]//input
 	заповнити autocomplete field  ${locator}  ${unit.name}
 

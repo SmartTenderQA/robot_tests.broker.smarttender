@@ -59,11 +59,12 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  Це ключове слово викликається в циклі для кожної ролі, яка бере участь в поточному сценарії.
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
-	comment  Дані міняемо тільки за необхідністю. Можуть буті проблеми з одиницями виміру.
 	${tender_data}  replace_delivery_address  ${tender_data}
 	${tender_data}  run keyword if
 	...  'tender_owner' in '${username.lower()}'  adapt_data  ${tender_data}
 	...  ELSE  set variable  ${tender_data}
+	log  ${tender_data}
+	log to console  ${tender_data}
 	[Return]  ${tender_data}
 
 
@@ -780,7 +781,9 @@ get_item_deliveryAddress_value
 Отримати інформацію із запитання
     [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name із запитання з question_id в описі для тендера tender_uaid.
-    перейти до сторінки детальної інформаціїї	
+    #на той стороне решили не ждать, можно зарепортить
+    run keyword if  "${TESTNAME}" == "Відображення заголовку анонімного запитання на тендер без відповіді"  Дочекатись синхронізації
+    перейти до сторінки детальної інформаціїї
     smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
 	${question_block}  set variable  //*[contains(text(),"${question_id}")]/ancestor::div[@class="ivu-card-body"][1]
 	${question_field_name}  run keyword  smarttender.запитання_сторінка_детальної отримати ${field_name}  ${question_block}
@@ -822,7 +825,7 @@ get_item_deliveryAddress_value
 	webclient.header натиснути на елемент за назвою  Зберегти
 	dialog box заголовок повинен містити  Надіслати відповідь на сервер ProZorro?
 	dialog box натиснути кнопку  Так
-    run keyword and ignore error  webclient.header натиснути на елемент за назвою  записати
+	run keyword and ignore error  webclient.header натиснути на елемент за назвою  Записати
 	webclient.активувати вкладку  Тестові публічні закупівлі
 	
 	

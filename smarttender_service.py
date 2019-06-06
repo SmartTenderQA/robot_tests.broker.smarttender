@@ -213,6 +213,12 @@ def download_file_to_my_path(url, path):
 
 
 def adapt_data(tender_data):
+    tender_data = replace_unit_name(tender_data)
+    tender_data = replace_procuringEntity(tender_data)
+    return tender_data
+
+
+def replace_procuringEntity(tender_data):
     tender_data.data.procuringEntity = {
         "contactPoint": {
             "telephone": "044 585 90 77",
@@ -234,6 +240,35 @@ def adapt_data(tender_data):
             "locality": u"Київ"
         }
     }
+
+    return tender_data
+
+
+def replace_unit_name(tender_data):
+    tender_data_replace = {
+        u'кілограми': u'кг',
+        u'літр': u'л',
+        u'пачок': u'пач.',
+        u'метри': u'м',
+        u'послуга': u'умов.',
+        u'метри кубічні': u'м3',
+        u'ящик': u'ящ',
+        u'тони': u'т',
+        u'кілометри': u'км',
+        u'місяць': u'міс',
+        u'пачка': u'пачка',
+        u'упаковка': u'упаков',
+        u'гектар': u'га',
+        u'Флакон': u'флак'
+    }
+
+    list_of_keys = list(tender_data_replace.keys())
+
+    for item in tender_data['data']['items']:
+        name = item['unit']['name']
+        if name in list_of_keys:
+            item['unit']['name'] = tender_data_replace[name]
+
     return tender_data
 
 
@@ -330,7 +365,7 @@ def replace_delivery_address(tender_data):
     for item in tender_data['data']['items']:
         cdb_locality = item['deliveryAddress']['locality']
         if cdb_locality in list_of_keys:
-            item['deliveryAddress']['locality'] = delivery_address_replace[cdb_locality]['locality']
             item['deliveryAddress']['region'] = delivery_address_replace[cdb_locality]['region']
+            item['deliveryAddress']['locality'] = delivery_address_replace[cdb_locality]['locality']
 
     return tender_data
