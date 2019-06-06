@@ -72,10 +72,6 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	[Arguments]   ${username}  ${tender_data}
 	[Documentation]   Створити тендер з початковими даними tender_data. Повернути uaid створеного тендера.
 	${tender_data}  Get From Dictionary  ${tender_data}  data
-	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
-	webclient.header натиснути на елемент за назвою  Очистити
-	webclient.header натиснути на елемент за назвою  OK
-	webclient.header натиснути на елемент за назвою  Додати
 	run keyword  Заповнити поля для ${mode}  ${tender_data}
 	webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
@@ -94,6 +90,10 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 Заповнити поля для belowThreshold		#Допорог
 	[Arguments]  ${tender_data}
+	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати
 	# ОСНОВНІ ПОЛЯ
 	${enquiryPeriod.startDate}  set variable  ${tender_data['enquiryPeriod']['startDate']}
 	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
@@ -130,6 +130,48 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  Заповнити умови оплати  ${milestone}
 	\  ${count_milestone}  evaluate  ${count_milestone} + 1
 
+
+Заповнити поля для reporting  #Договір
+	[Arguments]  ${tender_data}
+	webclient.робочий стіл натиснути на елемент за назвою  Звіт про укладений договір(тестові)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати
+	# ОСНОВНІ ПОЛЯ
+	${enquiryPeriod.startDate}  set variable  ${tender_data['enquiryPeriod']['startDate']}
+	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
+	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
+	${value.amount}  set variable  ${tender_data['value']['amount']}
+	${value.valueAddedTaxIncluded}  set variable  ${tender_data['value']['valueAddedTaxIncluded']}
+	${minimalStep.amount}  set variable  ${tender_data['minimalStep']['amount']}
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+	:FOR  ${field}  in
+	...  enquiryPeriod.startDate
+	...  tenderPeriod.startDate
+	...  tenderPeriod.endDate
+	...  value.amount
+	...  value.valueAddedTaxIncluded
+	...  minimalStep.amount
+	...  title
+	...  description
+	...  mainProcurementCategory
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+	# ЛОТИ
+	${count_item}  set variable  1
+	:FOR  ${item}  IN  @{tender_data['items']}
+	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
+	\  Заповнити поля лоту  ${item}
+	\  ${count_item}  evaluate  ${count_item} + 1
+
+	# УМОВИ ОПЛАТИ
+	${count_milestone}  set variable  1
+	:FOR  ${milestone}  IN  @{tender_data['milestones']}
+	\  run keyword if  '${count_milestone}' == '1'  webclient.активувати вкладку  Умови оплати
+	\  Заповнити умови оплати  ${milestone}
+	\  ${count_milestone}  evaluate  ${count_milestone} + 1
 
 
 Заповнити поля лоту
@@ -782,7 +824,7 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name із запитання з question_id в описі для тендера tender_uaid.
     #на той стороне решили не ждать, можно зарепортить
-    run keyword if  "${TESTNAME}" == "Відображення заголовку анонімного запитання на тендер без відповіді"  Дочекатись синхронізації
+    run keyword if  "${TEST_NAME}" == "Відображення заголовку анонімного запитання на тендер без відповіді"  Дочекатись синхронізації
     перейти до сторінки детальної інформаціїї
     smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
 	${question_block}  set variable  //*[contains(text(),"${question_id}")]/ancestor::div[@class="ivu-card-body"][1]
@@ -1131,13 +1173,15 @@ get_item_deliveryAddress_value
 Підтвердити підписання контракту
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
     [Documentation]  Перевести договір під номером contract_num до тендера tender_uaid в статус active.
-    log to console  Підтвердити підписання контракту
     debug
 #	${id}  evaluate  str(uuid.uuid4())  uuid
 #	заповнити поле для угоди id  ${id}
 #	${date}  get current date  result_format=%d.%m.%Y
 #	заповнити поле для угоди date  ${date}
 #	header натиснути на елемент за назвою  OK
+#	додати документ
+#	підписати договір
+#	двинути по стадії
 
 
 Перевести тендер на статус очікування обробки мостом
@@ -1421,7 +1465,6 @@ get_item_deliveryAddress_value
 ########################################################################################################
 Авторизуватися
 	[Arguments]  ${username}
-	log to console  Авторизуватися
 	${login}  set variable  ${USERS.users['${username}']['login']}
 	${password}  set variable  ${USERS.users['${username}']['password']}
 	сторінка_стартова натиснути вхід
