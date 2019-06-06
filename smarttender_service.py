@@ -99,7 +99,8 @@ def convert_unit_code(value):
         u'Флакон': u'VI',
         u'Набір(товару)': u'SET',
         u'набір': u'SET',
-        u'лот': u'LO'
+        u'лот': u'LO',
+        u'кг': u'KGM'
     }
     if value in units_map:
         result = units_map[value]
@@ -113,7 +114,8 @@ def convert_unit_name(value):
         u'Штука': u'штуки',
         u'Упаковка': u'упаковка',
         u'Флакон': u'Флакон',
-        u'Набір(товару)': u'набір'
+        u'Набір(товару)': u'набір',
+        u'кг': u'кілограми'
     }
     if value in units_map:
         result = units_map[value]
