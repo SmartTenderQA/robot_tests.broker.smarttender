@@ -319,7 +319,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  deliveryDate.endDate
 
 	run keyword if  '${additionalClassifications_status}' == 'PASS'  append to list  ${field_list}  additionalClassifications.scheme  additionalClassifications.description
-	run keyword if  '${description_en_status}' == 'PASS'  append to list  ${field_list}  description_en
+	run keyword if  '${description_en_status}' == 'PASS' and '${mode}' == 'openeu'  append to list  ${field_list}  description_en
 
 	:FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}
