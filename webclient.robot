@@ -379,6 +379,7 @@ header натиснути на елемент за назвою
 заповнити поле з датою
 	[Arguments]  ${locator}  ${date}
 	wait until keyword succeeds  5x  1s  заповнити поле з датою continue  ${locator}  ${date}
+	#Capture Page Screenshot
 
 
 заповнити поле з датою continue
@@ -386,6 +387,7 @@ header натиснути на елемент за назвою
 #  	${get}  get element attribute  ${locator}@value
 #	run keyword if  '${get}' != ''  Очистити поле дати  ${locator}
 #	input text  ${locator}  ${date.replace('.','').replace(' ','')}
+	clear input by JS  ${locator}
 	input text  ${locator}  ${date}
 	sleep  .5
 	press key  //body  \\13
