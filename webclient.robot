@@ -129,24 +129,6 @@ header натиснути на елемент за назвою
 
 заповнити поле для item unit.name
 	[Arguments]  ${unit.name}
-	${unit.name}  set variable if
-	...  '${unit.name}' == 'кілограми'  кг
-	...  '${unit.name}' == 'літр'  л
-	...  '${unit.name}' == 'пачок'  пач.
-	...  '${unit.name}' == 'метри'  м
-	...  '${unit.name}' == 'послуга'  умов.
-	...  '${unit.name}' == 'метри кубічні'  м3
-	...  '${unit.name}' == 'ящик'  ящ
-	...  '${unit.name}' == 'тони'  т
-	...  '${unit.name}' == 'кілометри'  км
-	...  '${unit.name}' == 'місяць'  міс
-	...  '${unit.name}' == 'пачка'  пач
-	...  '${unit.name}' == 'пачка'  пач
-	...  '${unit.name}' == 'упаковка'  упаков
-	...  '${unit.name}' == 'гектар'  га
-	...  '${unit.name}' == 'кілограми'  кг
-	...  '${unit.name}' == 'Флакон'  флак
-	...  ${unit.name}
 	${locator}  set variable  //*[@data-name="EDI"]//input
 	заповнити autocomplete field  ${locator}  ${unit.name}
 
@@ -367,13 +349,25 @@ header натиснути на елемент за назвою
 
 заповнити поле з датою continue
   	[Arguments]  ${locator}  ${date}
+#  	${get}  get element attribute  ${locator}@value
+#	run keyword if  '${get}' != ''  Очистити поле дати  ${locator}
+#	input text  ${locator}  ${date.replace('.','').replace(' ','')}
 	input text  ${locator}  ${date}
 	sleep  .5
-#	click screen header
 	press key  //body  \\13
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
 	should be equal  "${get}"  "${date}"
+
+
+Очистити поле дати
+  	[Arguments]  	${locator}
+	click element  ${locator}
+	loading дочекатися відображення елемента на сторінці  ${locator}/../..//img
+	click element  ${locator}/../..//img
+	${clear_date_button}  set variable  xpath=(//*[contains(@class, "Calendar") and text()="Очистити"])[last()]
+	loading дочекатися відображення елемента на сторінці  ${clear_date_button}
+	click element  ${clear_date_button}
 
 
 click screen header
@@ -506,7 +500,7 @@ screen заголовок повинен містити
 	${location}  get location
 	${grid_search_field}  set variable  xpath=((//*[@data-type="GridView"])[1]//td//input)[4]
 	run keyword if  '/webclient/' not in '${location}'  run keywords
-	...  go to  http://test.smarttender.biz/webclient/?proj=it_uk&tz=3  AND
+	...  go to  http://test.smarttender.biz/webclient/?testmode=1&proj=it_uk&tz=3  AND
 	...  loading дочекатись закінчення загрузки сторінки  AND
 	...  webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)  AND
 	...  webclient.header натиснути на елемент за назвою  Очистити  AND
