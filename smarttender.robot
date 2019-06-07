@@ -287,18 +287,18 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  Заповнити умови оплати  ${milestone}
 	\  ${count_milestone}  evaluate  ${count_milestone} + 1
 
+    webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
 
-	${status}  ${ret}  run keyword and ignore error
-	...  dialog box заголовок повинен містити  Перші п'ять символів (17.23) коду додаткової класифікації повинні збігатися з кодом додаткової класи...
-	run keyword if  '${status}' == 'PASS'
+    ${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
 	...  dialog box натиснути кнопку  Так
 
 	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
-
-	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
-	dialog box натиснути кнопку  Ні
+    webclient.screen заголовок повинен містити  Завантаження документації
+    click element   ${screen_root_selector}//*[@alt="Close"]
 
 
 Заповнити поля лоту
