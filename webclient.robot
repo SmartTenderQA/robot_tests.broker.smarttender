@@ -478,7 +478,7 @@ dialog box заголовок повинен містити
 	press key  ${locator}  \\13
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
-	${get}  evaluate  '${get}'.replace('\n', '|')
+	${get}  set variable  ${get.replace('\n', '')}
 	run keyword if  ${check}  should be equal  "${get}"  "${input_text}"
 
 
