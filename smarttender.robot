@@ -72,27 +72,8 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	[Arguments]   ${username}  ${tender_data}
 	[Documentation]   Створити тендер з початковими даними tender_data. Повернути uaid створеного тендера.
 	${tender_data}  Get From Dictionary  ${tender_data}  data
-	${is_multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${True}
-	run keyword if  ${is_multilot}
-	...  run keyword  Заповнити поля для ${mode} multilot  ${tender_data}
-	...  ELSE
-	...  run keyword  Заповнити поля для ${mode}           ${tender_data}
-	webclient.додати тендерну документацію
-	webclient.header натиснути на елемент за назвою  Додати
-	${status}  ${ret}  run keyword and ignore error
-	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
-	...  dialog box натиснути кнопку  Так
-	dialog box заголовок повинен містити  Оголосити закупівлю?
-	dialog box натиснути кнопку  Так
-	webclient.screen заголовок повинен містити  Завантаження документації
-	click element   ${screen_root_selector}//*[@alt="Close"]
-	loading дочекатись закінчення загрузки сторінки
-    run keyword if  "${mode}" == "openeu"
-        ...  run keywords
-	        ...  wait until element is visible  //*[@id="IMMessageBox_PW-1" and contains(.,"Накласти ЕЦП на тендер?")]  AND
-	        ...  click element  //*[@id="IMMessageBox_PW-1"]//*[text()="Ні"]                                            AND
-	        ...  loading дочекатись закінчення загрузки сторінки
+	${multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${SPACE}multilot  ${EMPTY}
+	run keyword  Оголосити закупівлю ${mode}${multilot}  ${tender_data}
 	${tender_uaid}  webclient.отримати номер тендера
 	[Return]  ${tender_uaid}
 	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"  run keywords
@@ -100,7 +81,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  fatal error  Тендер на створено!!!
 
 
-Заповнити поля для belowThreshold		#Допорог
+Оголосити закупівлю belowThreshold		#Допорог
 	[Arguments]  ${tender_data}
 	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
 	webclient.header натиснути на елемент за назвою  Очистити
@@ -142,8 +123,20 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  Заповнити умови оплати  ${milestone}
 	\  ${count_milestone}  evaluate  ${count_milestone} + 1
 
+	webclient.додати тендерну документацію
+	webclient.header натиснути на елемент за назвою  Додати
+	${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+	webclient.screen заголовок повинен містити  Завантаження документації
+	click element   ${screen_root_selector}//*[@alt="Close"]
+	loading дочекатись закінчення загрузки сторінки
 
-Заповнити поля для openeu		#Відкриті торги з публікацією англійською мовою
+
+Оголосити закупівлю openeu		#Відкриті торги з публікацією англійською мовою
 	[Arguments]  ${tender_data}
 	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
 	webclient.header натиснути на елемент за назвою  Очистити
@@ -188,33 +181,37 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  Заповнити умови оплати  ${milestone}
 	\  ${count_milestone}  evaluate  ${count_milestone} + 1
 
+	webclient.додати тендерну документацію
+	webclient.header натиснути на елемент за назвою  Додати
+	${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+	webclient.screen заголовок повинен містити  Завантаження документації
+	click element   ${screen_root_selector}//*[@alt="Close"]
+	loading дочекатись закінчення загрузки сторінки
+	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box натиснути кнопку  Ні
 
-Заповнити поля для reporting  #Договір
+
+Оголосити закупівлю reporting  #Договір
 	[Arguments]  ${tender_data}
 	webclient.робочий стіл натиснути на елемент за назвою  Звіт про укладений договір(тестові)
 	webclient.header натиснути на елемент за назвою  Очистити
 	webclient.header натиснути на елемент за назвою  OK
 	webclient.header натиснути на елемент за назвою  Додати
 	# ОСНОВНІ ПОЛЯ
-	${enquiryPeriod.startDate}  set variable  ${tender_data['enquiryPeriod']['startDate']}
-	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
-	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
 	${value.amount}  set variable  ${tender_data['value']['amount']}
 	${value.valueAddedTaxIncluded}  set variable  ${tender_data['value']['valueAddedTaxIncluded']}
-	${minimalStep.amount}  set variable  ${tender_data['minimalStep']['amount']}
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
-	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
 	:FOR  ${field}  in
-	...  enquiryPeriod.startDate
-	...  tenderPeriod.startDate
-	...  tenderPeriod.endDate
 	...  value.amount
 	...  value.valueAddedTaxIncluded
-	...  minimalStep.amount
 	...  title
 	...  description
-	...  mainProcurementCategory
 	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
 
 	# ПРЕДМЕТИ
@@ -232,8 +229,23 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  Заповнити умови оплати  ${milestone}
 	\  ${count_milestone}  evaluate  ${count_milestone} + 1
 
+	webclient.додати тендерну документацію
+	webclient.header натиснути на елемент за назвою  Додати
 
-Заповнити поля для belowThreshold multilot		#Допорог мультилот
+	${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
+
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+
+	webclient.screen заголовок повинен містити  Завантаження документації
+	click element   ${screen_root_selector}//*[@alt="Close"]
+	loading дочекатись закінчення загрузки сторінки
+
+
+Оголосити закупівлю belowThreshold multilot		#Допорог мультилот
 	[Arguments]  ${tender_data}
 	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
 	webclient.header натиснути на елемент за назвою  Очистити
@@ -274,6 +286,19 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  webclient.активувати вкладку  Умови оплати
 	\  Заповнити умови оплати  ${milestone}
 	\  ${count_milestone}  evaluate  ${count_milestone} + 1
+
+	webclient.header натиснути на елемент за назвою  Додати
+
+	${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  Перші п'ять символів (17.23) коду додаткової класифікації повинні збігатися з кодом додаткової класи...
+	run keyword if  '${status}' == 'PASS'
+	...  dialog box натиснути кнопку  Так
+
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+
+	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box натиснути кнопку  Ні
 
 
 Заповнити поля лоту
@@ -1221,11 +1246,14 @@ get_item_deliveryAddress_value
     [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до тендера tender_uaid.
 	знайти тендер у webclient  ${tender_uaid}
 	webclient.header натиснути на елемент за назвою  Змінити
+	run keyword if  '${mode}' == 'reporting'  webclient.header натиснути на елемент за назвою  Коригувати
 	webclient.активувати вкладку  Документи
 	webclient.натиснути додати документ
 	loading дочекатись закінчення загрузки сторінки
 	webclient.загрузити документ  ${filepath}
 	webclient.header натиснути на елемент за назвою  Зберегти
+	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box натиснути кнопку  Hi
 	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword and ignore error  dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
@@ -1438,14 +1466,33 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
     [Documentation]  Перевести договір під номером contract_num до тендера tender_uaid в статус active.
     debug
-#	${id}  evaluate  str(uuid.uuid4())  uuid
-#	заповнити поле для угоди id  ${id}
-#	${date}  get current date  result_format=%d.%m.%Y
-#	заповнити поле для угоди date  ${date}
-#	header натиснути на елемент за назвою  OK
-#	додати документ
-#	підписати договір
-#	двинути по стадії
+	${id}  evaluate  str(uuid.uuid4())  uuid
+	заповнити поле для угоди id  ${id}
+	${date}  get current date  result_format=%d.%m.%Y
+	заповнити поле для угоди date  ${date}
+
+	click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]
+	loading дочекатись закінчення загрузки сторінки
+	${list_of_file_args}  create_fake_doc
+	${file_path}  set variable  ${list_of_file_args[0]}
+	загрузити документ  ${file_path}
+
+	header натиснути на елемент за назвою  OK
+	webclient.screen заголовок повинен містити  Завантаження документації
+	click element   ${screen_root_selector}//*[@alt="Close"]
+	loading дочекатись закінчення загрузки сторінки
+
+	header натиснути на елемент за назвою  Підписати договір
+	dialog box заголовок повинен містити  Ви дійсно хочете підписати договір?
+	dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Накласти ЕЦП на договір?
+	dialog box натиснути кнопку  Ні
+	dialog box заголовок повинен містити  На рішення не накладено актуальний підпис ЕЦП.
+	dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Договір підписанний
+	dialog box натиснути кнопку  Так
+	click element  //*[@id="cpIMMessageBox" and contains(., "Договір підписаний")]//*[text()="ОК"]
+	loading дочекатись закінчення загрузки сторінки
 
 
 Перевести тендер на статус очікування обробки мостом
@@ -1479,8 +1526,59 @@ get_item_deliveryAddress_value
 Створити постачальника, додати документацію і підтвердити його
     [Arguments]  ${username}  ${tender_uaid}  ${supplier_data}  ${document}
     [Documentation]  Додати постачальника supplier_data для тендера tender_uaid, додати до нього документ, який знаходиться по шляху document та перевести в статус active.
-	log to console  Створити постачальника, додати документацію і підтвердити його
-	debug
+	header натиснути на елемент за назвою  Додати учасника
+
+	${identifier.id}  set variable  ${supplier_data['data']['suppliers'][0]['identifier']['id']}
+	${identifier.legalName}  set variable  ${supplier_data['data']['suppliers'][0]['identifier']['legalName']}
+
+	${scale}  set variable  ${supplier_data['data']['suppliers'][0]['scale']}
+
+	${contactPoint.name}  set variable  ${supplier_data['data']['suppliers'][0]['contactPoint']['name']}
+	${contactPoint.telephone}  set variable  ${supplier_data['data']['suppliers'][0]['contactPoint']['telephone']}
+	${contactPoint.email}  set variable  ${supplier_data['data']['suppliers'][0]['contactPoint']['email']}
+	${${contactPoint.url}}  set variable  ${supplier_data['data']['suppliers'][0]['contactPoint']['url']}
+	${address.postalCode}  set variable  ${supplier_data['data']['suppliers'][0]['address']['postalCode']}
+	${address.streetAddress}  set variable  ${supplier_data['data']['suppliers'][0]['address']['streetAddress']}
+	${address.locality}  set variable  ${supplier_data['data']['suppliers'][0]['address']['locality']}
+	${value.amount}  set variable  ${supplier_data['data']['value']['amount']}
+	${value.valueAddedTaxIncluded}  set variable  ${supplier_data['data']['value']['valueAddedTaxIncluded']}
+
+	&{scale_dict}  create dictionary
+	...  micro=Суб'єкт мікропідприємництва
+	...  sme=Суб'єкт малого підприємництва
+	...  large=Суб'єкт великого підприємництва
+	...  mid=Суб'єкт середнього підприємництва
+
+	заповнити simple input  //*[@data-name="OKPO"]//input  ${identifier.id}
+	заповнити simple input  //*[@data-name="NORG_DOC"]//input  ${identifier.legalName}
+
+	заповнити autocomplete field  //*[@data-name="IDSCALE"]//input  ${scale_dict['${scale}']}
+
+	заповнити simple input  //*[@data-name="CONTACTPERSON"]//input  ${contactPoint.name}
+	заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}
+	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}  check=${False}
+	заповнити simple input  //*[@data-name="URL"]//input  ${contactPoint.url}
+	заповнити simple input  //*[@data-name="PIND"]//input  ${address.postalCode}
+	заповнити simple input  //*[@data-name="APOTR"]//input  ${address.streetAddress}
+	заповнити autocomplete field  //*[@data-name="CITY_KOD"]//input  ${address.locality}  check=${False}
+
+	заповнити simple input  //*[@data-name="AMOUNT"]//input  ${value.amount}  check=${False}
+	операція над чекбоксом  ${value.valueAddedTaxIncluded}  //*[@data-name="WITHVAT"]//input
+
+	webclient.header натиснути на елемент за назвою  OK
+	dialog box заголовок повинен містити  Увага!
+	dialog box натиснути кнопку  Так
+
+	click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]
+	loading дочекатись закінчення загрузки сторінки
+	загрузити документ  ${document}
+
+	заповнити simple input  //*[@data-name="decision"]//textarea  Кваліфікація. Визнати учасника переможцем
+	webclient.header натиснути на елемент за назвою  Визнати учасника переможцем
+	dialog box заголовок повинен містити  Увага!
+	dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Накласти ЕЦП на рішення по пропозиції?
+	dialog box натиснути кнопку  Ні
 
 
 Створити план
@@ -1788,6 +1886,7 @@ get_item_deliveryAddress_value
 	ввести логін  ${login}
 	ввести пароль  ${password}
 	натиснути Увійти
+	run keyword and ignore error  click element   ${screen_root_selector}//*[@alt="Close"]
 
 
 сторінка_стартова натиснути вхід
@@ -1815,6 +1914,7 @@ get_item_deliveryAddress_value
 	loading дочекатися відображення елемента на сторінці  ${login_btn}
 	click element  ${login_btn}
 	loading дочекатися зникнення елемента зі сторінки  ${login_btn}  timeout=120
+
 
 Open button
 	[Documentation]   відкривае лінку з локатора у поточному вікні
