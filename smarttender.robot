@@ -72,7 +72,11 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	[Arguments]   ${username}  ${tender_data}
 	[Documentation]   Створити тендер з початковими даними tender_data. Повернути uaid створеного тендера.
 	${tender_data}  Get From Dictionary  ${tender_data}  data
-	run keyword  Заповнити поля для ${mode}  ${tender_data}
+	${is_multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${True}
+	run keyword if  ${is_multilot}
+	...  run keyword  Заповнити поля для ${mode} multilot  ${tender_data}
+	...  ELSE
+	...  run keyword  Заповнити поля для ${mode}           ${tender_data}
 	webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
 	${status}  ${ret}  run keyword and ignore error
@@ -210,22 +214,82 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  mainProcurementCategory
 	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
 
-	# ЛОТИ
-	${count_item}  set variable  1
+	# ПРЕДМЕТИ
+	${count_item}  set variable  1   #todo для чего устанавлиаем 1 ?
 	:FOR  ${item}  IN  @{tender_data['items']}
 	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
-	\  Заповнити поля лоту  ${item}
+	\  Заповнити поля предмету ${item}
 	\  ${count_item}  evaluate  ${count_item} + 1
 
 	# УМОВИ ОПЛАТИ
-	${count_milestone}  set variable  1
+	return from keyword if  ${NUMBER_OF_MILESTONES} == 0
+
 	:FOR  ${milestone}  IN  @{tender_data['milestones']}
-	\  run keyword if  '${count_milestone}' == '1'  webclient.активувати вкладку  Умови оплати
+	\  webclient.активувати вкладку  Умови оплати
+	\  Заповнити умови оплати  ${milestone}
+	\  ${count_milestone}  evaluate  ${count_milestone} + 1
+
+
+Заповнити поля для belowThreshold multilot		#Допорог мультилот
+	[Arguments]  ${tender_data}
+	webclient.робочий стіл натиснути на елемент за назвою  Звіт про укладений договір(тестові)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати
+	webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+	# ОСНОВНІ ПОЛЯ
+	${enquiryPeriod.startDate}  set variable  ${tender_data['enquiryPeriod']['startDate']}
+	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
+	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
+	#${value.amount}  set variable  ${tender_data['value']['amount']}
+	#${value.valueAddedTaxIncluded}  set variable  ${tender_data['value']['valueAddedTaxIncluded']}
+	#${minimalStep.amount}  set variable  ${tender_data['minimalStep']['amount']}
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+	:FOR  ${field}  in
+	...  enquiryPeriod.startDate
+	...  tenderPeriod.startDate
+	...  tenderPeriod.endDate
+	...  title
+	...  description
+	...  mainProcurementCategory
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+    # ЛОТИ
+	:FOR  ${lot}  IN  @{tender_data['lots']}
+	\  Заповнити поля лоту  ${lot}
+
+	# ПРЕДМЕТИ
+	:FOR  ${item}  IN  @{tender_data['items']}
+	\  webclient.додати item бланк
+	\  Заповнити поля предмету  ${item}
+
+	# УМОВИ ОПЛАТИ
+	return from keyword if  '${NUMBER_OF_MILESTONES}' == '0'
+	:FOR  ${milestone}  IN  @{tender_data['milestones']}
+	\  webclient.активувати вкладку  Умови оплати
 	\  Заповнити умови оплати  ${milestone}
 	\  ${count_milestone}  evaluate  ${count_milestone} + 1
 
 
 Заповнити поля лоту
+    [Arguments]  ${lot}
+    ${title}  set variable  ${lot['title']}
+	${description}  set variable  ${lot['description']}
+    ${value.amount}  set variable  ${lot['value']['amount']}
+	${value.valueAddedTaxIncluded}  set variable  ${lot['value']['valueAddedTaxIncluded']}
+	${minimalStep.amount}  set variable  ${lot['minimalStep']['amount']}
+    :FOR  ${field}  in
+	...  title
+	...  description
+	...  value.amount
+	...  value.valueAddedTaxIncluded
+	...  minimalStep.amount
+	\  run keyword  webclient.заповнити поле для lot ${field}  ${${field}}
+
+
+Заповнити поля предмету
   	[Arguments]  ${item}
 	${description}  set variable  ${item['description']}
 	${description_en_status}  ${description_en}  run keyword and ignore error  set variable  ${item['description_en']}
@@ -1106,8 +1170,20 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}
     [Documentation]  Відповісти на вимогу complaintID про виправлення умов закупівлі для тендера tender_uaid, використовуючи при цьому дані answer_data.  
 	log to console  Відповісти на вимогу про виправлення умов закупівлі
-	debug
-	
+	webclient.знайти тендер у webclient  ${tender_uaid}
+	webclient.активувати вкладку   Звернення за умовами тендеру
+	${complaintID_search_field}  set variable  xpath=((//*[@data-type="GridView"])[2]//td//input)[1]
+    input text  ${complaintID_search_field}  ${complaintID}
+	press key  ${complaintID_search_field}  \\13
+	loading дочекатись закінчення загрузки сторінки
+	webclient.header натиснути на елемент за назвою  Змінити
+	${answer_data}  set variable  ${answer_data['data']}
+	webclient.вимоги_внести текст рішення на вимогу   ${answer_data['resolution']}
+    webclient.вимоги_вказати тип рішення вимоги  ${answer_data['resolutionType']}
+    webclient.header натиснути на елемент за назвою  Зберегти
+    dialog box заголовок повинен містити  Надіслати відповідь
+	dialog box натиснути кнопку  Так
+
 	
 Підтвердити вирішення вимоги про виправлення умов закупівлі
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${confirmation_data}

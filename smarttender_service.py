@@ -191,6 +191,20 @@ def convert_contract_status(value):
     return result
 
 
+def conver_resolutionType(value):
+    map = {
+        u'resolved': u'Задоволено',
+        u'invalid': u'Відхилено',
+        u'declined': u'Не задоволено',
+    }
+    if value in map:
+        result = map[value]
+    else:
+        result = value
+    return result
+
+
+
 def convert_status(value):
     map = {
         u'Період уточнень': u'active.enquiries',

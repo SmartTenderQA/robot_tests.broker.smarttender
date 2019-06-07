@@ -107,6 +107,40 @@ header натиснути на елемент за назвою
 
 
 ##################################################
+######################LOTS#######################
+##################################################
+заповнити поле для lot title
+	[Arguments]  ${title}
+	${locator}  set variable  //*[@data-name="LOT_TITLE"]//input
+	заповнити simple input  ${locator}  ${title}
+
+
+заповнити поле для lot description
+	[Arguments]  ${description}
+	${locator}  set variable  //*[@data-name="LOT_DESCRIPTION"]//textarea
+	заповнити simple input  ${locator}  ${description}
+
+
+заповнити поле для lot value.amount
+	[Arguments]  ${amount}
+	${locator}  set variable  //*[@data-name="LOT_INITAMOUNT"]//input
+	заповнити simple input  ${locator}  ${amount}  check=${False}
+
+
+
+заповнити поле для lot minimalStep.amount
+	[Arguments]  ${minimalStep}
+	${locator}  set variable  //*[@data-name="LOT_MINSTEP"]//input
+	заповнити simple input  ${locator}  ${minimalStep}  check=${False}
+
+
+заповнити поле для lot value.valueAddedTaxIncluded
+	[Arguments]  ${bool}
+	${locator}  set variable  //*[@data-name="WITHVAT"]//input
+	операція над чекбоксом  ${bool}  ${locator}
+
+
+##################################################
 ######################ITEMS#######################
 ##################################################
 заповнити поле для item description
@@ -539,3 +573,25 @@ grid вибрати рядок за номером
     Wait Until Keyword Succeeds  5  .5  Click Element  xpath=${grid_selector}${row_sitfp}\[${row_number}]
     loading дочекатись закінчення загрузки сторінки
     loading дочекатися відображення елемента на сторінці  xpath=${grid_selector}${row_sitfp}\[${row_number}]\[contains(@class,"selected")]
+
+
+вимоги_внести текст рішення на вимогу
+    [Arguments]  ${text}
+    ${resolution input}  Set Variable  //*[@data-name="RESOLUTION"]//textarea
+    Sleep  0.5
+    Input Text  ${resolution input}  ${text}
+    Sleep  0.5
+
+
+вимоги_вказати тип рішення вимоги
+    [Arguments]  ${solution}
+    ${solution}  conver_resolutionType  ${solution}
+    ${input}  Set Variable  //*[@data-name="RESOLUTYPE"]//input[@class]
+    ${solution locator}  set variable  //td[contains(@class,"ListBoxItem")][.="${solution}"]
+    loading дочекатися відображення елемента на сторінці  ${input}
+    Click Element  ${input}
+    loading дочекатися відображення елемента на сторінці  ${solution locator}  10
+    Click Element  ${solution locator}
+    loading дочекатися зникнення елемента зі сторінки  ${solution locator}
+    ${get}  Get Element Attribute  ${input}@value
+    Should Be Equal  ${get}  ${solution}  Не вибрано тип рішення
