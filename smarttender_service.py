@@ -191,6 +191,20 @@ def convert_contract_status(value):
     return result
 
 
+def convert_award_status(value):
+    map = {
+        u'Переможець': u'active',
+        u'Рішення скасовано': u'cancelled',
+        u'Оцінка': u'pending',
+        u'Дискваліфікований': u'cancelled'
+    }
+    if value in map:
+        result = map[value]
+    else:
+        result = value
+    return result
+
+
 def convert_status(value):
     map = {
         u'Період уточнень': u'active.enquiries',
