@@ -10,21 +10,6 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 
 
 *** Keywords ***
-робочий стіл натиснути на елемент за назвою
-	[Arguments]  ${element_name}
-	click element  //*[text()="${element_name}"]
-	loading дочекатись закінчення загрузки сторінки
-
-
-header натиснути на елемент за назвою
-	[Arguments]  ${button_name}
-	${root}  check for open screen
-	${btn locator}  set variable  ${root}//*[contains(@title, "${button_name}")]
-	Wait Until Element Is Visible  ${btn locator}
-	Click Element  ${btn locator}
-	loading дочекатись закінчення загрузки сторінки
-
-
 заповнити поле enquiryPeriod.startDate
 	[Arguments]  ${date}
 	${date_input}  set variable  //*[@data-name="DDM"]//input
@@ -230,150 +215,6 @@ header натиснути на елемент за назвою
 
 
 
-
-вибрати значення з випадаючого списку в гріді
-	[Arguments]  ${locator}  ${text}
-	wait until keyword succeeds  10x  1s  run keywords
-	...  click element  ${locator}  AND
-	...  sleep  .5  AND
-	...  click element  ${locator}  AND
-#	...  loading дочекатися відображення елемента на сторінці  ${milestone_dropdown_list}  timeout=1s  AND
-	...  click element  ${milestone_dropdown_list}//*[text()="${text}"]  AND
-	...  loading дочекатись закінчення загрузки сторінки
-
-
-ввести значення в поле в гріді
-	[Arguments]  ${locator}  ${text}
-	wait until keyword succeeds  10x  1s  run keywords
-	...  click element  ${locator}  AND
-	...  click element  ${locator}  AND
-#	...  loading дочекатися відображення елемента на сторінці  ${locator}//input  timeout=1s  AND
-	...  input text  ${locator}//input  ${text}  AND
-	...  press key  //body  \\09  AND
-	...  loading дочекатись закінчення загрузки сторінки
-
-
-заповнити фіксований випадаючий список
-    [Arguments]  ${locator}  ${text}
-	wait until keyword succeeds  5x  1s  заповнити фіксований випадаючий список continue  ${locator}  ${text}
-
-
-заповнити фіксований випадаючий список continue
-	[Arguments]  ${locator}  ${text}
-	click element  ${locator}//td[3]
-	input text  ${locator}//td[2]//input  ${text}
-	click screen header
-	loading дочекатись закінчення загрузки сторінки
-	${get}  get element attribute  ${locator}//td[2]//input@value
-	should be equal  "${get}"  "${text}"
-
-
-заповнити simple input
-	[Arguments]  ${locator}  ${input_text}  ${check}=${True}
-	wait until keyword succeeds  5x  1s  заповнити simple input continue  ${locator}  ${input_text}  ${check}
-
-
-заповнити simple input continue
-    [Arguments]  ${locator}  ${input_text}  ${check}
-	${input_text}  evaluate  u"""${input_text}"""
-	input text  ${locator}  ${input_text}
-#	click screen header
-	press key  //body  \\13
-	loading дочекатись закінчення загрузки сторінки
-	${get}  get element attribute  ${locator}@value
-	run keyword if  ${check}  should be equal  "${get}"  "${input_text}"
-
-
-заповнити autocomplete field
-	[Arguments]  ${locator}  ${input_text}  ${check}=${True}
-	wait until keyword succeeds  5x  1s  заповнити autocomplete field continue  ${locator}  ${input_text}  ${check}
-
-
-заповнити autocomplete field continue
-	[Arguments]  ${locator}  ${input_text}  ${check}
-	${dropdown_list}  set variable  //*[@class="ade-list-back" and contains(@style, "left")]
-	${item_in_dropdown_list}  set variable  //*[@class="dhxcombo_option dhxcombo_option_selected"]
-	${input_text}  evaluate  u"""${input_text}"""
-	input text  ${locator}  ${input_text}
-	press key  //body  \\13
-	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=1
-	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}
-	loading дочекатись закінчення загрузки сторінки
-	${get}  get element attribute  ${locator}@value
-	run keyword if  ${check}  should be equal  "${get}"  "${input_text}"
-
-
-операція над чекбоксом
-	[Arguments]  ${bool}  ${locator}
-	${class}  get element attribute  ${locator}/../..@class
-	run keyword if  'Unchecked' in '${class}' and ${bool} or 'checked' in '${class}' and '${bool}' == '${False}'
-	...  click element  ${locator}/../..
-
-
-заповнити поле з датою
-	[Arguments]  ${locator}  ${date}
-	wait until keyword succeeds  5x  1s  заповнити поле з датою continue  ${locator}  ${date}
-
-
-заповнити поле з датою continue
-  	[Arguments]  ${locator}  ${date}
-#  	${get}  get element attribute  ${locator}@value
-#	run keyword if  '${get}' != ''  Очистити поле дати  ${locator}
-#	input text  ${locator}  ${date.replace('.','').replace(' ','')}
-	input text  ${locator}  ${date}
-	sleep  .5
-	press key  //body  \\13
-	loading дочекатись закінчення загрузки сторінки
-	${get}  get element attribute  ${locator}@value
-	should be equal  "${get}"  "${date}"
-
-
-Очистити поле дати
-  	[Arguments]  	${locator}
-	click element  ${locator}
-	loading дочекатися відображення елемента на сторінці  ${locator}/../..//img
-	click element  ${locator}/../..//img
-	${clear_date_button}  set variable  xpath=(//*[contains(@class, "Calendar") and text()="Очистити"])[last()]
-	loading дочекатися відображення елемента на сторінці  ${clear_date_button}
-	click element  ${clear_date_button}
-
-
-click screen header
-	click element  //*[@id="pcModalMode_PWH-1"]
-
-
-додати item бланк
-	[Arguments]  ${index}=1
-	${locator}  set variable  xpath=(${active_tab_in_screen}//*[@data-type="GridView"]//*[@class="dxr-group mygroup"]//*[@title="Додати"])[${index}]
-	click element  ${locator}
-	loading дочекатись закінчення загрузки сторінки
-
-
-активувати вкладку
-	[Arguments]  ${tab_name}
-	[Documentation]  Активирует вкладку по содержащую _tab_name_ в имени.
-#	http://joxi.ru/1A5Bjd9cn9WO6r
-#	там два элемента для каждой вкладки
-#	они перекрывают друг друга в зависимости от того вкладка активна или нет, соответственно один из элементов всегда не кликабельный
-#	итого у нас 3 варианта:
-#		- вкладка не активна, не зависимо активный вид или нет
-#		- вкладка активна в неактивном виде: нужно кликать по активной части
-#		- вкладка уже активна в активном виде: ничего не делаем
-	${tab}  webclient.get tab selector by name  ${tab_name}
-	${view_status}  webclient.get view status  ${tab}
-	${tab_status}  webclient.get tab status  ${tab}
-	Run Keyword If
-	...  "${tab_status}" == "none"  											run keywords
-	...  		click element  ${tab}											AND
-	...  		loading дочекатись закінчення загрузки сторінки  						ELSE IF
-	...  "${tab_status}" == "active" and "${view_status}" == "none"  			run keywords
-	...  		click element  ${tab}/following-sibling::*						AND
-	...  		loading дочекатись закінчення загрузки сторінки
-#	wait until keyword succeeds  10  .5  run keywords
-#	...  element attribute should contains value  ${tab}  style  display:		AND
-#	...  element attribute should contains value  ${tab}  style  none
-
-
 element attribute should contains value
 	[Arguments]  ${element}  ${attr}  ${value}
 	${class_value}  get element attribute  ${element}@${attr}
@@ -409,22 +250,6 @@ check for open screen
 	[Return]  ${screen}
 
 
-dialog box натиснути кнопку
-	[Arguments]  ${text}
-	${locator}  set variable  //*[@class='message-box']//*[text()="${text}"]
-	loading дочекатися відображення елемента на сторінці  ${locator}
-	click element  ${locator}
-	loading дочекатись закінчення загрузки сторінки
-	loading дочекатися зникнення елемента зі сторінки  ${locator}
-
-
-dialog box заголовок повинен містити
-	[Arguments]  ${text}
-	${locator}  set variable  //*[@id="IMMessageBox_PWH-1"]//*[@class="dxpc-headerContent"]
-	${title}  get text  ${locator}
-	should contain  ${title}  ${text}
-
-
 натиснути додати документ
 	${locator}  set variable  //*[@data-name="BTADDATTACHMENT"]
 	click element  ${locator}
@@ -434,14 +259,6 @@ dialog box заголовок повинен містити
 	${locator}  set variable  xpath=(//*[contains(@class, "rowselected")]/td/a)[1]
 	${UAID}  get text  ${locator}
 	[Return]  ${UAID}
-
-
-screen заголовок повинен містити
-	[Arguments]  ${text}
-	${selector}  set variable  ${screen_root_selector}//*[@id="pcModalMode_PWH-1T" or @id="pcCustomDialog_PWH-1T"]
-	loading дочекатися відображення елемента на сторінці  ${selector}
-	${title}  get text  ${selector}
-	should contain  ${title}  ${text}
 
 
 додати тендерну документацію
@@ -500,6 +317,26 @@ check for active tab
 	[Return]  (${screen}${tab}${grid})\[${grid_number}]
 
 
+############################################################################################
+############################################################################################
+#####################################KEYWORDS###############################################
+############################################################################################
+############################################################################################
+робочий стіл натиснути на елемент за назвою
+	[Arguments]  ${element_name}
+	click element  //*[text()="${element_name}"]
+	loading дочекатись закінчення загрузки сторінки
+
+
+header натиснути на елемент за назвою
+	[Arguments]  ${button_name}
+	${root}  check for open screen
+	${btn locator}  set variable  ${root}//*[contains(@title, "${button_name}")]
+	Wait Until Element Is Visible  ${btn locator}
+	Click Element  ${btn locator}
+	loading дочекатись закінчення загрузки сторінки
+
+
 grid вибрати рядок за номером
     [Arguments]  ${row_number}  ${grid_number}=1
     ${grid_selector}  отримати локатор для гріда  ${grid_number}
@@ -507,3 +344,145 @@ grid вибрати рядок за номером
     Wait Until Keyword Succeeds  5  .5  Click Element  xpath=${grid_selector}${row_sitfp}\[${row_number}]
     loading дочекатись закінчення загрузки сторінки
     loading дочекатися відображення елемента на сторінці  xpath=${grid_selector}${row_sitfp}\[${row_number}]\[contains(@class,"selected")]
+
+
+screen заголовок повинен містити
+	[Arguments]  ${text}
+	${selector}  set variable  ${screen_root_selector}//*[@id="pcModalMode_PWH-1T" or @id="pcCustomDialog_PWH-1T"]
+	loading дочекатися відображення елемента на сторінці  ${selector}
+	${title}  get text  ${selector}
+	should contain  ${title}  ${text}
+
+
+dialog box натиснути кнопку
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@class='message-box']//*[text()="${text}"]
+	loading дочекатися відображення елемента на сторінці  ${locator}
+	click element  ${locator}
+	loading дочекатись закінчення загрузки сторінки
+
+
+dialog box заголовок повинен містити
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@id="IMMessageBox_PWH-1"]//*[@class="dxpc-headerContent"]
+	${title}  get text  ${locator}
+	should contain  ${title}  ${text}
+
+
+вибрати значення з випадаючого списку в гріді
+	[Arguments]  ${locator}  ${text}
+	wait until keyword succeeds  10x  1s  run keywords
+	...  click element  ${locator}  AND
+	...  sleep  .5  AND
+	...  click element  ${locator}  AND
+#	...  loading дочекатися відображення елемента на сторінці  ${milestone_dropdown_list}  timeout=1s  AND
+	...  click element  ${milestone_dropdown_list}//*[text()="${text}"]  AND
+	...  loading дочекатись закінчення загрузки сторінки
+
+
+ввести значення в поле в гріді
+	[Arguments]  ${locator}  ${text}
+	wait until keyword succeeds  10x  1s  run keywords
+	...  click element  ${locator}  AND
+	...  click element  ${locator}  AND
+#	...  loading дочекатися відображення елемента на сторінці  ${locator}//input  timeout=1s  AND
+	...  input text  ${locator}//input  ${text}  AND
+	...  press key  //body  \\09  AND
+	...  loading дочекатись закінчення загрузки сторінки
+
+
+заповнити фіксований випадаючий список
+    [Arguments]  ${locator}  ${text}
+	wait until keyword succeeds  5x  1s  заповнити фіксований випадаючий список continue  ${locator}  ${text}
+
+
+заповнити фіксований випадаючий список continue
+	[Arguments]  ${locator}  ${text}
+	click element  ${locator}//td[3]
+	input text  ${locator}//td[2]//input  ${text}
+	click screen header
+	loading дочекатись закінчення загрузки сторінки
+	${get}  get element attribute  ${locator}//td[2]//input@value
+	should be equal  "${get}"  "${text}"
+
+
+заповнити simple input
+	[Arguments]  ${locator}  ${input_text}  ${check}=${True}
+	wait until keyword succeeds  5x  1s  заповнити simple input continue  ${locator}  ${input_text}  ${check}
+
+
+заповнити simple input continue
+    [Arguments]  ${locator}  ${input_text}  ${check}
+	${input_text}  evaluate  u"""${input_text}"""
+	input text  ${locator}  ${input_text}
+	press key  ${locator}  \\13
+	loading дочекатись закінчення загрузки сторінки
+	${get}  get element attribute  ${locator}@value
+	run keyword if  ${check}  should be equal  "${get}"  "${input_text}"
+
+
+заповнити autocomplete field
+	[Arguments]  ${locator}  ${input_text}  ${check}=${True}
+	wait until keyword succeeds  5x  1s  заповнити autocomplete field continue  ${locator}  ${input_text}  ${check}
+
+
+заповнити autocomplete field continue
+	[Arguments]  ${locator}  ${input_text}  ${check}
+	${dropdown_list}  set variable  //*[@class="ade-list-back" and contains(@style, "left")]
+	${item_in_dropdown_list}  set variable  //*[@class="dhxcombo_option dhxcombo_option_selected"]
+	${input_text}  evaluate  u"""${input_text}"""
+	input text  ${locator}  ${input_text}
+	press key  //body  \\13
+	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=1
+	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}
+	loading дочекатись закінчення загрузки сторінки
+	${get}  get element attribute  ${locator}@value
+	run keyword if  ${check}  should be equal  "${get}"  "${input_text}"
+
+
+операція над чекбоксом
+	[Arguments]  ${bool}  ${locator}
+	${class}  get element attribute  ${locator}/../..@class
+	run keyword if  'Unchecked' in '${class}' and ${bool} or 'checked' in '${class}' and '${bool}' == '${False}'
+	...  click element  ${locator}/../..
+
+
+заповнити поле з датою
+	[Arguments]  ${locator}  ${date}
+	wait until keyword succeeds  5x  1s  заповнити поле з датою continue  ${locator}  ${date}
+
+
+заповнити поле з датою continue
+  	[Arguments]  ${locator}  ${date}
+	input text  ${locator}  ${date}
+	sleep  .5
+	press key  //body  \\13
+	loading дочекатись закінчення загрузки сторінки
+	${get}  get element attribute  ${locator}@value
+	should be equal  "${get}"  "${date}"
+
+
+click screen header
+	click element  //*[@id="pcModalMode_PWH-1"]
+
+
+додати item бланк
+	[Arguments]  ${index}=1
+	${locator}  set variable  xpath=(${active_tab_in_screen}//*[@data-type="GridView"]//*[@class="dxr-group mygroup"]//*[@title="Додати"])[${index}]
+	click element  ${locator}
+	loading дочекатись закінчення загрузки сторінки
+
+
+активувати вкладку
+	[Arguments]  ${tab_name}
+	[Documentation]  Активирует вкладку по содержащую _tab_name_ в имени.
+	${tab}  webclient.get tab selector by name  ${tab_name}
+	${view_status}  webclient.get view status  ${tab}
+	${tab_status}  webclient.get tab status  ${tab}
+	Run Keyword If
+	...  "${tab_status}" == "none"  											run keywords
+	...  		click element  ${tab}											AND
+	...  		loading дочекатись закінчення загрузки сторінки  						ELSE IF
+	...  "${tab_status}" == "active" and "${view_status}" == "none"  			run keywords
+	...  		click element  ${tab}/following-sibling::*						AND
+	...  		loading дочекатись закінчення загрузки сторінки

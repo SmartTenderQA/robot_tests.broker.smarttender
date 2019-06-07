@@ -354,6 +354,10 @@ def replace_delivery_address(tender_data):
             "region": u"Київська обл.",
             "locality": u"Яготин"
         },
+        u'Ворзель': {
+            "region": u"Київська обл.",
+            "locality": u"Ворзель"
+        },
         u'Олешки': {
             "region": u"Харківська обл.",
             "locality": u"Олешки"
