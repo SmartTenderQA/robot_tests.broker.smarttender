@@ -78,7 +78,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	[Return]  ${tender_uaid}
 	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"  run keywords
 	...  capture page screenshot        AND
-	...  FAIL  Тендер на створено!!!
+	...  fatal error  Тендер на створено!!!
 
 
 Оголосити закупівлю belowThreshold		#Допорог
