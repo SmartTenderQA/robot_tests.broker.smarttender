@@ -256,9 +256,6 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${enquiryPeriod.startDate}  set variable  ${tender_data['enquiryPeriod']['startDate']}
 	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
 	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
-	#${value.amount}  set variable  ${tender_data['value']['amount']}
-	#${value.valueAddedTaxIncluded}  set variable  ${tender_data['value']['valueAddedTaxIncluded']}
-	#${minimalStep.amount}  set variable  ${tender_data['minimalStep']['amount']}
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
