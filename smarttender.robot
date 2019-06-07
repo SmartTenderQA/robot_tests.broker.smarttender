@@ -73,7 +73,6 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	[Documentation]   Створити тендер з початковими даними tender_data. Повернути uaid створеного тендера.
 	${tender_data}  Get From Dictionary  ${tender_data}  data
 	${multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${SPACE}multilot  ${EMPTY}
-    debug
 	run keyword  Оголосити закупівлю ${mode}${multilot}  ${tender_data}
 	${tender_uaid}  webclient.отримати номер тендера
 	[Return]  ${tender_uaid}
