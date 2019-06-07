@@ -57,12 +57,22 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 	заповнити simple input  ${locator}  ${text}
 
 
+заповнити поле title_en
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@data-name="TITLE_EN"]//input
+	заповнити simple input  ${locator}  ${text}
+
 
 заповнити поле description
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="DESCRIPT"]//textarea
 	заповнити simple input  ${locator}  ${text}
 
+
+заповнити поле description_en
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@data-name="DESCRIPT_EN"]//textarea
+	заповнити simple input  ${locator}  ${text}
 
 
 заповнити поле mainProcurementCategory
@@ -76,11 +86,51 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 
 
 ##################################################
+######################LOTS#######################
+##################################################
+заповнити поле для lot title
+	[Arguments]  ${title}
+	${locator}  set variable  //*[@data-name="LOT_TITLE"]//input
+	заповнити simple input  ${locator}  ${title}
+
+
+заповнити поле для lot description
+	[Arguments]  ${description}
+	${locator}  set variable  //*[@data-name="LOT_DESCRIPTION"]//textarea
+	заповнити simple input  ${locator}  ${description}
+
+
+заповнити поле для lot value.amount
+	[Arguments]  ${amount}
+	${locator}  set variable  //*[@data-name="LOT_INITAMOUNT"]//input
+	заповнити simple input  ${locator}  ${amount}  check=${False}
+
+
+
+заповнити поле для lot minimalStep.amount
+	[Arguments]  ${minimalStep}
+	${locator}  set variable  //*[@data-name="LOT_MINSTEP"]//input
+	заповнити simple input  ${locator}  ${minimalStep}  check=${False}
+
+
+заповнити поле для lot value.valueAddedTaxIncluded
+	[Arguments]  ${bool}
+	${locator}  set variable  //*[@data-name="WITHVAT"]//input
+	операція над чекбоксом  ${bool}  ${locator}
+
+
+##################################################
 ######################ITEMS#######################
 ##################################################
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
+	заповнити simple input  ${locator}  ${description}
+
+
+заповнити поле для item description_en
+	[Arguments]  ${description}
+	${locator}  set variable  //*[@data-name="RESOURSENAME_EN"]//input
 	заповнити simple input  ${locator}  ${description}
 
 
@@ -391,6 +441,16 @@ dialog box заголовок повинен містити
 	...  loading дочекатись закінчення загрузки сторінки
 
 
+вибрати значення з випадаючого списку
+	[Arguments]  ${locator}  ${text}
+	${dropdown_table_locator}  set variable  //*[contains(@class,"dxpcDropDown_DevEx") and contains(@style,"visibility: visible")]
+	wait until keyword succeeds  10x  1s  run keywords
+	...  click element  ${locator}  AND
+	...  wait until element is visible  ${dropdown_table_locator}  AND
+	...  click element  ${dropdown_table_locator}//*[text()="${text}"]  AND
+	...  loading дочекатись закінчення загрузки сторінки
+
+
 заповнити фіксований випадаючий список
     [Arguments]  ${locator}  ${text}
 	wait until keyword succeeds  5x  1s  заповнити фіксований випадаючий список continue  ${locator}  ${text}
@@ -450,10 +510,12 @@ dialog box заголовок повинен містити
 заповнити поле з датою
 	[Arguments]  ${locator}  ${date}
 	wait until keyword succeeds  5x  1s  заповнити поле з датою continue  ${locator}  ${date}
+	#Capture Page Screenshot
 
 
 заповнити поле з датою continue
   	[Arguments]  ${locator}  ${date}
+	clear input by JS  ${locator}
 	input text  ${locator}  ${date}
 	sleep  .5
 	press key  //body  \\13
