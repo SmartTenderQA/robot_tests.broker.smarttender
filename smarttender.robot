@@ -125,11 +125,11 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  mainProcurementCategory
 	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
 
-	# ЛОТИ
+	# ПРЕДМЕТИ
 	${count_item}  set variable  1
 	:FOR  ${item}  IN  @{tender_data['items']}
 	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
-	\  Заповнити поля лоту  ${item}
+	\  Заповнити поля предмету ${item}
 	\  ${count_item}  evaluate  ${count_item} + 1
 
 	# УМОВИ ОПЛАТИ
@@ -171,11 +171,11 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  mainProcurementCategory
 	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
 
-	# ЛОТИ
+	# ПРЕДМЕТИ
 	${count_item}  set variable  1
 	:FOR  ${item}  IN  @{tender_data['items']}
 	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
-	\  Заповнити поля лоту  ${item}
+	\  Заповнити поля предмету ${item}
 	\  ${count_item}  evaluate  ${count_item} + 1
 
 	# УМОВИ ОПЛАТИ
@@ -215,7 +215,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
 
 	# ПРЕДМЕТИ
-	${count_item}  set variable  1   #todo для чего устанавлиаем 1 ?
+	${count_item}  set variable  1
 	:FOR  ${item}  IN  @{tender_data['items']}
 	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
 	\  Заповнити поля предмету ${item}
@@ -232,7 +232,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 Заповнити поля для belowThreshold multilot		#Допорог мультилот
 	[Arguments]  ${tender_data}
-	webclient.робочий стіл натиснути на елемент за назвою  Звіт про укладений договір(тестові)
+	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
 	webclient.header натиснути на елемент за назвою  Очистити
 	webclient.header натиснути на елемент за назвою  OK
 	webclient.header натиснути на елемент за назвою  Додати
@@ -1827,6 +1827,14 @@ get text by JS
 	${text_is}  Execute JavaScript
 	...  return document.evaluate('${xpath}', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.textContent
 	[Return]  ${text_is}
+
+
+clear input by JS
+    [Arguments]    ${xpath}
+	${xpath}  Set Variable  ${xpath.replace("'", '"')}
+	${xpath}  Set Variable  ${xpath.replace('xpath=', '')}
+    Execute JavaScript
+    ...  document.evaluate('${xpath}', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.value=""
 
 
 #################################################
