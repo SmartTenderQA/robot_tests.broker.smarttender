@@ -205,6 +205,19 @@ def convert_award_status(value):
     return result
 
 
+def conver_resolutionType(value):
+    map = {
+        u'resolved': u'Задоволено',
+        u'invalid': u'Відхилено',
+        u'declined': u'Не задоволено'
+    }
+    if value in map:
+        result = map[value]
+    else:
+        result = value
+    return result
+
+
 def convert_status(value):
     map = {
         u'Період уточнень': u'active.enquiries',
@@ -369,6 +382,10 @@ def replace_delivery_address(tender_data):
         u'Яготин': {
             "region": u"Київська обл.",
             "locality": u"Яготин"
+        },
+        u'Ворзель': {
+            "region": u"Київська обл.",
+            "locality": u"Ворзель"
         },
         u'Олешки': {
             "region": u"Харківська обл.",
