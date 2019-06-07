@@ -474,6 +474,7 @@ dialog box заголовок повинен містити
 заповнити simple input continue
     [Arguments]  ${locator}  ${input_text}  ${check}
 	${input_text}  evaluate  u"""${input_text}"""
+	clear input by JS  ${locator}
 	input text  ${locator}  ${input_text}
 	press key  ${locator}  \\13
 	loading дочекатись закінчення загрузки сторінки

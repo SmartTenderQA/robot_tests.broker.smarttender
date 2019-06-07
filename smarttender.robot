@@ -73,6 +73,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	[Documentation]   Створити тендер з початковими даними tender_data. Повернути uaid створеного тендера.
 	${tender_data}  Get From Dictionary  ${tender_data}  data
 	${multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${SPACE}multilot  ${EMPTY}
+    debug
 	run keyword  Оголосити закупівлю ${mode}${multilot}  ${tender_data}
 	${tender_uaid}  webclient.отримати номер тендера
 	[Return]  ${tender_uaid}
@@ -222,9 +223,10 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  ${count_item}  evaluate  ${count_item} + 1
 
 	# УМОВИ ОПЛАТИ
-	return from keyword if  ${NUMBER_OF_MILESTONES} == 0
+	${milestones}  set variable if  '${NUMBER_OF_MILESTONES}' == '0'  ${None}  ${tender_data['milestones']}
 
-	:FOR  ${milestone}  IN  @{tender_data['milestones']}
+	:FOR  ${milestone}  IN  ${milestones}
+	\  exit for loop if  ${milestones} == ${None}
 	\  webclient.активувати вкладку  Умови оплати
 	\  Заповнити умови оплати  ${milestone}
 	\  ${count_milestone}  evaluate  ${count_milestone} + 1
@@ -278,8 +280,10 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  Заповнити поля предмету  ${item}
 
 	# УМОВИ ОПЛАТИ
-	return from keyword if  '${NUMBER_OF_MILESTONES}' == '0'
-	:FOR  ${milestone}  IN  @{tender_data['milestones']}
+	${milestones}  set variable if  '${NUMBER_OF_MILESTONES}' == '0'  ${None}  ${tender_data['milestones']}
+
+	:FOR  ${milestone}  IN  ${milestones}
+	\  exit for loop if  ${milestones} == ${None}
 	\  webclient.активувати вкладку  Умови оплати
 	\  Заповнити умови оплати  ${milestone}
 	\  ${count_milestone}  evaluate  ${count_milestone} + 1
