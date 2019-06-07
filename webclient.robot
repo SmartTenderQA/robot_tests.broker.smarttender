@@ -25,6 +25,12 @@ header натиснути на елемент за назвою
 	loading дочекатись закінчення загрузки сторінки
 
 
+вибрати тип процедури
+    [Arguments]  ${text}
+    ${tender_type_dropdown_locator}  set variable  //*[@data-name="KDM2"]
+	вибрати значення з випадаючого списку  ${tender_type_dropdown_locator}  ${text}
+
+
 заповнити поле enquiryPeriod.startDate
 	[Arguments]  ${date}
 	${date_input}  set variable  //*[@data-name="DDM"]//input
@@ -72,12 +78,22 @@ header натиснути на елемент за назвою
 	заповнити simple input  ${locator}  ${text}
 
 
+заповнити поле title_en
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@data-name="TITLE_EN"]//input
+	заповнити simple input  ${locator}  ${text}
+
 
 заповнити поле description
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="DESCRIPT"]//textarea
 	заповнити simple input  ${locator}  ${text}
 
+
+заповнити поле description_en
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@data-name="DESCRIPT_EN"]//textarea
+	заповнити simple input  ${locator}  ${text}
 
 
 заповнити поле mainProcurementCategory
@@ -96,6 +112,12 @@ header натиснути на елемент за назвою
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
+	заповнити simple input  ${locator}  ${description}
+
+
+заповнити поле для item description_en
+	[Arguments]  ${description}
+	${locator}  set variable  //*[@data-name="RESOURSENAME_EN"]//input
 	заповнити simple input  ${locator}  ${description}
 
 
@@ -268,6 +290,16 @@ header натиснути на елемент за назвою
 #	...  loading дочекатися відображення елемента на сторінці  ${locator}//input  timeout=1s  AND
 	...  input text  ${locator}//input  ${text}  AND
 	...  press key  //body  \\09  AND
+	...  loading дочекатись закінчення загрузки сторінки
+
+
+вибрати значення з випадаючого списку
+	[Arguments]  ${locator}  ${text}
+	${dropdown_table_locator}  set variable  //*[contains(@class,"dxpcDropDown_DevEx") and contains(@style,"visibility: visible")]
+	wait until keyword succeeds  10x  1s  run keywords
+	...  click element  ${locator}  AND
+	...  wait until element is visible  ${dropdown_table_locator}  AND
+	...  click element  ${dropdown_table_locator}//*[text()="${text}"]  AND
 	...  loading дочекатись закінчення загрузки сторінки
 
 

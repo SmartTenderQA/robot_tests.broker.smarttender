@@ -87,6 +87,11 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
 	loading дочекатись закінчення загрузки сторінки
+    run keyword if  "${mode}" == "openeu"
+        ...  run keywords
+	        ...  wait until element is visible  //*[@id="IMMessageBox_PW-1" and contains(.,"Накласти ЕЦП на тендер?")]  AND
+	        ...  click element  //*[@id="IMMessageBox_PW-1"]//*[text()="Ні"]                                            AND
+	        ...  loading дочекатись закінчення загрузки сторінки
 	${tender_uaid}  webclient.отримати номер тендера
 	[Return]  ${tender_uaid}
 
@@ -130,10 +135,53 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  ${count_milestone}  evaluate  ${count_milestone} + 1
 
 
+Заповнити поля для openeu		#Відкриті торги з публікацією англійською мовою
+	[Arguments]  ${tender_data}
+    вибрати тип процедури  Відкриті торги з публікацією англійською мовою
+	# ОСНОВНІ ПОЛЯ
+#	${enquiryPeriod.startDate}  set variable  ${tender_data['enquiryPeriod']['startDate']} этого поля нет в дата
+#	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']} у нас это не ввести
+	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
+	${value.amount}  set variable  ${tender_data['value']['amount']}
+	${value.valueAddedTaxIncluded}  set variable  ${tender_data['value']['valueAddedTaxIncluded']}
+	${minimalStep.amount}  set variable  ${tender_data['minimalStep']['amount']}
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${title_en}  set variable  ${tender_data['title_en']}
+	${description_en}  set variable  ${tender_data['description_en']}
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+	:FOR  ${field}  in
+	...  tenderPeriod.endDate
+	...  value.amount
+	...  value.valueAddedTaxIncluded
+	...  minimalStep.amount
+	...  title
+	...  description
+	...  title_en
+	...  description_en
+	...  mainProcurementCategory
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+	# ЛОТИ
+	${count_item}  set variable  1
+	:FOR  ${item}  IN  @{tender_data['items']}
+	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
+	\  Заповнити поля лоту  ${item}
+	\  ${count_item}  evaluate  ${count_item} + 1
+
+	# УМОВИ ОПЛАТИ
+	${count_milestone}  set variable  1
+	:FOR  ${milestone}  IN  @{tender_data['milestones']}
+	\  run keyword if  '${count_milestone}' == '1'  webclient.активувати вкладку  Умови оплати
+	\  Заповнити умови оплати  ${milestone}
+	\  ${count_milestone}  evaluate  ${count_milestone} + 1
+
+
 
 Заповнити поля лоту
   	[Arguments]  ${item}
 	${description}  set variable  ${item['description']}
+	${description_en_status}  ${description_en}  run keyword and ignore error  set variable  ${item['description_en']}
 	${quantity}  set variable  ${item['quantity']}
 	${unit.name}  set variable  ${item['unit']['name']}
 	${classification.id}  set variable  ${item['classification']['id']}
@@ -157,6 +205,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  deliveryDate.endDate
 
 	run keyword if  '${additionalClassifications_status}' == 'PASS'  append to list  ${field_list}  additionalClassifications.scheme  additionalClassifications.description
+	run keyword if  '${description_en_status}' == 'PASS'  append to list  ${field_list}  description_en
 
 	:FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}
