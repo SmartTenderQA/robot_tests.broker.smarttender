@@ -95,6 +95,9 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	        ...  loading дочекатись закінчення загрузки сторінки
 	${tender_uaid}  webclient.отримати номер тендера
 	[Return]  ${tender_uaid}
+	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"  run keywords
+	...  capture page screenshot        AND
+	...  fatal error  Тендер на створено!!!
 
 
 Заповнити поля для belowThreshold		#Допорог
