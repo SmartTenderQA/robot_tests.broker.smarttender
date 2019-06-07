@@ -475,6 +475,7 @@ dialog box заголовок повинен містити
     [Arguments]  ${locator}  ${input_text}  ${check}
 	${input_text}  evaluate  u"""${input_text}"""
 	clear input by JS  ${locator}
+	Clear Element Text  ${locator}
 	sleep  1
 	input text  ${locator}  ${input_text}
 	press key  ${locator}  \\13

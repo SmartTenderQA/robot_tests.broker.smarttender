@@ -117,11 +117,9 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  ${count_item}  evaluate  ${count_item} + 1
 
 	# УМОВИ ОПЛАТИ
-	${count_milestone}  set variable  1
-	:FOR  ${milestone}  IN  @{tender_data['milestones']}
-	\  run keyword if  '${count_milestone}' == '1'  webclient.активувати вкладку  Умови оплати
-	\  Заповнити умови оплати  ${milestone}
-	\  ${count_milestone}  evaluate  ${count_milestone} + 1
+	${milestones}  set variable if  '${NUMBER_OF_MILESTONES}' == '0'  ${EMPTY}  ${tender_data['milestones']}
+	${is_milestones}  should not be empty  ${milestones}
+	run keyword if  ${is_milestones}  smarttender.додати умови оплати  ${milestones}
 
 	webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
@@ -175,11 +173,9 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  ${count_item}  evaluate  ${count_item} + 1
 
 	# УМОВИ ОПЛАТИ
-	${count_milestone}  set variable  1
-	:FOR  ${milestone}  IN  @{tender_data['milestones']}
-	\  run keyword if  '${count_milestone}' == '1'  webclient.активувати вкладку  Умови оплати
-	\  Заповнити умови оплати  ${milestone}
-	\  ${count_milestone}  evaluate  ${count_milestone} + 1
+	${milestones}  set variable if  '${NUMBER_OF_MILESTONES}' == '0'  ${EMPTY}  ${tender_data['milestones']}
+	${is_milestones}  should not be empty  ${milestones}
+	run keyword if  ${is_milestones}  smarttender.додати умови оплати  ${milestones}
 
 	webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
@@ -222,13 +218,9 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  ${count_item}  evaluate  ${count_item} + 1
 
 	# УМОВИ ОПЛАТИ
-	${milestones}  set variable if  '${NUMBER_OF_MILESTONES}' == '0'  ${None}  ${tender_data['milestones']}
-
-	:FOR  ${milestone}  IN  ${milestones}
-	\  exit for loop if  ${milestones} == ${None}
-	\  webclient.активувати вкладку  Умови оплати
-	\  Заповнити умови оплати  ${milestone}
-	\  ${count_milestone}  evaluate  ${count_milestone} + 1
+	${milestones}  set variable if  '${NUMBER_OF_MILESTONES}' == '0'  ${EMPTY}  ${tender_data['milestones']}
+	${is_milestones}  should not be empty  ${milestones}
+	run keyword if  ${is_milestones}  smarttender.додати умови оплати  ${milestones}
 
 	webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
@@ -240,6 +232,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
+
 
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
@@ -279,13 +272,9 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  Заповнити поля предмету  ${item}
 
 	# УМОВИ ОПЛАТИ
-	${milestones}  set variable if  '${NUMBER_OF_MILESTONES}' == '0'  ${None}  ${tender_data['milestones']}
-
-	:FOR  ${milestone}  IN  ${milestones}
-	\  exit for loop if  ${milestones} == ${None}
-	\  webclient.активувати вкладку  Умови оплати
-	\  Заповнити умови оплати  ${milestone}
-	\  ${count_milestone}  evaluate  ${count_milestone} + 1
+	${milestones}  set variable if  '${NUMBER_OF_MILESTONES}' == '0'  ${EMPTY}  ${tender_data['milestones']}
+	${is_milestones}  should not be empty  ${milestones}
+	run keyword if  ${is_milestones}  smarttender.додати умови оплати  ${milestones}
 
     webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
@@ -297,7 +286,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
-    webclient.screen заголовок повинен містити  Завантаження документації
+    webclient.scre Створити планen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
 
 
@@ -348,6 +337,15 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 	:FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}
+
+
+додати умови оплати
+    [Arguments]  ${milestones}
+	${count_milestone}  set variable  1
+	:FOR  ${milestone}  IN  @{milestones}
+	\  run keyword if  '${count_milestone}' == '1'  webclient.активувати вкладку  Умови оплати
+	\  Заповнити умови оплати  ${milestone}
+	\  ${count_milestone}  evaluate  ${count_milestone} + 1
 
 
 Заповнити умови оплати
