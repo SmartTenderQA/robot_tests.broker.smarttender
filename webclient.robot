@@ -91,13 +91,13 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 заповнити поле для lot title
 	[Arguments]  ${title}
 	${locator}  set variable  //*[@data-name="LOT_TITLE"]//input
-	заповнити simple input  ${locator}  ${title}
+	заповнити simple input  ${locator}  ${title}  check=${False}
 
 
 заповнити поле для lot description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="LOT_DESCRIPTION"]//textarea
-	заповнити simple input  ${locator}  ${description}
+	заповнити simple input  ${locator}  ${description}  check=${False}
 
 
 заповнити поле для lot value.amount
@@ -125,7 +125,7 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
-	заповнити simple input  ${locator}  ${description}
+	заповнити simple input  ${locator}  ${description}  check=${False}
 
 
 заповнити поле для item description_en
@@ -475,7 +475,6 @@ dialog box заголовок повинен містити
     [Arguments]  ${locator}  ${input_text}  ${check}
 	${input_text}  evaluate  u"""${input_text}"""
 	clear input by JS  ${locator}
-	Clear Element Text  ${locator}
 	sleep  1
 	input text  ${locator}  ${input_text}
 	press key  ${locator}  \\13
