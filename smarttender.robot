@@ -1193,16 +1193,21 @@ get_item_deliveryAddress_value
     [Documentation]  Відповісти на вимогу complaintID про виправлення умов закупівлі для тендера tender_uaid, використовуючи при цьому дані answer_data.  
 	log to console  Відповісти на вимогу про виправлення умов закупівлі
 	webclient.знайти тендер у webclient  ${tender_uaid}
+	#  знаходимо потрібну вимогу
 	webclient.активувати вкладку   Звернення за умовами тендеру
 	${complaintID_search_field}  set variable  xpath=((//*[@data-type="GridView"])[2]//td//input)[1]
     input text  ${complaintID_search_field}  ${complaintID}
-	press key  ${complaintID_search_field}  \\13
+	press key   ${complaintID_search_field}  \\13
 	loading дочекатись закінчення загрузки сторінки
+	#  вносимо відповідь на вимогу
 	webclient.header натиснути на елемент за назвою  Змінити
-	${answer_data}  set variable  ${answer_data['data']}
-	debug
-	webclient.вимоги_внести текст рішення на вимогу   ${answer_data['resolution']}
-    webclient.вимоги_вказати тип рішення вимоги  ${answer_data['resolutionType']}
+	${answer_data}             set variable  ${answer_data['data']}
+	${resolutionType}          conver_resolutionType  ${answer_data['resolutionType']}
+	${resolution locator}      set variable  //*[@data-name="RESOLUTION"]//textarea
+	${resolutionType locator}  set variable  //*[@data-name="RESOLUTYPE"]//input[@class]
+	webclient.заповнити simple input                 ${resolution locator}      ${answer_data['resolution']}
+	webclient.вибрати значення з випадаючого списку  ${resolutionType locator}  ${resolutionType}
+	#  зберігаємо та відправляємо вимогу
     webclient.header натиснути на елемент за назвою  Зберегти
     dialog box заголовок повинен містити  Надіслати відповідь
 	dialog box натиснути кнопку  Так
