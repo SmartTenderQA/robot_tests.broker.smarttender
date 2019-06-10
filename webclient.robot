@@ -494,6 +494,7 @@ dialog box заголовок повинен містити
 	${dropdown_list}  set variable  //*[@class="ade-list-back" and contains(@style, "left")]
 	${item_in_dropdown_list}  set variable  //*[@class="dhxcombo_option dhxcombo_option_selected"]
 	${input_text}  evaluate  u"""${input_text}"""
+	clear input by JS  ${locator}
 	input text  ${locator}  ${input_text}
 	press key  //body  \\13
 	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=1
