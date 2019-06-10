@@ -117,9 +117,8 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  ${count_item}  evaluate  ${count_item} + 1
 
 	# УМОВИ ОПЛАТИ
-	${milestones}  set variable if  '${NUMBER_OF_MILESTONES}' == '0'  ${EMPTY}  ${tender_data['milestones']}
-	${is_milestones}  should not be empty  ${milestones}
-	run keyword if  ${is_milestones}  smarttender.додати умови оплати  ${milestones}
+	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
+	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
 
 	webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
@@ -127,6 +126,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
 	...  dialog box натиснути кнопку  Так
+
 	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
@@ -173,9 +173,8 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  ${count_item}  evaluate  ${count_item} + 1
 
 	# УМОВИ ОПЛАТИ
-	${milestones}  set variable if  '${NUMBER_OF_MILESTONES}' == '0'  ${EMPTY}  ${tender_data['milestones']}
-	${is_milestones}  should not be empty  ${milestones}
-	run keyword if  ${is_milestones}  smarttender.додати умови оплати  ${milestones}
+	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
+	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
 
 	webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
@@ -218,9 +217,8 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  ${count_item}  evaluate  ${count_item} + 1
 
 	# УМОВИ ОПЛАТИ
-	${milestones}  set variable if  '${NUMBER_OF_MILESTONES}' == '0'  ${EMPTY}  ${tender_data['milestones']}
-	${is_milestones}  should not be empty  ${milestones}
-	run keyword if  ${is_milestones}  smarttender.додати умови оплати  ${milestones}
+	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
+	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
 
 	webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
@@ -272,9 +270,8 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  Заповнити поля предмету  ${item}
 
 	# УМОВИ ОПЛАТИ
-	${milestones}  set variable if  '${NUMBER_OF_MILESTONES}' == '0'  ${EMPTY}  ${tender_data['milestones']}
-	${is_milestones}  should not be empty  ${milestones}
-	run keyword if  ${is_milestones}  smarttender.додати умови оплати  ${milestones}
+	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
+	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
 
     webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
@@ -286,7 +283,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
-    webclient.scre Створити планen заголовок повинен містити  Завантаження документації
+    webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
 
 
