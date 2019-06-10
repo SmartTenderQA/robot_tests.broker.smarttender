@@ -399,7 +399,7 @@ grid вибрати рядок за номером
 screen заголовок повинен містити
 	[Arguments]  ${text}
 	${selector}  set variable  ${screen_root_selector}//*[@id="pcModalMode_PWH-1T" or @id="pcCustomDialog_PWH-1T"]
-	loading дочекатися відображення елемента на сторінці  ${selector}
+	loading дочекатися відображення елемента на сторінці  ${selector}  15
 	${title}  get text  ${selector}
 	should contain  ${title}  ${text}
 
