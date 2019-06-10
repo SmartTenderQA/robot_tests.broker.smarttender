@@ -10,7 +10,7 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 
 
 *** Keywords ***
-заповнити поле enquiryPeriod.startDate
+заповнити поле enquiryPeriod.endDate
 	[Arguments]  ${date}
 	${date_input}  set variable  //*[@data-name="DDM"]//input
 	${formated_date}  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S.%f+03:00

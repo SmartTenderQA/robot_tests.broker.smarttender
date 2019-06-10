@@ -88,7 +88,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	webclient.header натиснути на елемент за назвою  OK
 	webclient.header натиснути на елемент за назвою  Додати
 	# ОСНОВНІ ПОЛЯ
-	${enquiryPeriod.startDate}  set variable  ${tender_data['enquiryPeriod']['startDate']}
+	${enquiryPeriod.endDate}  set variable  ${tender_data['enquiryPeriod']['endDate']}
 	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
 	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
 	${value.amount}  set variable  ${tender_data['value']['amount']}
@@ -98,7 +98,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${description}  set variable  ${tender_data['description']}
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
 	:FOR  ${field}  in
-	...  enquiryPeriod.startDate
+	...  enquiryPeriod.endDate
 	...  tenderPeriod.startDate
 	...  tenderPeriod.endDate
 	...  value.amount
@@ -142,8 +142,6 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	webclient.header натиснути на елемент за назвою  Додати
     вибрати тип процедури  Відкриті торги з публікацією англійською мовою
 	# ОСНОВНІ ПОЛЯ
-#	${enquiryPeriod.startDate}  set variable  ${tender_data['enquiryPeriod']['startDate']} этого поля нет в дата
-#	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']} у нас это не ввести
 	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
 	${value.amount}  set variable  ${tender_data['value']['amount']}
 	${value.valueAddedTaxIncluded}  set variable  ${tender_data['value']['valueAddedTaxIncluded']}
@@ -239,20 +237,21 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 Оголосити закупівлю belowThreshold multilot		#Допорог мультилот
 	[Arguments]  ${tender_data}
+	log  голосити закупівлю belowThreshold multilot  WARN
 	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
 	webclient.header натиснути на елемент за назвою  Очистити
 	webclient.header натиснути на елемент за назвою  OK
 	webclient.header натиснути на елемент за назвою  Додати
 	webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
 	# ОСНОВНІ ПОЛЯ
-	${enquiryPeriod.startDate}  set variable  ${tender_data['enquiryPeriod']['startDate']}
+	${enquiryPeriod.endDate}  set variable  ${tender_data['enquiryPeriod']['endDate']}
 	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
 	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
 	:FOR  ${field}  in
-	...  enquiryPeriod.startDate
+	...  enquiryPeriod.endDate
 	...  tenderPeriod.startDate
 	...  tenderPeriod.endDate
 	...  title
@@ -1201,6 +1200,7 @@ get_item_deliveryAddress_value
 	loading дочекатись закінчення загрузки сторінки
 	webclient.header натиснути на елемент за назвою  Змінити
 	${answer_data}  set variable  ${answer_data['data']}
+	debug
 	webclient.вимоги_внести текст рішення на вимогу   ${answer_data['resolution']}
     webclient.вимоги_вказати тип рішення вимоги  ${answer_data['resolutionType']}
     webclient.header натиснути на елемент за назвою  Зберегти
@@ -1246,8 +1246,10 @@ get_item_deliveryAddress_value
 	webclient.натиснути додати документ
 	loading дочекатись закінчення загрузки сторінки
 	webclient.загрузити документ  ${filepath}
-	webclient.header натиснути на елемент за назвою  Зберегти
-	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	log to console  Завантажити документ
+	run keyword if  'below' not in '${mode}'  run keywords
+	...  webclient.header натиснути на елемент за назвою  Зберегти      AND
+	...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
 	dialog box натиснути кнопку  Hi
 	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword and ignore error  dialog box натиснути кнопку  Так
