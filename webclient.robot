@@ -97,7 +97,7 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 заповнити поле для lot description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="LOT_DESCRIPTION"]//textarea
-	заповнити simple input  ${locator}  ${description}  check=${False}
+	заповнити simple input  ${locator}  ${description}  #check=${False}
 
 
 заповнити поле для lot value.amount
@@ -125,7 +125,7 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
-	заповнити simple input  ${locator}  ${description}  check=${False}
+	заповнити simple input  ${locator}  ${description}  #check=${False}
 
 
 заповнити поле для item description_en
