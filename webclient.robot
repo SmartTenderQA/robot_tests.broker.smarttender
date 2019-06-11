@@ -97,7 +97,7 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 заповнити поле для lot description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="LOT_DESCRIPTION"]//textarea
-	заповнити simple input  ${locator}  ${description}  #check=${False}
+	заповнити simple input  ${locator}  ${description}  check=${False}
 
 
 заповнити поле для lot value.amount
@@ -125,7 +125,7 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
-	заповнити simple input  ${locator}  ${description}  #check=${False}
+	заповнити simple input  ${locator}  ${description}  check=${False}
 
 
 заповнити поле для item description_en
@@ -181,7 +181,7 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 заповнити поле для item deliveryAddress.locality
 	[Arguments]  ${deliveryAddress.locality}
 	${locator}  set variable  //*[@data-name="CITY_KOD"]//input
-	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  #check=${False}
+	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${False}
 
 
 заповнити поле для item deliveryDate.startDate
@@ -306,9 +306,24 @@ check for open screen
 
 
 отримати номер тендера
+    [Arguments]  ${title}
 	${locator}  set variable  xpath=(//*[contains(@class, "rowselected")]/td/a)[1]
+	webclient.пошук тендера по title  ${title}
 	${UAID}  get text  ${locator}
 	[Return]  ${UAID}
+
+
+пошук тендера по title
+	[Arguments]  ${title}
+	${find tender field}  Set Variable  xpath=((//tr[@class=' has-system-column'])[1]/td[count(//div[contains(text(), 'Узагальнена назва закупівлі')]/ancestor::td[@draggable]/preceding-sibling::*)+1]//input)[1]
+	loading дочекатися відображення елемента на сторінці  ${find tender field}
+	Click Element  ${find tender field}
+	Clear Element Text  ${find tender field}
+	Sleep  .5
+	Input Text  ${find tender field}  ${title}
+	Press Key  ${find tender field}  \\13
+	loading дочекатись закінчення загрузки сторінки
+
 
 
 додати тендерну документацію
@@ -473,15 +488,15 @@ dialog box заголовок повинен містити
 
 заповнити simple input continue
     [Arguments]  ${locator}  ${input_text}  ${check}
-	${input_text}  evaluate  u"""${input_text}"""
+	${text}  evaluate  u"""${input_text}"""
 	clear input by JS  ${locator}
 	sleep  1
-	press key  ${locator}  ${input_text}
+	input text  ${locator}  ${text}
 	press key  ${locator}  \\13
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
 	${get}  set variable  ${get.replace('\n', '')}
-	run keyword if  ${check}  should be equal  "${get}"  "${input_text}"
+	run keyword if  ${check}  should be equal  "${get}"  "${text}"
 
 
 заповнити autocomplete field
@@ -493,15 +508,15 @@ dialog box заголовок повинен містити
 	[Arguments]  ${locator}  ${input_text}  ${check}
 	${dropdown_list}  set variable  //*[@class="ade-list-back" and contains(@style, "left")]
 	${item_in_dropdown_list}  set variable  //*[@class="dhxcombo_option dhxcombo_option_selected"]
-	${input_text}  evaluate  u"""${input_text}"""
+	${text}  evaluate  u"""${input_text}"""
 	clear input by JS  ${locator}
-	press key  ${locator}  ${input_text}
+	input text  ${locator}  ${text}
 	press key  //body  \\13
 	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=1
 	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
-	run keyword if  ${check}  should contain  "${get}"  "${input_text}"
+	run keyword if  ${check}  should contain  "${get}"  "${text}"
 
 
 операція над чекбоксом

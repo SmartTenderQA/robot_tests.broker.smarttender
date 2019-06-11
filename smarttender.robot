@@ -74,7 +74,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${tender_data}  Get From Dictionary  ${tender_data}  data
 	${multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${SPACE}multilot  ${EMPTY}
 	run keyword  Оголосити закупівлю ${mode}${multilot}  ${tender_data}
-	${tender_uaid}  webclient.отримати номер тендера
+	${tender_uaid}  webclient.отримати номер тендера  ${tender_data['title']}
 	[Return]  ${tender_uaid}
 	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"  run keywords
 	...  capture page screenshot        AND
@@ -1251,11 +1251,10 @@ get_item_deliveryAddress_value
 	webclient.натиснути додати документ
 	loading дочекатись закінчення загрузки сторінки
 	webclient.загрузити документ  ${filepath}
-	log to console  Завантажити документ
+	webclient.header натиснути на елемент за назвою  Зберегти
 	run keyword if  'below' not in '${mode}'  run keywords
-	...  webclient.header натиснути на елемент за назвою  Зберегти      AND
-	...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
-	dialog box натиснути кнопку  Hi
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+	...  dialog box натиснути кнопку  Hi
 	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword and ignore error  dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
