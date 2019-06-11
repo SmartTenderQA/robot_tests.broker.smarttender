@@ -229,10 +229,12 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
 
-
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
 	loading дочекатись закінчення загрузки сторінки
+
+	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box натиснути кнопку  Ні
 
 
 Оголосити закупівлю belowThreshold multilot		#Допорог мультилот
@@ -1095,7 +1097,8 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name із запитання з question_id в описі для тендера tender_uaid.
     #на той стороне решили не ждать, можно зарепортить
-    run keyword if  "${TEST_NAME}" == "Відображення заголовку анонімного запитання на тендер без відповіді"  Дочекатись синхронізації
+    run keyword if  "${TEST_NAME}" == "Відображення заголовку анонімного запитання на тендер без відповіді"
+    ...  Wait Until Keyword Succeeds  10m  5s  smarttender.Дочекатись синхронізації
     перейти до сторінки детальної інформаціїї
     smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
 	${question_block}  set variable  //*[contains(text(),"${question_id}")]/ancestor::div[@class="ivu-card-body"][1]
@@ -1254,7 +1257,7 @@ get_item_deliveryAddress_value
 	webclient.header натиснути на елемент за назвою  Зберегти
 	run keyword if  'below' not in '${mode}'  run keywords
     ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
-	...  dialog box натиснути кнопку  Hi
+	...  dialog box натиснути кнопку  Ні
 	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword and ignore error  dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
