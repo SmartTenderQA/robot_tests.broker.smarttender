@@ -91,13 +91,13 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 заповнити поле для lot title
 	[Arguments]  ${title}
 	${locator}  set variable  //*[@data-name="LOT_TITLE"]//input
-	заповнити simple input  ${locator}  ${title}  check=${False}
+	заповнити flex input  ${locator}  ${title}  check=${False}
 
 
 заповнити поле для lot description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="LOT_DESCRIPTION"]//textarea
-	заповнити flex input  ${locator}  ${description}  #check=${False}
+	заповнити simple input  ${locator}  ${description}  #check=${False}
 
 
 заповнити поле для lot value.amount
@@ -181,7 +181,7 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 заповнити поле для item deliveryAddress.locality
 	[Arguments]  ${deliveryAddress.locality}
 	${locator}  set variable  //*[@data-name="CITY_KOD"]//input
-	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${False}
+	заповнити flex autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${False}
 
 
 заповнити поле для item deliveryDate.startDate
@@ -311,6 +311,11 @@ check for open screen
 	webclient.пошук тендера по title  ${title}
 	${UAID}  get text  ${locator}
 	[Return]  ${UAID}
+
+
+вибрати тип процедури
+    [Arguments]  ${value}
+    wait until keyword succeeds  3x  1s  webclient.вибрати значення з випадаючого списку  //*[@data-name="KDM2"]  ${value}
 
 
 пошук тендера по title
@@ -516,13 +521,6 @@ dialog box заголовок повинен містити
 	${get}  set variable  ${get.replace('\n', '')}
 	run keyword if  ${check}  should be equal  "${get}"  "${text}"
 
-Input Type Flex
-  [Arguments]    ${locator}    ${text}
-  [Documentation]    write text letter by letter
-  ${items}    Get Length    ${text}
-  : FOR    ${item}    IN RANGE    ${items}
-  \    Press Key    ${locator}    ${text[${item}]}
-
 
 заповнити autocomplete field
 	[Arguments]  ${locator}  ${input_text}  ${check}=${True}
@@ -536,6 +534,26 @@ Input Type Flex
 	${text}  evaluate  u"""${input_text}"""
 	clear input by JS  ${locator}
 	input text  ${locator}  ${text}
+	press key  //body  \\13
+	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=3
+	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}
+	loading дочекатись закінчення загрузки сторінки
+	${get}  get element attribute  ${locator}@value
+	run keyword if  ${check}  should contain  "${get}"  "${text}"
+
+
+заповнити flex autocomplete field
+	[Arguments]  ${locator}  ${input_text}  ${check}=${True}
+	wait until keyword succeeds  5x  1s  заповнити autocomplete field continue  ${locator}  ${input_text}  ${check}
+
+
+заповнити flex autocomplete field continue
+	[Arguments]  ${locator}  ${input_text}  ${check}
+	${dropdown_list}  set variable  //*[@class="ade-list-back" and contains(@style, "left")]
+	${item_in_dropdown_list}  set variable  //*[@class="dhxcombo_option dhxcombo_option_selected"]
+	${text}  evaluate  u"""${input_text}"""
+	clear input by JS  ${locator}
+	Input Type Flex  ${locator}  ${text}
 	press key  //body  \\13
 	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=3
 	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}

@@ -140,7 +140,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	webclient.header натиснути на елемент за назвою  Очистити
 	webclient.header натиснути на елемент за назвою  OK
 	webclient.header натиснути на елемент за назвою  Додати
-    вибрати тип процедури  Відкриті торги з публікацією англійською мовою
+    webclient.вибрати тип процедури  Відкриті торги з публікацією англійською мовою
 	# ОСНОВНІ ПОЛЯ
 	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
 	${value.amount}  set variable  ${tender_data['value']['amount']}
@@ -186,6 +186,62 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	click element   ${screen_root_selector}//*[@alt="Close"]
 	loading дочекатись закінчення загрузки сторінки
 	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box натиснути кнопку  Ні
+
+
+Оголосити закупівлю openua multilot
+	[Arguments]  ${tender_data}
+	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати
+    webclient.вибрати тип процедури  Відкриті торги
+    webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+    # ОСНОВНІ ПОЛЯ
+	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+	:FOR  ${field}  in
+	...  tenderPeriod.endDate
+	...  title
+	...  description
+	...  mainProcurementCategory
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+    # ЛОТИ
+	:FOR  ${lot}  IN  @{tender_data['lots']}
+	\  Заповнити поля лоту  ${lot}
+
+	# ПРЕДМЕТИ
+	:FOR  ${item}  IN  @{tender_data['items']}
+	\  webclient.додати item бланк
+	\  Заповнити поля предмету  ${item}
+
+	# УМОВИ ОПЛАТИ
+	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
+	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
+
+    webclient.додати тендерну документацію
+	webclient.header натиснути на елемент за назвою  Додати
+
+    ${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
+
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+
+	${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  Увага! Бюджет перевищує
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
+
+    webclient.screen заголовок повинен містити  Завантаження документації
+    click element   ${screen_root_selector}//*[@alt="Close"]
+
+    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
 	dialog box натиснути кнопку  Ні
 
 
@@ -2008,6 +2064,14 @@ clear input by JS
 	${xpath}  Set Variable  ${xpath.replace('xpath=', '')}
     Execute JavaScript
     ...  document.evaluate('${xpath}', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.value=""
+
+
+Input Type Flex
+  [Arguments]    ${locator}    ${text}
+  [Documentation]    write text letter by letter
+  ${items}    Get Length    ${text}
+  : FOR    ${item}    IN RANGE    ${items}
+  \    Press Key    ${locator}    ${text[${item}]}
 
 
 #################################################
