@@ -934,8 +934,7 @@ get_item_deliveryAddress_value
 	
 Отримати інформацію із лоту
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${field_name}
-    [Documentation]  Отримати значення поля field_name з лоту з lot_id в описі для тендера tender_uaid.   
-	log to console  Отримати інформацію із лоту
+    [Documentation]  Отримати значення поля field_name з лоту з lot_id в описі для тендера tender_uaid.
     ${field_selector}      set variable if
     ...  '${field_name}' == 'description'                           //*[@data-qa="lot-description"]
     ...  '${field_name}' == 'title'                                 //*[@data-qa="lot-title"]  # and contains(text(), "${lot_id}")
@@ -1198,6 +1197,7 @@ get_item_deliveryAddress_value
 	webclient.знайти тендер у webclient  ${tender_uaid}
 	#  знаходимо потрібну вимогу
 	webclient.активувати вкладку   Звернення за умовами тендеру
+	webclient.header натиснути на елемент за назвою  Перечитати
 	${complaintID_search_field}  set variable  xpath=((//*[@data-type="GridView"])[2]//td//input)[1]
     input text  ${complaintID_search_field}  ${complaintID}
 	press key   ${complaintID_search_field}  \\13
