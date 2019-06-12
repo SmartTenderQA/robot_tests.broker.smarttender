@@ -90,7 +90,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${SPACE}multilot  ${EMPTY}
 	run keyword  Оголосити закупівлю ${mode}${multilot}  ${tender_data}
 	webclient.пошук тендера по title  ${tender_data['title']}
-	${tender_uaid}  webclient.отримати номер тендера  ${tender_data['title']}
+	${tender_uaid}  webclient.отримати номер тендера
 	[Return]  ${tender_uaid}
 	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"  run keywords
 	...  capture page screenshot        AND
@@ -113,6 +113,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+
 	:FOR  ${field}  in
 	...  enquiryPeriod.endDate
 	...  tenderPeriod.startDate
@@ -218,6 +219,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+
 	:FOR  ${field}  in
 	...  tenderPeriod.endDate
 	...  title
@@ -233,6 +235,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	:FOR  ${item}  IN  @{tender_data['items']}
 	\  webclient.додати item бланк
 	\  Заповнити поля предмету  ${item}
+
 
 	# УМОВИ ОПЛАТИ
 	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
@@ -324,6 +327,12 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+
+	# Донари
+	:FOR  ${funders}  IN  @{tender_data['funders']}
+	\  операція над чекбоксом  ${True}  //*[@data-name="FUNDERS_CB"]//input
+	\  заповнити flex autocomplete field  //*[@data-name="FUNDERID"]//input  ${funders['identifier']['legalName']}  check=${False}
+
 	:FOR  ${field}  in
 	...  enquiryPeriod.endDate
 	...  tenderPeriod.startDate

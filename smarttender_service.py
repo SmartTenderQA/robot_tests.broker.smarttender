@@ -401,7 +401,6 @@ def replace_unit_name(tender_data):
 
 
 def replace_unit_name_dict(key):
-    key = unicode(key)
     if key in unitname_dict_smartweb.keys():
         return unitname_dict_smartweb[key]
     else:
