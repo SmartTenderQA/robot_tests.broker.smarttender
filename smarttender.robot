@@ -1739,8 +1739,7 @@ get_item_deliveryAddress_value
 	...  "${field_name}" == "budget.description"  create_plan заповнити "Конкретна назва предмету закупівлі"  ${value}  ELSE IF
 	...  "${field_name}" == "budget.amount"  create_plan заповнити "Очікувана вартість закупівлі"  ${value}  ELSE IF
 	...  "${field_name}" == "items[0].deliveryDate.endDate"  create_plan заповнити "Дата поставки"  ${value}  row=2  ELSE IF
-	...  "${field_name}" == "items[0].quantity"  create_plan заповнити "Кількість"  ${value}  row=2  ELSE IF
-	...  "${field_name}" == "budget.period"  run keywords  log to console  Внести зміни в план  AND  no operation  row=2  ELSE IF
+	...  "${field_name}" == "items[0].quantity"  create_plan заповнити "Кількість"  ${value}  row=2
 
 	header натиснути на елемент за назвою  Зберегти
 	dialog box заголовок повинен містити  Накласти ЕЦП на план?
@@ -1759,7 +1758,7 @@ get_item_deliveryAddress_value
 	${classification_id}  		set variable  ${item['classification']['id']}
 	${description}  			set variable  ${item['description']}
 	${unit_name_not_converted}  set variable  ${item['unit']['name']}
-	${unit_name}				set variable  ${unitname_dict_smartweb[u'${unit_name_not_converted}']}
+	${unit_name}				evaluate  replace_unit_name_dict  ${unit_name_not_converted}
 	${quantity}  				set variable  ${item['quantity']}
 	${deliveryDate}  			set variable  ${item['deliveryDate']['endDate']}
 

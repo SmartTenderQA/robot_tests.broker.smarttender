@@ -22,6 +22,7 @@ unitname_dict_smartweb = {
     u'Флакон': u'флак'
 }
 
+
 method_types = {
     u'belowThreshold': u'Допорогові закупівлі',
     u'aboveThresholdUA': u'Відкриті торги',
@@ -39,6 +40,98 @@ method_types = {
     u'competitiveDialogueEU': u'Конкурентний діалог з публікацією англійською мовою 1-ий етап',
     u'closeFrameworkAgreementUA': u'Укладання рамкової угоди',
     u'closeFrameworkAgreementSelectionUA': u'Відбір для закупівлі за рамковою угодою',
+}
+
+
+delivery_address_replace = {
+    u'Переяслав-Хмельницький': {
+        "region": u"Київська обл.",
+        "locality": u"Переяслав-Хмельницький"
+    },
+    u'Київ': {
+        "region": u"Київська обл.",
+        "locality": u"Київ"
+    },
+    u'Синельникове': {
+        "region": u"Дніпропетровська обл.",
+        "locality": u"Синельникове"
+    },
+    u'Дніпро': {
+        "region": u"Дніпропетровська обл.",
+        "locality": u"Дніпропетровськ"
+    },
+    u'Кривий Ріг': {
+        "region": u"Дніпропетровська обл.",
+        "locality": u"Кривий Ріг"
+    },
+    u'Чернігів': {
+        "region": u"Чернігівська обл.",
+        "locality": u"Чернігів"
+    },
+    u'Одеса': {
+        "region": u"Одеська обл.",
+        "locality": u"Одеса"
+    },
+    u'Перещепине': {
+        "region": u"Дніпропетровська обл.",
+        "locality": u"Перещепине"
+    },
+    u'Миколаїв': {
+        "region": u"Дніпропетровська обл.",
+        "locality": u"Перещепине"
+    },
+    u'Нікополь': {
+        "region": u"Дніпропетровська обл.",
+        "locality": u"Нікополь"
+    },
+    u'Вишгород': {
+        "region": u"Київська обл.",
+        "locality": u"Вишгород"
+    },
+    u"Кам'янське": {
+        "region": u"Київська обл.",
+        "locality": u"Вишгород"
+    },
+    u'Здолбунів': {
+        "region": u"Рівненська обл.",
+        "locality": u"Здолбунів"
+    },
+    u'Херсон': {
+        "region": u"Херсонська обл.",
+        "locality": u"Херсон"
+    },
+    u'Доманівка': {
+        "region": u"Миколаївська обл.",
+        "locality": u"Доманівка"
+    },
+    u'Олександрія': {
+        "region": u"Миколаївська обл.",
+        "locality": u"Доманівка"
+    },
+    u'Новий Буг': {
+        "region": u"Новий Буг",
+        "locality": u"Миколаївська обл."
+    },
+    u'Трикратне': {
+        "region": u"Миколаївська обл.",
+        "locality": u"Трикратне"
+    },
+    u'Гостомель': {
+        "region": u"Київська обл.",
+        "locality": u"Гостомель"
+    },
+    u'Яготин': {
+        "region": u"Київська обл.",
+        "locality": u"Яготин"
+    },
+    u'Ворзель': {
+        "region": u"Київська обл.",
+        "locality": u"Ворзель"
+    },
+    u'Олешки': {
+        "region": u"Харківська обл.",
+        "locality": u"Олешки"
+    }
 }
 
 
@@ -307,98 +400,15 @@ def replace_unit_name(tender_data):
     return tender_data
 
 
-def replace_delivery_address(tender_data):
-    delivery_address_replace = {
-        u'Переяслав-Хмельницький': {
-            "region": u"Київська обл.",
-            "locality": u"Переяслав-Хмельницький"
-        },
-        u'Київ': {
-            "region": u"Київська обл.",
-            "locality": u"Київ"
-        },
-        u'Синельникове': {
-            "region": u"Дніпропетровська обл.",
-            "locality": u"Синельникове"
-        },
-        u'Дніпро': {
-            "region": u"Дніпропетровська обл.",
-            "locality": u"Дніпропетровськ"
-        },
-        u'Кривий Ріг': {
-            "region": u"Дніпропетровська обл.",
-            "locality": u"Кривий Ріг"
-        },
-        u'Чернігів': {
-            "region": u"Чернігівська обл.",
-            "locality": u"Чернігів"
-        },
-        u'Одеса': {
-            "region": u"Одеська обл.",
-            "locality": u"Одеса"
-        },
-        u'Перещепине': {
-            "region": u"Дніпропетровська обл.",
-            "locality": u"Перещепине"
-        },
-        u'Миколаїв': {
-            "region": u"Дніпропетровська обл.",
-            "locality": u"Перещепине"
-        },
-        u'Нікополь': {
-            "region": u"Дніпропетровська обл.",
-            "locality": u"Нікополь"
-        },
-        u'Вишгород': {
-            "region": u"Київська обл.",
-            "locality": u"Вишгород"
-        },
-        u"Кам'янське": {
-            "region": u"Київська обл.",
-            "locality": u"Вишгород"
-        },
-        u'Здолбунів': {
-            "region": u"Рівненська обл.",
-            "locality": u"Здолбунів"
-        },
-        u'Херсон': {
-            "region": u"Херсонська обл.",
-            "locality": u"Херсон"
-        },
-        u'Доманівка': {
-            "region": u"Миколаївська обл.",
-            "locality": u"Доманівка"
-        },
-        u'Олександрія': {
-            "region": u"Миколаївська обл.",
-            "locality": u"Доманівка"
-        },
-        u'Новий Буг': {
-            "region": u"Новий Буг",
-            "locality": u"Миколаївська обл."
-        },
-        u'Трикратне': {
-            "region": u"Миколаївська обл.",
-            "locality": u"Трикратне"
-        },
-        u'Гостомель': {
-            "region": u"Київська обл.",
-            "locality": u"Гостомель"
-        },
-        u'Яготин': {
-            "region": u"Київська обл.",
-            "locality": u"Яготин"
-        },
-        u'Ворзель': {
-            "region": u"Київська обл.",
-            "locality": u"Ворзель"
-        },
-        u'Олешки': {
-            "region": u"Харківська обл.",
-            "locality": u"Олешки"
-        }
-    }
+def replace_unit_name_dict(key):
+    key = unicode(key)
+    if key in unitname_dict_smartweb.keys():
+        return unitname_dict_smartweb[key]
+    else:
+        return key
 
+
+def replace_delivery_address(tender_data):
     list_of_keys = list(delivery_address_replace.keys())
 
     for item in tender_data['data']['items']:

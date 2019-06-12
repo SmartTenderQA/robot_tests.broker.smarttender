@@ -325,6 +325,8 @@ create_plan заповнити "Дод.класифікація-Код"
 	[Arguments]  ${value}  ${row}=1
 	${locator}  set variable  (${plan_cursor_row})[${row}]//td[count(${plan_block}//div[contains(@title,"Коди відповідних") and contains(@title,"класифікаторів предмета")]/ancestor::td/preceding-sibling::*)+4]
 	ввести значення в поле в гріді   ${locator}  ${value}
+	comment  вибір з випадаючого списку
+	run keyword and ignore error  click element  //*[@class="ade-list-back"]//*[contains(@style, "visibility: visible;")][2]/div[1]
 
 
 create_plan заповнити "Назва номенклатури"
