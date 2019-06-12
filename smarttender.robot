@@ -1252,7 +1252,8 @@ get_item_deliveryAddress_value
 	log to console  Відповісти на вимогу про виправлення умов закупівлі
 	webclient.знайти тендер у webclient  ${tender_uaid}
 	#  знаходимо потрібну вимогу
-	webclient.активувати вкладку   Звернення за умовами тендеру
+	${tab_status}  run keyword and return status  webclient.активувати вкладку  Звернення за умовами тендеру
+	run keyword if  "${tab_status}" == "False"    webclient.активувати вкладку  Оскарження умов тендеру
 	webclient.header натиснути на елемент за назвою  Перечитати
 	${complaintID_search_field}  set variable  xpath=((//*[@data-type="GridView"])[2]//td//input)[1]
     input text  ${complaintID_search_field}  ${complaintID}
