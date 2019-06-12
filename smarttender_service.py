@@ -214,11 +214,12 @@ def convert_contract_status(value):
     return result
 
 
-def conver_resolutionType(value):
+def convert_award_status(value):
     map = {
-        u'resolved': u'Задоволено',
-        u'invalid': u'Відхилено',
-        u'declined': u'Не задоволено',
+        u'Переможець': u'active',
+        u'Рішення скасовано': u'cancelled',
+        u'Оцінка': u'pending',
+        u'Дискваліфікований': u'cancelled'
     }
     if value in map:
         result = map[value]
@@ -226,6 +227,18 @@ def conver_resolutionType(value):
         result = value
     return result
 
+
+def conver_resolutionType(value):
+    map = {
+        u'resolved': u'Задоволено',
+        u'invalid': u'Відхилено',
+        u'declined': u'Не задоволено'
+    }
+    if value in map:
+        result = map[value]
+    else:
+        result = value
+    return result
 
 
 def convert_status(value):

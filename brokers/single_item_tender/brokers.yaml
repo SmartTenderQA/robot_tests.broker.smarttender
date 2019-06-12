@@ -1,0 +1,636 @@
+Default:
+    # Default dictionary:
+    # These values are used unless a
+    # specific broker entry overrides them
+    intervals:
+        # intervals: Interval values for each "mode"
+        #
+        # Each field is a mode name
+        # Current modes are:
+        # single, multi, limited, openua, openeu, openua_defense
+        #
+        # See `prepare_test_tender_data()`
+        # in `service_keywords.py` for more details
+        #
+        # If some mode is not specified,
+        # time values are taken from "default"
+        default:
+            # default: Used for modes that are not present in `intervals`
+            #
+            # enquiry, tender: Period names with corresponding time values
+            #
+            # Other mode-specific fields are allowed too
+            #
+            # First number in list:  Delay before period starts (for startDate)
+            # Second number in list: Duration of period (for endDate)
+            enquiry: [0, 11]
+            tender:  [0, 31]
+            # accelerator: Integer value
+            # This is not a name of period
+            # Please refer to API documentation to find out what's this
+            accelerator: 1440
+        openua:
+            accelerator: 1440
+            tender:  [0, 15]
+            # Please remember that openUA, openEU and openUA_defense procedures
+            # forbid anyone to set or modify enquiryPeriod
+            # (it is set automatically)
+        openeu:
+            accelerator: 1440
+            tender:  [0, 30]
+        openua_defense:
+            accelerator: 1440
+            tender:  [0, 6]
+        open_competitive_dialogue:
+            accelerator: 1440
+            tender:  [0, 30]
+        open_esco:
+             accelerator: 1440
+             enquiry: [0, 15]
+             tender:  [0, 30]
+        open_framework:
+             accelerator: 1440
+             tender:  [0, 30]
+        framework_selection:
+             accelerator: 360
+    # Synchronization delay, in seconds
+    timeout_on_wait: 0
+Quinta:
+    intervals:
+        default:
+            enquiry: [0, 20]
+            tender:  [0, 20]
+        openua:
+            tender:  [1, 30]
+        openeu:
+            tender:  [1, 35]
+        openua_defense:
+            tender:  [0, 30]
+        open_competitive_dialogue:
+            accelerator: 1440
+            tender:  [0, 30]
+        open_esco:
+             accelerator: 1440
+             enquiry: [0, 15]
+             tender:  [0, 30]
+        open_framework:
+             accelerator: 1440
+             tender:  [0, 30]
+        framework_selection:
+             accelerator: 360
+    keywords_file: openprocurement_client
+    roles:
+        provider:       Tender_User
+        provider1:      Tender_User1
+        provider2:      Tender_User2
+        tender_owner:   Tender_Owner
+        viewer:         Tender_Viewer
+        dasu_user:      Dasu_User
+    timeout_on_wait: 15
+Etender:
+    intervals:
+        default:
+            enquiry: [0, 5]
+    keywords_file: etender
+    roles:
+        provider:       Etender_Provider1
+        provider1:      Etender_Provider2
+        tender_owner:   Etender_Owner
+        viewer:         Etender_Viewer
+    timeout_on_wait: 60
+DZO:
+    intervals:
+        default:
+            enquiry: [0, 20]
+            tender:  [0, 20]
+        openua:
+            accelerator: 720
+            tender:  [0, 30]
+    keywords_file: dzo
+    roles:
+        tender_owner:   DZO_Owner
+        provider:       DZO_Provider
+        provider1:      DZO_Provider1
+        viewer:         DZO_Viewer
+    timeout_on_wait: 300
+b25h8:
+    intervals:
+        default:
+            accelerator: 720
+            enquiry: [0, 50]
+            tender:  [0, 15]
+        belowThreshold:
+            accelerator: 60
+            enquiry: [0, 60]
+            tender:  [0, 15]
+        openua:
+            accelerator: 720
+            tender:  [0, 70]
+        openeu:
+            accelerator: 720
+            tender:  [0, 61]
+        negotiation:
+            accelerator: 720
+            enquiry: [0, 20]
+            tender:  [0, 20]
+    keywords_file: 25h8
+    roles:
+        tender_owner:   u25h8_Owner
+        provider:       u25h8_Provider
+        provider1:      u25h8_Provider1
+        viewer:         u25h8_Viewer
+    timeout_on_wait: 180
+tendersallbiz:
+    intervals:
+        default:
+            accelerator: 720
+            enquiry: [0, 50]
+            tender:  [0, 15]
+        belowThreshold:
+            accelerator: 720
+            enquiry: [0, 20]
+            tender:  [0, 20]
+        openua:
+            accelerator: 720
+            tender:  [0, 60]
+        openeu:
+            accelerator: 720
+            tender:  [0, 71]
+        openua_defense:
+            accelerator: 720
+            tender:  [0, 71]
+        negotiation:
+            accelerator: 720
+            enquiry: [0, 20]
+            tender:  [0, 20]
+    keywords_file: allbiz
+    roles:
+        tender_owner:   allbiz_Owner
+        provider:       allbiz_Provider
+        provider1:      allbiz_Provider1
+        viewer:         allbiz_Viewer
+    timeout_on_wait: 180
+tenderonline:
+    intervals:
+        default:
+            accelerator: 720
+            enquiry: [0, 50]
+            tender:  [0, 15]
+        belowThreshold:
+            accelerator: 60
+            enquiry: [0, 60]
+            tender:  [0, 15]
+        openua:
+            accelerator: 720
+            tender:  [0, 70]
+        openeu:
+            accelerator: 720
+            tender:  [0, 62]
+        negotiation:
+            accelerator: 720
+            enquiry: [0, 20]
+            tender:  [0, 20]
+    keywords_file: tenderonline
+    roles:
+        tender_owner:   tenderonline_Owner
+        provider:       tenderonline_Provider
+        provider1:      tenderonline_Provider1
+        viewer:         tenderonline_Viewer
+    timeout_on_wait: 180
+ztv:
+    intervals:
+        default:
+            enquiry: [0, 17]
+            tender:  [0, 16]
+    keywords_file: ztv
+    roles:
+        tender_owner:   ztv_Owner
+        provider:       ztv_Provider
+        provider1:      ztv_Provider1
+        viewer:         ztv_Viewer
+    timeout_on_wait: 300
+Newtend:
+    keywords_file: newtend
+    roles:
+        provider:       Newtend_Provider1
+        tender_owner:   Newtend_Owner
+        viewer:         Newtend_Viewer
+    timeout_on_wait: 60
+PrivatMarket:
+    intervals:
+        default:
+            accelerator: 1440
+            enquiry: [0, 18]
+            tender:  [0, 18]
+        openeu:
+            accelerator: 1440
+            tender:  [0, 50]
+        openua:
+            accelerator: 1440
+            tender:  [0, 65]
+        belowThreshold:
+            accelerator: 1440
+            enquiry: [0, 75]
+            tender:  [0, 65]
+        negotiation:
+            accelerator: 360
+            enquiry: [0, 20]
+            tender:  [0, 20]
+        openua_defense:
+            tender:  [0, 110]
+    keywords_file: privatmarket
+    roles:
+        provider:       PrivatMarket_Provider
+        provider1:      PrivatMarket_Provider1
+        tender_owner:   PrivatMarket_Owner
+        viewer:         PrivatMarket_Viewer
+    timeout_on_wait: 30
+Prom:
+    intervals:
+        default:
+            enquiry: [4, 4]
+            tender:  [0,  30]
+    keywords_file: prom
+    roles:
+        tender_owner:   Prom_Owner
+        viewer:         Prom_Viewer
+        provider:       Prom_Provider1
+    timeout_on_wait: 10
+Publicbid:
+    intervals:
+        default:
+            enquiry: [1, 10]
+            tender:  [1, 12]
+    keywords_file: publicbid
+    roles:
+        provider:       Publicbid_Provider1
+        tender_owner:   Publicbid_Owner
+        viewer:         Publicbid_Viewer
+    timeout_on_wait: 120
+upetem:
+    intervals:
+        default:
+            enquiry: [1, 10]
+            tender:  [1, 20]
+    keywords_file: upetem
+    roles:
+        provider:       upetem_Provider
+        provider1:      upetem_Provider1
+        tender_owner:   upetem_Owner
+        viewer:         upetem_Viewer
+    timeout_on_wait: 15
+PublicPortal:
+    keywords_file: publicportal
+    roles:
+        viewer:         PublicPortal_Viewer
+    timeout_on_wait: 300
+SmartTender:
+    intervals:
+        default:
+            enquiry: [0, 10]
+            tender:  [0, 20]
+        belowThreshold:
+            enquiry: [0, 20]
+            tender:  [0, 15]
+            accelerator: 1440
+        openua:
+            accelerator: 1440
+            tender:  [0, 15]
+        openeu:
+            tender:  [0, 30]
+            accelerator: 1440
+    keywords_file: smarttender
+    roles:
+        provider:       SmartTender_Provider1
+        provider1:      SmartTender_Provider2
+        tender_owner:   SmartTender_Owner
+        viewer:         SmartTender_Viewer
+    timeout_on_wait: 0
+uatenders:
+    intervals:
+        default:
+            enquiry: [0, 20]
+            tender:  [0, 30]
+    keywords_file: uatenders
+    roles:
+        provider:       uatenders_Provider
+        tender_owner:   uatenders_Owner
+        viewer:         uatenders_Viewer
+    timeout_on_wait: 60
+ubiz:
+    intervals:
+        default:
+            accelerator: 1440
+            enquiry: [0, 12]
+            tender:  [0, 20]
+        openeu:
+            accelerator: 1440
+            tender:  [0, 50]
+        openua:
+            accelerator: 2880
+            tender:  [0, 45]
+        belowThreshold:
+            accelerator: 550
+            enquiry: [0, 80]
+            tender:  [0, 15]
+    keywords_file: ubiz
+    homepage: 'http://test.ubiz.com.ua/prozorro'
+    buy:      'http://test.ubiz.com.ua/prozorro/tender/buy'
+    plans:    'http://test.ubiz.com.ua/prozorro/plan-view/index'
+    roles:
+        provider:       ubiz_Provider1
+        provider1:      ubiz_Provider2
+        tender_owner:   ubiz_Owner
+        viewer:         ubiz_Viewer
+    timeout_on_wait: 10
+zakpro:
+    intervals:
+        default:
+            enquiry: [0, 20]
+            tender:  [0, 15]
+    keywords_file: zakpro
+    roles:
+        provider:       zakpro_Provider
+        provider1:      zakpro_Provider1
+        tender_owner:   zakpro_Owner
+        viewer:         zakpro_Viewer
+    timeout_on_wait: 300
+proztorg:
+    intervals:
+        default:
+            enquiry: [0, 5]
+    keywords_file: proztorg
+    homepage: 'http://proztorg.com.ua/'
+    roles:
+        provider:       proztorg_Provider1
+        provider1:      proztorg_Provider2
+        tender_owner:   proztorg_Owner
+        viewer:         proztorg_Viewer
+    timeout_on_wait: 50
+uub:
+    intervals:
+        default:
+            enquiry: [0, 8]
+            tender:  [0, 10]
+        openua:
+            accelerator: 1440
+            tender:  [0, 15]
+        openeu:
+            tender:  [0, 30]
+            accelerator: 1440
+    keywords_file: uub
+    roles:
+        tender_owner:   uub_Owner
+        provider:       uub_Provider
+        provider1:      uub_Provider1
+        viewer:         uub_Viewer
+    timeout_on_wait: 15
+APStender:
+    keywords_file: aps
+    roles:
+        viewer:         aps_Viewer
+        provider:       aps_Provider
+        provider1:      aps_Provider1
+        tender_owner:   aps_Owner
+    intervals:
+        default:
+            enquiry: [0, 15]
+            tender:  [0, 15]
+    timeout_on_wait: 10
+alltenders:
+    intervals:
+        default:
+            accelerator: 1440
+            enquiry: [0, 15]
+            tender:  [0, 20]
+        belowThreshold:
+            accelerator: 1440
+            enquiry: [0, 10]
+            tender:  [0, 15]
+        openua:
+            accelerator: 1440
+            tender:  [0, 20]
+        openeu:
+            accelerator: 1440
+            tender:  [0, 30]
+    keywords_file: alltenders
+    homepage: 'https://prozorro.alltenders.com.ua/?mode=test&notification=off'
+    roles:
+        provider:       alltenders_Provider
+        provider1:      alltenders_Provider1
+        provider2:      alltenders_Provider2
+        tender_owner:   alltenders_Owner
+        viewer:         alltenders_Viewer
+    timeout_on_wait: 35
+Kapitalist:
+    intervals:
+        default:
+            enquiry: [0, 15]
+            tender:  [0, 20]
+            accelerator: 1440
+    keywords_file: kapitalist
+    roles:
+        tender_owner:   kapitalist_Owner
+        provider:       kapitalist_Provider
+        provider1:      kapitalist_Provider1
+        viewer:         kapitalist_Viewer
+    timeout_on_wait: 80
+pzo:
+    intervals:
+        default:
+            enquiry: [0, 20]
+            tender:  [0, 20]
+            accelerator: 1440
+        belowThreshold:
+            enquiry: [0, 25]
+            tender:  [0, 25]
+            accelerator: 1440
+        openua:
+            tender:  [0, 35]
+            accelerator: 1440
+        openeu:
+            tender:  [0, 35]
+            accelerator: 1440
+        openua_defense:
+            accelerator: 720
+            tender: [0, 40]
+        open_competitive_dialogue:
+            accelerator: 1440
+            tender:  [0, 40]
+        open_esco:
+            tender: [0, 35]
+    keywords_file: pzo
+    basepage: 'http://dev.pzo.com.ua'
+    homepage: 'http://dev.pzo.com.ua/tenders'
+    syncpage: 'http://dev.pzo.com.ua/develop/sync?psw=369369'
+    roles:
+        provider:       pzo_Provider
+        provider1:      pzo_Provider1
+        provider2:      pzo_Provider2
+        tender_owner:   pzo_Owner
+        viewer:         pzo_Viewer
+    timeout_on_wait: 1
+aladdin:
+    intervals:
+        default:
+            enquiry: [0, 20]
+            tender:  [0, 20]
+            accelerator: 900
+        belowThreshold:
+            enquiry: [0, 60]
+            tender:  [0, 15]
+            accelerator: 1440
+        openua:
+            accelerator: 1440
+            tender:  [0, 45]
+        openeu:
+            tender:  [0, 60]
+            accelerator: 1440
+    keywords_file: aladdin
+    roles:
+        tender_owner:   aladdin_Owner
+        provider:       aladdin_Provider
+        provider1:      aladdin_Provider1
+        viewer:         aladdin_Viewer
+    timeout_on_wait: 1
+izi:
+    homepage: "https://test.izi.trade"
+    backendUrl: "https://api-test.izi.trade"
+    intervals:
+        default:
+            enquiry: [0, 20]
+            tender:  [0, 10]
+            accelerator: 1440
+        belowThreshold:
+            enquiry: [0, 20]
+            tender:  [0, 10]
+            accelerator: 300
+        openua:
+            tender:  [0, 20]
+            accelerator: 1440
+        openeu:
+            tender:  [0, 35]
+            accelerator: 1440
+        openua_defense:
+            tender:  [0, 20]
+            accelerator: 1440
+        open_competitive_dialogue:
+            tender:  [0, 35]
+            accelerator: 1440
+    keywords_file: izi
+    roles:
+        provider:       izi_provider
+        provider1:      izi_provider1
+        viewer:         izi_viewer
+    timeout_on_wait: 0
+ukrtender:
+    intervals:
+        default:
+            enquiry: [0, 20]
+            tender:  [0, 20]
+            accelerator: 900
+        belowThreshold:
+            enquiry: [0, 35]
+            tender:  [0, 30]
+            accelerator: 720
+        openua:
+            accelerator: 1440
+            tender:  [0, 40]
+        openeu:
+            tender:  [0, 40]
+            accelerator: 1440
+        openua_defense:
+            accelerator: 1440
+            tender:  [0,31]
+        esco:
+            accelerator: 1440
+            tender:  [0, 30]
+        open_competitive_dialogue:
+            accelerator: 1440
+            tender:  [0, 20]
+    keywords_file: ukrtender
+    roles:
+        provider:       ukrtender_Provider
+        provider1:      ukrtender_Provider1
+        provider2:      ukrtender_Provider2
+        tender_owner:   ukrtender_Owner
+        viewer:         ukrtender_Viewer
+    timeout_on_wait: 10
+playtender:
+    intervals:
+        default:
+            enquiry: [0, 20]
+            tender:  [0, 20]
+            accelerator: 1440
+        belowThreshold:
+            enquiry: [0, 25]
+            tender:  [0, 25]
+            accelerator: 1440
+        openua:
+            tender:  [0, 25]
+            accelerator: 1440
+        openeu:
+            tender:  [0, 25]
+            accelerator: 1440
+        open_competitive_dialogue:
+            accelerator: 1440
+            tender:  [0, 35]
+        open_esco:
+             enquiry: [0, 25]
+             tender:  [0, 25]
+             accelerator: 1440
+        open_framework:
+             tender:  [0, 25]
+             accelerator: 1440
+    keywords_file: playtender
+    basepage: 'http://test.playtender.com.ua'
+    homepage: 'http://test.playtender.com.ua/tenders'
+    syncpage: 'http://test.playtender.com.ua/develop/sync?psw=369369'
+    roles:
+        provider:       playtender_Provider
+        provider1:      playtender_Provider1
+        provider2:      playtender_Provider2
+        tender_owner:   playtender_Owner
+        viewer:         playtender_Viewer
+    timeout_on_wait: 1
+avi:
+    intervals:
+        default:
+            accelerator: 1440
+            enquiry: [0, 12]
+            tender:  [0, 20]
+        openeu:
+            accelerator: 1440
+            tender:  [0, 65]
+        openua:
+            accelerator: 1440
+            tender:  [0, 60]
+        belowThreshold:
+            accelerator: 1440
+            enquiry: [0, 20]
+            tender:  [0, 15]
+        negotiation:
+            accelerator: 720
+            enquiry: [0, 20]
+            tender:  [0, 20]
+        open_esco:
+            accelerator: 1440
+            enquiry: [0, 20]
+            tender:  [0, 40]
+        open_competitive_dialogue:
+            accelerator: 1440
+            tender:  [0, 75]
+        openua_defense:
+            accelerator: 720
+            tender:  [0, 50]
+    keywords_file: avi
+    homepage: 'https://test.avi.net.ua/prozorro'
+    buy:      'https://test.avi.net.ua/prozorro/tender/buy'
+    plans:    'https://test.avi.net.ua/prozorro/plan-view'
+    roles:
+        provider:       avi_Provider1
+        provider1:      avi_Provider2
+        provider2:      avi_Provider3
+        tender_owner:   avi_Owner
+        viewer:         avi_Viewer
+    timeout_on_wait: 120

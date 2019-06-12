@@ -16,7 +16,7 @@ ${plan_block}                    	//div[@data-name="GRIDPLATABLE"]
 
 
 *** Keywords ***
-заповнити поле enquiryPeriod.startDate
+заповнити поле enquiryPeriod.endDate
 	[Arguments]  ${date}
 	${date_input}  set variable  //*[@data-name="DDM"]//input
 	${formated_date}  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S.%f+03:00
@@ -97,13 +97,13 @@ ${plan_block}                    	//div[@data-name="GRIDPLATABLE"]
 заповнити поле для lot title
 	[Arguments]  ${title}
 	${locator}  set variable  //*[@data-name="LOT_TITLE"]//input
-	заповнити simple input  ${locator}  ${title}
+	заповнити flex input  ${locator}  ${title}  check=${False}
 
 
 заповнити поле для lot description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="LOT_DESCRIPTION"]//textarea
-	заповнити simple input  ${locator}  ${description}
+	заповнити simple input  ${locator}  ${description}  #check=${False}
 
 
 заповнити поле для lot value.amount
@@ -131,13 +131,13 @@ ${plan_block}                    	//div[@data-name="GRIDPLATABLE"]
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
-	заповнити simple input  ${locator}  ${description}
+	заповнити flex input  ${locator}  ${description}  #check=${False}
 
 
 заповнити поле для item description_en
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="RESOURSENAME_EN"]//input
-	заповнити simple input  ${locator}  ${description}
+	заповнити flex input  ${locator}  ${description}
 
 
 заповнити поле для item quantity
@@ -187,7 +187,7 @@ ${plan_block}                    	//div[@data-name="GRIDPLATABLE"]
 заповнити поле для item deliveryAddress.locality
 	[Arguments]  ${deliveryAddress.locality}
 	${locator}  set variable  //*[@data-name="CITY_KOD"]//input
-	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${False}
+	заповнити flex autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${False}
 
 
 заповнити поле для item deliveryDate.startDate
@@ -408,9 +408,29 @@ check for open screen
 
 
 отримати номер тендера
+    [Arguments]  ${title}
 	${locator}  set variable  xpath=(//*[contains(@class, "rowselected")]/td/a)[1]
+	webclient.пошук тендера по title  ${title}
 	${UAID}  get text  ${locator}
 	[Return]  ${UAID}
+
+
+вибрати тип процедури
+    [Arguments]  ${value}
+    wait until keyword succeeds  3x  1s  webclient.вибрати значення з випадаючого списку  //*[@data-name="KDM2"]  ${value}
+
+
+пошук тендера по title
+	[Arguments]  ${title}
+	${find tender field}  Set Variable  xpath=((//tr[@class=' has-system-column'])[1]/td[count(//div[contains(text(), 'Узагальнена назва закупівлі')]/ancestor::td[@draggable]/preceding-sibling::*)+1]//input)[1]
+	loading дочекатись закінчення загрузки сторінки
+	Click Element  ${find tender field}
+	Clear Element Text  ${find tender field}
+	Sleep  .5
+	Input Text  ${find tender field}  ${title}
+	Press Key  ${find tender field}  \\13
+	loading дочекатись закінчення загрузки сторінки
+
 
 
 додати тендерну документацію
@@ -517,7 +537,7 @@ grid вибрати рядок за номером
 screen заголовок повинен містити
 	[Arguments]  ${text}
 	${selector}  set variable  ${screen_root_selector}//*[@id="pcModalMode_PWH-1T" or @id="pcCustomDialog_PWH-1T"]
-	loading дочекатися відображення елемента на сторінці  ${selector}
+	loading дочекатися відображення елемента на сторінці  ${selector}  15
 	${title}  get text  ${selector}
 	should contain  ${title}  ${text}
 
@@ -587,14 +607,35 @@ dialog box заголовок повинен містити
 	wait until keyword succeeds  5x  1s  заповнити simple input continue  ${locator}  ${input_text}  ${check}
 
 
+заповнити flex input
+	[Arguments]  ${locator}  ${input_text}  ${check}=${True}
+	wait until keyword succeeds  5x  1s  заповнити flex input continue  ${locator}  ${input_text}  ${check}
+
+
 заповнити simple input continue
     [Arguments]  ${locator}  ${input_text}  ${check}
-	${input_text}  evaluate  u"""${input_text}"""
-	input text  ${locator}  ${input_text}
+	${text}  evaluate  u"""${input_text}"""
+	clear input by JS  ${locator}
+	sleep  1
+	input text  ${locator}  ${text}
 	press key  ${locator}  \\13
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
-	run keyword if  ${check}  should be equal  "${get}"  "${input_text}"
+	${get}  set variable  ${get.replace('\n', '')}
+	run keyword if  ${check}  should be equal  "${get}"  "${text}"
+
+
+заповнити flex input continue
+    [Arguments]  ${locator}  ${input_text}  ${check}
+	${text}  evaluate  u"""${input_text}"""
+	clear input by JS  ${locator}
+	sleep  1
+	Input Type Flex  ${locator}  ${text}
+	press key  ${locator}  \\13
+	loading дочекатись закінчення загрузки сторінки
+	${get}  get element attribute  ${locator}@value
+	${get}  set variable  ${get.replace('\n', '')}
+	run keyword if  ${check}  should be equal  "${get}"  "${text}"
 
 
 заповнити autocomplete field
@@ -606,21 +647,46 @@ dialog box заголовок повинен містити
 	[Arguments]  ${locator}  ${input_text}  ${check}
 	${dropdown_list}  set variable  //*[@class="ade-list-back" and contains(@style, "left")]
 	${item_in_dropdown_list}  set variable  //*[@class="dhxcombo_option dhxcombo_option_selected"]
-	${input_text}  evaluate  u"""${input_text}"""
-	input text  ${locator}  ${input_text}
+	${text}  evaluate  u"""${input_text}"""
+	clear input by JS  ${locator}
+	input text  ${locator}  ${text}
 	press key  //body  \\13
-	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=1
+	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=3
 	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
-	run keyword if  ${check}  should be equal  "${get}"  "${input_text}"
+	run keyword if  ${check}  should contain  "${get}"  "${text}"
+
+
+заповнити flex autocomplete field
+	[Arguments]  ${locator}  ${input_text}  ${check}=${True}
+	wait until keyword succeeds  5x  1s  заповнити autocomplete field continue  ${locator}  ${input_text}  ${check}
+
+
+заповнити flex autocomplete field continue
+	[Arguments]  ${locator}  ${input_text}  ${check}
+	${dropdown_list}  set variable  //*[@class="ade-list-back" and contains(@style, "left")]
+	${item_in_dropdown_list}  set variable  //*[@class="dhxcombo_option dhxcombo_option_selected"]
+	${text}  evaluate  u"""${input_text}"""
+	clear input by JS  ${locator}
+	Input Type Flex  ${locator}  ${text}
+	press key  //body  \\13
+	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=3
+	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}
+	loading дочекатись закінчення загрузки сторінки
+	${get}  get element attribute  ${locator}@value
+	run keyword if  ${check}  should contain  "${get}"  "${text}"
 
 
 операція над чекбоксом
 	[Arguments]  ${bool}  ${locator}
 	${class}  get element attribute  ${locator}/../..@class
-	run keyword if  'Unchecked' in '${class}' and ${bool} or 'checked' in '${class}' and '${bool}' == '${False}'
+	run keyword if  'Unchecked' in '${class}' and ${bool} or 'Checked' in '${class}' and '${bool}' == '${False}'
 	...  click element  ${locator}/../..
+	sleep  1
+	${class}  get element attribute  ${locator}/../..@class
+	run keyword if  ${bool}  should contain  ${class}  Checked
+	...  ELSE                should contain  ${class}  Unchecked
 
 
 заповнити поле з датою
