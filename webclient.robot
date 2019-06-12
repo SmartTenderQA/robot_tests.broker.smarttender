@@ -97,7 +97,7 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 заповнити поле для lot description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="LOT_DESCRIPTION"]//textarea
-	заповнити simple input  ${locator}  ${description}  #check=${False}
+	заповнити flex input  ${locator}  ${description}  #check=${False}
 
 
 заповнити поле для lot value.amount
@@ -125,13 +125,13 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
-	заповнити simple input  ${locator}  ${description}  #check=${False}
+	заповнити flex input  ${locator}  ${description}  #check=${False}
 
 
 заповнити поле для item description_en
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="RESOURSENAME_EN"]//input
-	заповнити simple input  ${locator}  ${description}
+	заповнити flex input  ${locator}  ${description}
 
 
 заповнити поле для item quantity
@@ -486,6 +486,11 @@ dialog box заголовок повинен містити
 	wait until keyword succeeds  5x  1s  заповнити simple input continue  ${locator}  ${input_text}  ${check}
 
 
+заповнити flex input
+	[Arguments]  ${locator}  ${input_text}  ${check}=${True}
+	wait until keyword succeeds  5x  1s  заповнити flex input continue  ${locator}  ${input_text}  ${check}
+
+
 заповнити simple input continue
     [Arguments]  ${locator}  ${input_text}  ${check}
 	${text}  evaluate  u"""${input_text}"""
@@ -497,6 +502,26 @@ dialog box заголовок повинен містити
 	${get}  get element attribute  ${locator}@value
 	${get}  set variable  ${get.replace('\n', '')}
 	run keyword if  ${check}  should be equal  "${get}"  "${text}"
+
+
+заповнити flex input continue
+    [Arguments]  ${locator}  ${input_text}  ${check}
+	${text}  evaluate  u"""${input_text}"""
+	clear input by JS  ${locator}
+	sleep  1
+	Input Type Flex  ${locator}  ${text}
+	press key  ${locator}  \\13
+	loading дочекатись закінчення загрузки сторінки
+	${get}  get element attribute  ${locator}@value
+	${get}  set variable  ${get.replace('\n', '')}
+	run keyword if  ${check}  should be equal  "${get}"  "${text}"
+
+Input Type Flex
+  [Arguments]    ${locator}    ${text}
+  [Documentation]    write text letter by letter
+  ${items}    Get Length    ${text}
+  : FOR    ${item}    IN RANGE    ${items}
+  \    Press Key    ${locator}    ${text[${item}]}
 
 
 заповнити autocomplete field
