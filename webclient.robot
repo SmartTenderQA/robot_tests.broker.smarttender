@@ -316,7 +316,7 @@ check for open screen
 пошук тендера по title
 	[Arguments]  ${title}
 	${find tender field}  Set Variable  xpath=((//tr[@class=' has-system-column'])[1]/td[count(//div[contains(text(), 'Узагальнена назва закупівлі')]/ancestor::td[@draggable]/preceding-sibling::*)+1]//input)[1]
-	loading дочекатися відображення елемента на сторінці  ${find tender field}
+	loading дочекатись закінчення загрузки сторінки
 	Click Element  ${find tender field}
 	Clear Element Text  ${find tender field}
 	Sleep  .5
@@ -537,7 +537,7 @@ Input Type Flex
 	clear input by JS  ${locator}
 	input text  ${locator}  ${text}
 	press key  //body  \\13
-	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=1
+	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=3
 	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
@@ -547,8 +547,12 @@ Input Type Flex
 операція над чекбоксом
 	[Arguments]  ${bool}  ${locator}
 	${class}  get element attribute  ${locator}/../..@class
-	run keyword if  'Unchecked' in '${class}' and ${bool} or 'checked' in '${class}' and '${bool}' == '${False}'
+	run keyword if  'Unchecked' in '${class}' and ${bool} or 'Checked' in '${class}' and '${bool}' == '${False}'
 	...  click element  ${locator}/../..
+	sleep  1
+	${class}  get element attribute  ${locator}/../..@class
+	run keyword if  ${bool}  should contain  ${class}  Checked
+	...  ELSE                should contain  ${class}  Unchecked
 
 
 заповнити поле з датою
