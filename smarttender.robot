@@ -89,6 +89,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${tender_data}  get from dictionary  ${tender_data}  data
 	${multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${SPACE}multilot  ${EMPTY}
 	run keyword  Оголосити закупівлю ${mode}${multilot}  ${tender_data}
+	webclient.пошук тендера по title  ${tender_data['title']}
 	${tender_uaid}  webclient.отримати номер тендера  ${tender_data['title']}
 	[Return]  ${tender_uaid}
 	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"  run keywords
@@ -1758,7 +1759,7 @@ get_item_deliveryAddress_value
 	${classification_id}  		set variable  ${item['classification']['id']}
 	${description}  			set variable  ${item['description']}
 	${unit_name_not_converted}  set variable  ${item['unit']['name']}
-	${unit_name}				set variable  ${unitname_dict_smartweb['${unit_name_not_converted}']}
+	${unit_name}				set variable  ${unitname_dict_smartweb[u'${unit_name_not_converted}']}
 	${quantity}  				set variable  ${item['quantity']}
 	${deliveryDate}  			set variable  ${item['deliveryDate']['endDate']}
 

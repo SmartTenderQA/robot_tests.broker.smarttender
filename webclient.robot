@@ -11,8 +11,8 @@ ${locator_for_click_tab_tbsk}	    //*[contains(@class, "dxtc-tab")]
 ${row_sitfp}						//tr[contains(@class,"Row")]
 ${grid}								//*[@data-type="GridView"]
 ${active_view}						//*[contains(@class, "active-dxtc-frame")]
-${plan_cursor_row}               	//*[@data-name="GRIDPLATABLE"]//tr[contains(@class,"Row")]
-${plan_block}                    	//div[@data-name="GRIDPLATABLE"]
+${plan_cursor_row}               	//*[@data-name="GRIDTABLE"]//tr[contains(@class,"Row")]
+${plan_block}                    	//div[@data-name="GRIDTABLE"]
 
 
 *** Keywords ***
@@ -408,9 +408,7 @@ check for open screen
 
 
 отримати номер тендера
-    [Arguments]  ${title}
 	${locator}  set variable  xpath=(//*[contains(@class, "rowselected")]/td/a)[1]
-	webclient.пошук тендера по title  ${title}
 	${UAID}  get text  ${locator}
 	[Return]  ${UAID}
 
