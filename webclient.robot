@@ -1,12 +1,18 @@
+*** Settings ***
+Library  	DateTime
+
+
 *** Variables ***
 ${active_tab_in_screen}  			//*[@id="pcModalMode_PW-1"]//*[@class="dxtc-content"]/div[@style="" or (not(@style) and @id)]
-${milestone_active_row}				xpath=(//*[contains(@class, "rowselected")])[last()]
+${milestone_active_row}				(//*[contains(@class, "rowselected")])[last()]
 ${milestone_dropdown_list}			//*[@class="dhxcombolist_material" and not(contains(@style, 'display: none;'))]
 ${screen_root_selector}             //*[(@id="pcCustomDialog_PW-1" or @id="pcModalMode_PW-1") and contains(@style, "visibility: visible;")]
 ${locator_for_click_tab_tbsk}	    //*[contains(@class, "dxtc-tab")]
 ${row_sitfp}						//tr[contains(@class,"Row")]
 ${grid}								//*[@data-type="GridView"]
 ${active_view}						//*[contains(@class, "active-dxtc-frame")]
+${plan_cursor_row}               	//*[@data-name="GRIDPLATABLE"]//tr[contains(@class,"Row")]
+${plan_block}                    	//div[@data-name="GRIDPLATABLE"]
 
 
 *** Keywords ***
@@ -261,6 +267,102 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 	заповнити поле з датою  ${amount_input}  ${fieldvalue}
 
 
+############################################################
+######################PLANNING##############################
+############################################################
+create_plan заповнити "Тип процедури закупівлі"
+	[Arguments]  ${procurementMethodType}
+	${locator}  set variable  (${plan_cursor_row})[1]//td[count(${plan_block}//div[contains(@title,"Тип процедури") and contains(@title,"закупівлі")]/ancestor::td/preceding-sibling::*)+1]
+	вибрати значення з випадаючого списку в гріді  ${locator}  ${procurementMethodType}
+
+
+create_plan заповнити "Орієнтований початок процедури закупівлі"
+	[Arguments]  ${value}
+	${tenderPeriod_startDate_year}  convert date  ${value}  result_format=%Y  date_format=%Y-%m-%dT%H:%M:%S+03:00
+	${tenderPeriod_startDate_month_str}  convert date  ${value}  result_format=%m  date_format=%Y-%m-%dT%H:%M:%S+03:00
+	${tenderPeriod_startDate_month}  evaluate  str(int(${tenderPeriod_startDate_month_str}))
+	${locator}  set variable  xpath=(${plan_cursor_row})[1]//td[count(${plan_block}//div[contains(@title,"Орієнтований початок") and contains(@title,"процедури закупівлі")]/ancestor::td/preceding-sibling::*)+1]
+	click element  ${locator}
+	wait until page contains  Введіть рік і місяць  10
+	заповнити simple input  //*[@data-type="SpinEdit"]//input  ${tenderPeriod_startDate_year}
+	вибрати значення з випадаючого списку  //*[@data-type="ComboBox"]  ${tenderPeriod_startDate_month}
+	header натиснути на елемент за назвою  OK
+
+
+create_plan заповнити "Конкретна назва предмету закупівлі"
+	[Arguments]  ${value}
+	${locator}  set variable  (${plan_cursor_row})[1]//td[count(${plan_block}//div[contains(@title,"Конкретна назва") and contains(@title,"предмету закупівлі")]/ancestor::td/preceding-sibling::*)+1]
+	ввести значення в поле в гріді  ${locator}  ${value}
+
+
+create_plan заповнити "Рік з"
+	[Arguments]  ${value}
+	${tenderPeriod_startDate_year}  convert date  ${value}  result_format=%Y  date_format=%Y-%m-%dT%H:%M:%S+03:00
+	${locator}  set variable  (${plan_cursor_row})[1]//td[count(${plan_block}//div[contains(@title,"Примітки")]/ancestor::td/preceding-sibling::*)+2]
+	ввести значення в поле в гріді  ${locator}  ${tenderPeriod_startDate_year}
+
+
+create_plan заповнити "Очікувана вартість закупівлі"
+	[Arguments]  ${value}
+	${value}  evaluate  str(${value})
+	${locator}  set variable  (${plan_cursor_row})[1]//td[count(${plan_block}//div[contains(@title,"Очікувана") and contains(@title,"вартість закупівлі")]/ancestor::td/preceding-sibling::*)+2]
+	ввести значення в поле в гріді  ${locator}  ${value}
+
+
+create_plan заповнити "Коди відповідних класифікаторів предмета закупівлі"
+	[Arguments]  ${value}  ${row}=1
+	${locator}  set variable  (${plan_cursor_row})[${row}]//td[count(${plan_block}//div[contains(@title,"Коди відповідних") and contains(@title,"класифікаторів предмета")]/ancestor::td/preceding-sibling::*)+2]
+	ввести значення в поле в гріді  ${locator}  ${value}
+
+
+create_plan заповнити "Дод.класифікація-Тип"
+	[Arguments]  ${value}  ${row}=1
+	${locator}  set variable  (${plan_cursor_row})[${row}]//td[count(${plan_block}//div[contains(@title,"Коди відповідних") and contains(@title,"класифікаторів предмета")]/ancestor::td/preceding-sibling::*)+3]
+	вибрати значення з випадаючого списку в гріді   ${locator}  ${value}
+
+
+create_plan заповнити "Дод.класифікація-Код"
+	[Arguments]  ${value}  ${row}=1
+	${locator}  set variable  (${plan_cursor_row})[${row}]//td[count(${plan_block}//div[contains(@title,"Коди відповідних") and contains(@title,"класифікаторів предмета")]/ancestor::td/preceding-sibling::*)+4]
+	ввести значення в поле в гріді   ${locator}  ${value}
+
+
+create_plan заповнити "Назва номенклатури"
+	[Arguments]  ${value}  ${row}=1
+	${locator}  set variable  (${plan_cursor_row})[${row}]//td[count(${plan_block}//div[contains(@title,"Назва") and contains(@title,"номенклатури")]/ancestor::td/preceding-sibling::*)+3]
+	ввести значення в поле в гріді   ${locator}  ${value}
+
+
+create_plan заповнити "Од. вим."
+	[Arguments]  ${value}  ${row}=1
+	${locator}  set variable  (${plan_cursor_row})[${row}]//td[count(${plan_block}//div[contains(@title,"Од.") and contains(@title,"вим.")]/ancestor::td/preceding-sibling::*)+3]
+	вибрати значення з випадаючого списку в гріді   ${locator}  ${value}
+	click element  xpath=${locator}
+	sleep  2
+	Assign Id To Element  xpath=${milestone_dropdown_list}//*[text()="${value}"]  pls_click_this_${value}
+	Execute Javascript  document.getElementById("pls_click_this_${value}").click()
+
+
+create_plan заповнити "Кількість"
+	[Arguments]  ${value}  ${row}=1
+	${value}  evaluate  str(${value})
+	${locator}  set variable  (${plan_cursor_row})[${row}]//td[count(${plan_block}//div[contains(@title,"Кількість")]/ancestor::td/preceding-sibling::*)+3]
+	ввести значення в поле в гріді   ${locator}  ${value}
+
+
+create_plan заповнити "Дата поставки"
+	[Arguments]  ${value}  ${row}=1
+	${deliveryDate}  convert date  ${value}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S+03:00
+	${locator}  set variable  (${plan_cursor_row})[${row}]//td[count(${plan_block}//div[contains(@title,"Дата") and contains(@title,"поставки")]/ancestor::td/preceding-sibling::*)+3]
+	wait until keyword succeeds  5x  .1s  run keywords
+	...  click element  xpath=${locator}  AND
+	...  click element  xpath=${locator}  AND
+	...  Assign Id To Element  xpath=${locator}//input  pls_click_this_${deliveryDate}  AND
+	...  Execute JavaScript  document.getElementById("pls_click_this_${deliveryDate}").value='${deliveryDate}'  AND
+	...  press key  //body  \\09
+
+
+
 
 
 
@@ -346,6 +448,22 @@ check for open screen
 	...  loading дочекатись закінчення загрузки сторінки
 
 
+знайти план у webclient
+	[Arguments]  ${tender_uaid}
+	${location}  get location
+	${grid_search_field}  set variable  xpath=((//*[@data-type="GridView"])[1]//td//input)[2]
+	run keyword if  '/webclient/' not in '${location}'  run keywords
+	...  go to  http://test.smarttender.biz/webclient/?testmode=1&proj=it_uk&tz=3  AND
+	...  loading дочекатись закінчення загрузки сторінки  AND
+	...  webclient.робочий стіл натиснути на елемент за назвою  Планы закупок(тестовые)  AND
+	...  webclient.header натиснути на елемент за назвою  Очистити  AND
+	...  webclient.header натиснути на елемент за назвою  OK  AND
+	...  loading дочекатися відображення елемента на сторінці  ${grid_search_field}  AND
+	...  input text  ${grid_search_field}  ${tender_uaid}  AND
+	...  press key  ${grid_search_field}  \\13  AND
+	...  loading дочекатись закінчення загрузки сторінки
+
+
 Заповнити текст рішення квалиіфікації
 	[Arguments]  ${text}
 	input text  ${screen_root_selector}//textarea  ${text}
@@ -421,22 +539,20 @@ dialog box заголовок повинен містити
 
 вибрати значення з випадаючого списку в гріді
 	[Arguments]  ${locator}  ${text}
-	wait until keyword succeeds  10x  1s  run keywords
-	...  click element  ${locator}  AND
+	wait until keyword succeeds  5x  1s  run keywords
+	...  click element  xpath=${locator}  AND
 	...  sleep  .5  AND
-	...  click element  ${locator}  AND
-#	...  loading дочекатися відображення елемента на сторінці  ${milestone_dropdown_list}  timeout=1s  AND
-	...  click element  ${milestone_dropdown_list}//*[text()="${text}"]  AND
+	...  click element  xpath=${locator}  AND
+	...  click element  xpath=${milestone_dropdown_list}//*[text()="${text}"]  AND
 	...  loading дочекатись закінчення загрузки сторінки
 
 
 ввести значення в поле в гріді
 	[Arguments]  ${locator}  ${text}
-	wait until keyword succeeds  10x  1s  run keywords
-	...  click element  ${locator}  AND
-	...  click element  ${locator}  AND
-#	...  loading дочекатися відображення елемента на сторінці  ${locator}//input  timeout=1s  AND
-	...  input text  ${locator}//input  ${text}  AND
+	wait until keyword succeeds  5x  1s  run keywords
+	...  click element  xpath=${locator}  AND
+	...  click element  xpath=${locator}  AND
+	...  input text  xpath=${locator}//input|${locator}//textarea  ${text}  AND
 	...  press key  //body  \\09  AND
 	...  loading дочекатись закінчення загрузки сторінки
 
@@ -447,7 +563,7 @@ dialog box заголовок повинен містити
 	wait until keyword succeeds  10x  1s  run keywords
 	...  click element  ${locator}  AND
 	...  wait until element is visible  ${dropdown_table_locator}  AND
-	...  click element  ${dropdown_table_locator}//*[text()="${text}"]  AND
+	...  click element  ${dropdown_table_locator}//*[contains(text(), "${text}")]  AND
 	...  loading дочекатись закінчення загрузки сторінки
 
 

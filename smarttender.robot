@@ -1,9 +1,10 @@
 *** Settings ***
-Library  Selenium2Screenshots
-Library  String
-Library  DateTime
-Resource  webclient.robot
-Library  smarttender_service.py
+Library  	Selenium2Screenshots
+Library  	String
+Library  	DateTime
+Resource  	webclient.robot
+Library  	smarttender_service.py
+Variables	smarttender_service.py
 
 
 *** Variables ***
@@ -45,8 +46,6 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
 	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
 	maximize browser window
-#	Set Window Position   @{USERS.users['${username}'].position}
-#	Set Window Size       @{USERS.users['${username}'].size}
 	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
 
 
@@ -59,19 +58,35 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  Це ключове слово викликається в циклі для кожної ролі, яка бере участь в поточному сценарії.
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
-	${tender_data}  replace_delivery_address  ${tender_data}
-	${tender_data}  run keyword if
-	...  'tender_owner' in '${username.lower()}'  adapt_data  ${tender_data}
-	...  ELSE  set variable  ${tender_data}
+
+	${tedner_data}  adapt_data  ${tender_data}
+	${status}  run keyword and return status  replace_delivery_address  ${tender_data}
+	${tender_data}  run keyword if  ${status}  replace_delivery_address  ${tender_data}  ELSE  set variable  ${tender_data}
+
 	log  ${tender_data}
 	log to console  ${tender_data}
 	[Return]  ${tender_data}
 
 
+Підготувати дані для оголошення не плану
+	[Arguments]  ${tender_data}
+	${tender_data}  replace_delivery_address  ${tender_data}
+	${tender_data}  run keyword if
+	...  'tender_owner' in '${username.lower()}'  adapt_data  ${tender_data}
+	...  ELSE  set variable  ${tender_data}
+	[Return]  ${tender_data}
+
+
+Підготувати дані для оголошення плану
+  	[Arguments]  ${tender_data}
+	${tedner_data}  adapt_data  ${tender_data}
+  	[Return]  ${tender_data}
+
+
 Створити тендер
 	[Arguments]   ${username}  ${tender_data}
 	[Documentation]   Створити тендер з початковими даними tender_data. Повернути uaid створеного тендера.
-	${tender_data}  Get From Dictionary  ${tender_data}  data
+	${tender_data}  get from dictionary  ${tender_data}  data
 	${multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${SPACE}multilot  ${EMPTY}
 	run keyword  Оголосити закупівлю ${mode}${multilot}  ${tender_data}
 	${tender_uaid}  webclient.отримати номер тендера
@@ -1585,13 +1600,127 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_data}
     [Documentation]  Створити план з початковими даними tender_data. Повернути uaid створеного плану.
 	log to console  Створити план
+	${tender_data}  get from dictionary  ${tender_data}  data
+
+	webclient.робочий стіл натиснути на елемент за назвою  Планы закупок(тестовые)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати план закупівель
+
+
+	${procurementMethodType_en}  			set variable  					${tender_data['tender']['procurementMethodType']}
+	${procurementMethodType}  				get_en_procurement_method_type  ${procurementMethodType_en}
+	${tenderPeriod_startDate_not_formated}  set variable  					${tender_data['tender']['tenderPeriod']['startDate']}
+	${budget_description}  					set variable  					${tender_data['budget']['description']}
+	${budget_amount}  						set variable  					${tender_data['budget']['amount']}
+	${budget_id}  							set variable  					${tender_data['classification']['id']}  	####  ?????
+	${additionalClassifications_status}  	${additionalClassifications}  	run keyword and ignore error  set variable  ${tender_data['additionalClassifications']}
+
+	create_plan заповнити "Тип процедури закупівлі"  							${procurementMethodType}
+	create_plan заповнити "Орієнтований початок процедури закупівлі"  			${tenderPeriod_startDate_not_formated}
+	create_plan заповнити "Конкретна назва предмету закупівлі"  				${budget_description}
+	create_plan заповнити "Рік з"  												${tenderPeriod_startDate_not_formated}
+	create_plan заповнити "Очікувана вартість закупівлі"  						${budget_amount}
+	create_plan заповнити "Коди відповідних класифікаторів предмета закупівлі"  ${budget_id}
+	run keyword if  '${additionalClassifications_status}' == 'PASS'
+	...  Заповнити additionalClassifications для плану  						${additionalClassifications}
+
+	${row}  set variable  2
+	:FOR  ${item}  IN  @{tender_data['items']}
+	\  webclient.header натиснути на елемент за назвою  Додати елемент плану
+	\  ${classification_id}  	set variable  ${item['classification']['id']}
+	\  ${description}  			set variable  ${item['description']}
+	\  ${unit_name}  			set variable  ${item['unit']['name']}
+	\  ${quantity}  			set variable  ${item['quantity']}
+	\  ${deliveryDate}  		set variable  ${item['deliveryDate']['endDate']}
+
+	\  create_plan заповнити "Коди відповідних класифікаторів предмета закупівлі"
+	\  ...											${classification_id}  	row=${row}
+	\  create_plan заповнити "Назва номенклатури"  	${description}  		row=${row}
+	\  create_plan заповнити "Од. вим."  			${unit_name}  			row=${row}
+	\  create_plan заповнити "Кількість"  			${quantity}  			row=${row}
+	\  create_plan заповнити "Дата поставки"  		${deliveryDate}  		row=${row}
+	\  ${additionalClassifications_status}  ${additionalClassifications}  run keyword and ignore error  set variable  ${item['additionalClassifications']}
+	\  run keyword if  '${additionalClassifications_status}' == 'PASS'  Заповнити additionalClassifications для плану  ${additionalClassifications}  row=${row}
+	\  ${row}  evaluate  ${row} + 1
+
+	webclient.header натиснути на елемент за назвою  Зберегти
+	webclient.header натиснути на елемент за назвою  Синхронізувати з ProZorro
+	dialog box заголовок повинен містити  Накласти ЕЦП на план?
+	dialog box натиснути кнопку  Ні
+	screen заголовок повинен містити  Текстовий документ
+	click element   ${screen_root_selector}//*[@alt="Close"]
+	sleep  5
+	${planID}  webclient.отримати номер тендера
     [Return]  ${planID}
+
+
+Заповнити additionalClassifications для плану
+	[Arguments]  ${additionalClassifications}  ${row}=1
+	:FOR  ${additionalClassification}  IN  @{additionalClassifications}
+	\  ${additionalClassification_scheme}  	set variable  ${additionalClassification['scheme']}
+	\  ${additionalClassification_id}		set variable  ${additionalClassification['id']}
+	\  create_plan заповнити "Дод.класифікація-Тип"  ${additionalClassification_scheme}  	row=${row}
+	\  create_plan заповнити "Дод.класифікація-Код"  ${additionalClassification_id}  		row=${row}
+
+
+Внести зміни в план
+	[Arguments]  ${username}  ${tender_uaid}  ${field_name}  ${value}
+	log to console  Внести зміни в план
+
+	знайти план у webclient  ${tender_uaid}
+	header натиснути на елемент за назвою  Коригувати план закупівель
+	header натиснути на елемент за назвою  Коригувати
+	${value}  run keyword if  "${field_name}" == "items[0].deliveryDate.endDate"  convert date  ${value}  result_format=%Y-%m-%dT%H:%M:%S+03:00  date_format=%Y-%m-%dT%H:%M:%S.%f+03:00
+	...  ELSE  set variable  ${value}
+	run keyword if
+	...  "${field_name}" == "budget.description"  create_plan заповнити "Конкретна назва предмету закупівлі"  ${value}  ELSE IF
+	...  "${field_name}" == "budget.amount"  create_plan заповнити "Очікувана вартість закупівлі"  ${value}  ELSE IF
+	...  "${field_name}" == "items[0].deliveryDate.endDate"  create_plan заповнити "Дата поставки"  ${value}  row=2  ELSE IF
+	...  "${field_name}" == "items[0].quantity"  create_plan заповнити "Кількість"  ${value}  row=2  ELSE IF
+	...  "${field_name}" == "budget.period"  run keywords  log to console  Внести зміни в план  AND  no operation  row=2  ELSE IF
+
+	header натиснути на елемент за назвою  Зберегти
+	dialog box заголовок повинен містити  Накласти ЕЦП на план?
+	dialog box натиснути кнопку  Ні
+	screen заголовок повинен містити  Текстовий документ
+	click element   ${screen_root_selector}//*[@alt="Close"]
+
+
+Додати предмет закупівлі в план
+ 	[Arguments]  ${username}  ${tender_uaid}  ${item}
+	header натиснути на елемент за назвою  Коригувати план закупівель
+	header натиснути на елемент за назвою  Коригувати
+
+ 	webclient.header натиснути на елемент за назвою  Додати елемент плану
+ 	${row}  set variable  4
+	${classification_id}  		set variable  ${item['classification']['id']}
+	${description}  			set variable  ${item['description']}
+	${unit_name_not_converted}  set variable  ${item['unit']['name']}
+	${unit_name}				set variable  ${unitname_dict_smartweb['${unit_name_not_converted}']}
+	${quantity}  				set variable  ${item['quantity']}
+	${deliveryDate}  			set variable  ${item['deliveryDate']['endDate']}
+
+	create_plan заповнити "Коди відповідних класифікаторів предмета закупівлі"
+	...											${classification_id}  	row=${row}
+	create_plan заповнити "Назва номенклатури"  	${description}  		row=${row}
+	create_plan заповнити "Од. вим."  			${unit_name}  			row=${row}
+	create_plan заповнити "Кількість"  			${quantity}  			row=${row}
+	create_plan заповнити "Дата поставки"  		${deliveryDate}  		row=${row}
+	${additionalClassifications_status}  ${additionalClassifications}  run keyword and ignore error  set variable  ${item['additionalClassifications']}
+	run keyword if  '${additionalClassifications_status}' == 'PASS'  Заповнити additionalClassifications для плану  ${additionalClassifications}  row=${row}
+
+	header натиснути на елемент за назвою  Зберегти
+	dialog box заголовок повинен містити  Накласти ЕЦП на план?
+	dialog box натиснути кнопку  Ні
+	screen заголовок повинен містити  Текстовий документ
+	click element   ${screen_root_selector}//*[@alt="Close"]
 
 
 Пошук плану по ідентифікатору
     [Arguments]  ${username}  ${planID}
     [Documentation]  Знайти план з uaid рівним tender_uaid.
-	smarttender.перейти до сторінки планів
+	smarttender.перейти до сторінки планів  ${username}
 	smarttender.сторінка_планів ввести текст в поле пошуку  ${planID}
     smarttender.сторінка_планів виконати пошук
 	smarttender.сторінка_планів перейти за першим результатом пошуку
@@ -1600,7 +1729,10 @@ get_item_deliveryAddress_value
 
 
 перейти до сторінки планів
-    go to  https://test.smarttender.biz/plans/
+	[Arguments]  ${username}
+	${mi}  set variable if  'tender_owner' in '${username.lower()}'  2  1
+    go to  https://test.smarttender.biz/plans/?q&mi=${mi}&p=1&af&at
+    loading дочекатись закінчення загрузки сторінки
 
 
 Отримати інформацію із плану
@@ -1616,7 +1748,15 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${lot_id}=${Empty}
     [Documentation]  Видалити з плану tender_uaid предмет з item_id в описі (предмет може бути прив'язаним до лоту з lot_id в описі, якщо lot_id != Empty).
 	log to console  Видалити предмет закупівлі плану
-	debug
+	header натиснути на елемент за назвою  Коригувати план закупівель
+	header натиснути на елемент за назвою  Коригувати
+	click element  //*[contains(text(), "${item_id}")]
+	header натиснути на елемент за назвою  Видалити
+	header натиснути на елемент за назвою  Зберегти
+	dialog box заголовок повинен містити  Накласти ЕЦП на план?
+	dialog box натиснути кнопку  Ні
+	screen заголовок повинен містити  Текстовий документ
+	click element   ${screen_root_selector}//*[@alt="Close"]
 
 
 Оновити сторінку з планом

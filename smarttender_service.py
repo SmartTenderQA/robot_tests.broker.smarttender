@@ -5,6 +5,43 @@ import re
 import requests
 
 
+unitname_dict_smartweb = {
+    u'кілограми': u'кг',
+    u'літр': u'л',
+    u'пачок': u'пач.',
+    u'метри': u'м',
+    u'послуга': u'умов.',
+    u'метри кубічні': u'м3',
+    u'ящик': u'ящ',
+    u'тони': u'т',
+    u'кілометри': u'км',
+    u'місяць': u'міс',
+    u'пачка': u'пачка',
+    u'упаковка': u'упаков',
+    u'гектар': u'га',
+    u'Флакон': u'флак'
+}
+
+method_types = {
+    u'belowThreshold': u'Допорогові закупівлі',
+    u'aboveThresholdUA': u'Відкриті торги',
+    u'aboveThresholdEU': u'Відкриті торги з публікацією англійською мовою',
+    u'reporting': u'Звіт про укладений договір',
+    u'negotiation': u'Переговорна процедура',
+    u'negotiation.quick': u'Переговорна процедура (скорочена)',
+    u'aboveThresholdUA.defense': u'Переговорна процедура для потреб оборони',
+    u'esco': u'Відкриті торги для закупівлі енергосервісу',
+    u'belowThresholdRFP': u'Запит цінових пропозицій',
+    u'aboveThresholdTS': u'Двохетапний тендер',
+    u'competitiveDialogueUA.stage2': u'Конкурентний діалог 2-ий етап',
+    u'competitiveDialogueEU.stage2': u'Конкурентний діалог з публікацією англійською мовою 2-ий етап',
+    u'competitiveDialogueUA': u'Конкурентний діалог 1-ий етап',
+    u'competitiveDialogueEU': u'Конкурентний діалог з публікацією англійською мовою 1-ий етап',
+    u'closeFrameworkAgreementUA': u'Укладання рамкової угоди',
+    u'closeFrameworkAgreementSelectionUA': u'Відбір для закупівлі за рамковою угодою',
+}
+
+
 def convert_page_values(field, value):
     global ret
     if 'locality' in field or 'postalCode' in field or 'streetAddress' in field:
@@ -125,29 +162,15 @@ def convert_unit_name(value):
 
 
 def convert_procurementMethodType(value):
-    method_types = {
-        u'belowThreshold': u'Допорогові закупівлі',
-        u'aboveThresholdUA': u'Відкриті торги',
-        u'aboveThresholdEU': u'Відкриті торги з публікацією англійською мовою',
-        u'reporting': u'Звіт про укладений договір',
-        u'negotiation': u'Переговорна процедура',
-        u'negotiation.quick': u'Переговорна процедура (скорочена)',
-        u'aboveThresholdUA.defense': u'Переговорна процедура для потреб оборони',
-        u'esco': u'Відкриті торги для закупівлі енергосервісу',
-        u'belowThresholdRFP': u'Запит цінових пропозицій',
-        u'aboveThresholdTS': u'Двохетапний тендер',
-        u'competitiveDialogueUA.stage2': u'Конкурентний діалог 2-ий етап',
-        u'competitiveDialogueEU.stage2': u'Конкурентний діалог з публікацією англійською мовою 2-ий етап',
-        u'competitiveDialogueUA': u'Конкурентний діалог 1-ий етап',
-        u'competitiveDialogueEU': u'Конкурентний діалог з публікацією англійською мовою 1-ий етап',
-        u'closeFrameworkAgreementUA': u'Укладання рамкової угоди',
-        u'closeFrameworkAgreementSelectionUA': u'Відбір для закупівлі за рамковою угодою',
-    }
     if value in method_types.values():
         result = method_types.keys()[method_types.values().index(value)]
     else:
         result = value
     return result
+
+
+def get_en_procurement_method_type(value):
+    return method_types[value]
 
 
 def convert_currency(value):
@@ -261,29 +284,12 @@ def replace_procuringEntity(tender_data):
 
 
 def replace_unit_name(tender_data):
-    tender_data_replace = {
-        u'кілограми': u'кг',
-        u'літр': u'л',
-        u'пачок': u'пач.',
-        u'метри': u'м',
-        u'послуга': u'умов.',
-        u'метри кубічні': u'м3',
-        u'ящик': u'ящ',
-        u'тони': u'т',
-        u'кілометри': u'км',
-        u'місяць': u'міс',
-        u'пачка': u'пачка',
-        u'упаковка': u'упаков',
-        u'гектар': u'га',
-        u'Флакон': u'флак'
-    }
-
-    list_of_keys = list(tender_data_replace.keys())
+    list_of_keys = list(unitname_dict_smartweb.keys())
 
     for item in tender_data['data']['items']:
         name = item['unit']['name']
         if name in list_of_keys:
-            item['unit']['name'] = tender_data_replace[name]
+            item['unit']['name'] = unitname_dict_smartweb[name]
 
     return tender_data
 
