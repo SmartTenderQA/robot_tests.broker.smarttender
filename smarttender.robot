@@ -369,19 +369,67 @@ ${view auction link}                       //*[@data-qa="link-view"]
     click element   ${screen_root_selector}//*[@alt="Close"]
 
 
+Оголосити закупівлю negotiation multilot
+	[Arguments]  ${tender_data}
+	log to console  Оголосити закупівлю negotiation multilot
+	webclient.робочий стіл натиснути на елемент за назвою  Переговорная процедура(тестовые)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати
+	dialog box заголовок повинен містити  Увага
+	dialog box натиснути кнопку  ОК
+	webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+
+	# ОСНОВНІ ПОЛЯ
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${cause}  set variable  ${tender_data['cause']}
+	${cause_description}  set variable  ${tender_data['causeDescription']}
+
+	:FOR  ${field}  in
+	...  title
+	...  description
+	...  cause
+	...  cause_description
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+	# ЛОТИ
+	${lot_index}  set variable  1
+	:FOR  ${lot}  IN  @{tender_data['lots']}
+	\  run keyword if  '${lot_index}' != '1'  run keywords
+	\  ...  webclient.додати item бланк  AND
+	\  ...  Змінити номенклатуру на лот
+	\  Заповнити поля лоту  ${lot}
+	\  ${lot_id}  set variable  ${lot['id']}
+	\  Заповнити поля для items по lot_id  ${lot_id}  @{tender_data['items']}
+	\  ${lot_index}  evaluate  ${lot_index}+1
+	debug
+
+
+Заповнити поля для items по lot_id
+	[Arguments]  ${lot_id}  @{items}
+	:FOR  ${item}  IN  @{items}
+	\  run keyword if  '${lot_id}' == '${item['relatedLot']}'  run keywords
+	\  ...  webclient.додати item бланк  AND
+	\  ...  Заповнити поля предмету  ${item}
+
+
 Заповнити поля лоту
     [Arguments]  ${lot}
     ${title}  set variable  ${lot['title']}
 	${description}  set variable  ${lot['description']}
     ${value.amount}  set variable  ${lot['value']['amount']}
 	${value.valueAddedTaxIncluded}  set variable  ${lot['value']['valueAddedTaxIncluded']}
-	${minimalStep.amount}  set variable  ${lot['minimalStep']['amount']}
-    :FOR  ${field}  in
+	${minimalStep_status}  ${minimalStep.amount}  run keyword and ignore error  set variable  ${lot['minimalStep']['amount']}
+
+	${field_list}  create list
 	...  title
 	...  description
 	...  value.amount
 	...  value.valueAddedTaxIncluded
-	...  minimalStep.amount
+	run keyword if  '${minimalStep_status}' == 'PASS'  append to list  ${field_list}  minimalStep.amount
+
+    :FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для lot ${field}  ${${field}}
 
 
@@ -2565,3 +2613,8 @@ loading дочекатися зникнення елемента зі сторі
 	Wait Until Page Does Not Contain Element  ${auction loading}  30
 	Sleep  1
 ################################################################################
+Змінити номенклатуру на лот
+	wait until keyword succeeds  5x  .1  run keywords
+	...  click element  ${active_tab_in_screen}//*[contains(@class, "rowselected")]//*[text()="Номенклатура"]  AND
+	...  click element  ${active_tab_in_screen}//*[contains(@class, "rowselected")]//*[text()="Номенклатура"]  AND
+	...  click element  //*[@class="dhxcombo_option_text" and text()= "Лот"]

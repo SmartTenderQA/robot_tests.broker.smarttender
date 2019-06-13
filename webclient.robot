@@ -81,6 +81,18 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 	заповнити simple input  ${locator}  ${text}
 
 
+заповнити поле cause
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@data-name="KREASON"]//input
+	заповнити flex input  ${locator}  п. 1, ч. 2, cт. 35
+
+
+заповнити поле cause_description
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@data-name="REASONING"]//input
+	заповнити simple input  ${locator}  ${text}
+
+
 заповнити поле mainProcurementCategory
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="IDCATGROUP"]
@@ -97,7 +109,7 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 заповнити поле для lot title
 	[Arguments]  ${title}
 	${locator}  set variable  //*[@data-name="LOT_TITLE"]//input
-	заповнити flex input  ${locator}  ${title}  check=${False}
+	заповнити flex input  ${locator}  ${title}  check=${True}
 
 
 заповнити поле для lot description
