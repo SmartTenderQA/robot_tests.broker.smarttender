@@ -1767,7 +1767,7 @@ get_item_deliveryAddress_value
 	${classification_id}  		set variable  ${item['classification']['id']}
 	${description}  			set variable  ${item['description']}
 	${unit_name_not_converted}  set variable  ${item['unit']['name']}
-	${unit_name}				evaluate  replace_unit_name_dict  ${unit_name_not_converted}
+	${unit_name}				evaluate  replace_unit_name_dict  u'${unit_name_not_converted}'
 	${quantity}  				set variable  ${item['quantity']}
 	${deliveryDate}  			set variable  ${item['deliveryDate']['endDate']}
 
@@ -2142,15 +2142,29 @@ get_item_deliveryAddress_value
 
 
 Видалити донора
-	[Arguments]  ${username}  ${command}  ${tender_uaid}  ${json}
-	log to console  Видалити донора
-	debug
+	[Arguments]  ${username}  ${tender_auid}  ${json}
+	знайти тендер у webclient  ${tender_uaid}
+	header натиснути на елемент за назвою  Змінити
+	операція над чекбоксом  ${False}  //*[@data-name="FUNDERS_CB"]//input
+	header натиснути на елемент за назвою  Зберегти
+	${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
 
 
 Додати донора
-	[Arguments]  ${username}  ${command}  ${tender_uaid}  ${json}
-	log to console  Додати донора
-	debug
+	[Arguments]  ${username}  ${tender_auid}  ${json}
+	знайти тендер у webclient  ${tender_uaid}
+	header натиснути на елемент за назвою  Змінити
+	операція над чекбоксом  ${True}  //*[@data-name="FUNDERS_CB"]//input
+	заповнити flex autocomplete field  //*[@data-name="FUNDERID"]//input  ${json['identifier']['legalName']}  check=${False}
+	header натиснути на елемент за назвою  Зберегти
+	${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
+
 
 
 ########################################################################################################
