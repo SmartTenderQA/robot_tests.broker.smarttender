@@ -89,7 +89,6 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${tender_data}  get from dictionary  ${tender_data}  data
 	${multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${SPACE}multilot  ${EMPTY}
 	run keyword  Оголосити закупівлю ${mode}${multilot}  ${tender_data}
-	webclient.пошук тендера по title  ${tender_data['title']}
 	${tender_uaid}  webclient.отримати номер тендера
 	[Return]  ${tender_uaid}
 	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"  run keywords
@@ -113,7 +112,6 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
-
 	:FOR  ${field}  in
 	...  enquiryPeriod.endDate
 	...  tenderPeriod.startDate
@@ -149,6 +147,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
 	loading дочекатись закінчення загрузки сторінки
+	webclient.пошук тендера по title  ${tender_data['title']}
 
 
 Оголосити закупівлю openeu		#Відкриті торги з публікацією англійською мовою
@@ -204,6 +203,59 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	loading дочекатись закінчення загрузки сторінки
 	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
 	dialog box натиснути кнопку  Ні
+	webclient.пошук тендера по title  ${tender_data['title']}
+
+
+Оголосити закупівлю openeu multilot
+	[Arguments]  ${tender_data}
+	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати
+    webclient.вибрати тип процедури  Відкриті торги з публікацією англійською мовою
+    webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+    # ОСНОВНІ ПОЛЯ
+	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${title_en}  set variable  ${tender_data['title_en']}
+	${description_en}  set variable  ${tender_data['description_en']}
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+	:FOR  ${field}  in
+	...  tenderPeriod.endDate
+	...  title
+	...  description
+	...  title_en
+	...  description_en
+	...  mainProcurementCategory
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+    # ЛОТИ
+	:FOR  ${lot}  IN  @{tender_data['lots']}
+	\  Заповнити поля лоту  ${lot}
+
+	# ПРЕДМЕТИ
+	:FOR  ${item}  IN  @{tender_data['items']}
+	\  webclient.додати item бланк
+	\  Заповнити поля предмету  ${item}
+
+	# УМОВИ ОПЛАТИ
+	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
+	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
+
+    webclient.додати тендерну документацію
+	webclient.header натиснути на елемент за назвою  Додати
+    ${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+    webclient.screen заголовок повинен містити  Завантаження документації
+    click element   ${screen_root_selector}//*[@alt="Close"]
+    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box натиснути кнопку  Ні
+	webclient.пошук тендера по title  ${tender_data['title']}
 
 
 Оголосити закупівлю openua multilot
@@ -219,7 +271,6 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
-
 	:FOR  ${field}  in
 	...  tenderPeriod.endDate
 	...  title
@@ -236,32 +287,27 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  webclient.додати item бланк
 	\  Заповнити поля предмету  ${item}
 
-
 	# УМОВИ ОПЛАТИ
 	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
 	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
 
     webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
-
     ${status}  ${ret}  run keyword and ignore error
 	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
 	...  dialog box натиснути кнопку  Так
-
 	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
-
 	${status}  ${ret}  run keyword and ignore error
 	...  dialog box заголовок повинен містити  Увага! Бюджет перевищує
 	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
 	...  dialog box натиснути кнопку  Так
-
     webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
-
     wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
 	dialog box натиснути кнопку  Ні
+	webclient.пошук тендера по title  ${tender_data['title']}
 
 
 Оголосити закупівлю reporting  #Договір
@@ -300,16 +346,14 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
 	...  dialog box натиснути кнопку  Так
-
 	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
-
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
 	loading дочекатись закінчення загрузки сторінки
-
 	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
 	dialog box натиснути кнопку  Ні
+	webclient.пошук тендера по title  ${tender_data['title']}
 
 
 Оголосити закупівлю belowThreshold multilot		#Допорог мультилот
@@ -354,19 +398,17 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	# УМОВИ ОПЛАТИ
 	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
 	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
-
     webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
-
     ${status}  ${ret}  run keyword and ignore error
 	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
 	...  dialog box натиснути кнопку  Так
-
 	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
     webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
+	webclient.пошук тендера по title  ${tender_data['title']}
 
 
 Оголосити закупівлю negotiation multilot
@@ -418,6 +460,8 @@ ${view auction link}                       //*[@data-qa="link-view"]
     [Arguments]  ${lot}
     ${title}  set variable  ${lot['title']}
 	${description}  set variable  ${lot['description']}
+	${title_en_status}  ${title_en}              run keyword and ignore error  set variable  ${lot['title_en']}
+	${description_en_status}  ${description_en}  run keyword and ignore error  set variable  ${lot['description_en']}
     ${value.amount}  set variable  ${lot['value']['amount']}
 	${value.valueAddedTaxIncluded}  set variable  ${lot['value']['valueAddedTaxIncluded']}
 	${minimalStep_status}  ${minimalStep.amount}  run keyword and ignore error  set variable  ${lot['minimalStep']['amount']}
@@ -428,6 +472,8 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  value.amount
 	...  value.valueAddedTaxIncluded
 	run keyword if  '${minimalStep_status}' == 'PASS'  append to list  ${field_list}  minimalStep.amount
+	run keyword if  '${title_en_status}' == 'PASS' and '${mode}' == 'openeu'        append to list  ${field_list}  title_en
+	run keyword if  '${description_en_status}' == 'PASS' and '${mode}' == 'openeu'  append to list  ${field_list}  description_en
 
     :FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для lot ${field}  ${${field}}
@@ -1045,8 +1091,19 @@ get_item_deliveryAddress_value
     [Documentation]  Видалити з тендера tender_uaid предмет з item_id в описі (предмет може бути прив'язаним до лоту з lot_id в описі, якщо lot_id != Empty).    
 	log to console  Видалити предмет закупівлі
 	debug
-	
-	
+	header натиснути на елемент за назвою  Змінити
+	header натиснути на елемент за назвою  Коригувати
+	# ПРЕДМЕТИ
+	видалити item по id  ${item_id}
+	#  Зберегти
+    webclient.header натиснути на елемент за назвою  Зберегти
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
+	run keyword if  'below' not in '${mode}'  run keywords
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+	...  dialog box натиснути кнопку  Ні
+
+
 Створити лот
     [Arguments]  ${username}  ${tender_uaid}  ${lot}
     [Documentation]  Додати лот lot до тендера tender_uaid.   
@@ -1059,7 +1116,22 @@ get_item_deliveryAddress_value
     [Documentation]  Додати лот lot з предметом item до тендера tender_uaid.   
 	log to console  Створити лот із предметом закупівлі
 	debug
-	
+	header натиснути на елемент за назвою  Змінити
+	header натиснути на елемент за назвою  Коригувати
+	# ЛОТИ
+	Заповнити поля лоту  ${lot}
+
+	# ПРЕДМЕТИ
+	webclient.додати item бланк
+	Заповнити поля предмету  ${item}
+    #  Зберегти
+    webclient.header натиснути на елемент за назвою  Зберегти
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
+	run keyword if  'below' not in '${mode}'  run keywords
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+	...  dialog box натиснути кнопку  Ні
+
 	
 Отримати інформацію із лоту
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${field_name}
@@ -1080,23 +1152,69 @@ get_item_deliveryAddress_value
     
 Змінити лот
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${fieldname}  ${fieldvalue}
-    [Documentation]  Змінити значення поля fieldname лоту з lot_id в описі для тендера tender_uaid на fieldvalue   
-	log to console  Змінити лот
-	debug
-	
+    [Documentation]  Змінити значення поля fieldname лоту з lot_id в описі для тендера tender_uaid на fieldvalue
+	header натиснути на елемент за назвою  Змінити
+	header натиснути на елемент за назвою  Коригувати
+	#  Стати на комірку з потрібним лотом
+	${lot_row_locator}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//td[contains(text(),"${lot_id}")]/ancestor::tr[1]
+	click element  ${lot_row_locator}
+	wait until page contains element  ${lot_row_locator}[contains(@class,"rowselected")]  5
+	#  Змінити поле лоту
+    run keyword  webclient.заповнити поле для lot ${fieldname}  ${fieldvalue}
+    #  Зберегти
+    webclient.header натиснути на елемент за назвою  Зберегти
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
+	run keyword if  'below' not in '${mode}'  run keywords
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+	...  dialog box натиснути кнопку  Ні
+
 	
 Додати предмет закупівлі в лот
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${item}
     [Documentation]  Додати предмет item в лот з lot_id в описі для тендера tender_uaid.   
 	log to console  Додати предмет закупівлі в лот
 	debug
-	
+	header натиснути на елемент за назвою  Змінити
+	header натиснути на елемент за назвою  Коригувати
+	#  Стати на комірку з потрібним лотом
+	${lot_row_locator}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//td[contains(text(),"${lot_id}")]/ancestor::tr[1]
+	click element  ${lot_row_locator}
+	wait until page contains element  ${lot_row_locator}[contains(@class,"rowselected")]  5
+	# ПРЕДМЕТИ
+	webclient.додати item бланк
+	Заповнити поля предмету  ${item}
+    #  Зберегти
+    webclient.header натиснути на елемент за назвою  Зберегти
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
+	run keyword if  'below' not in '${mode}'  run keywords
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+	...  dialog box натиснути кнопку  Ні
+
 	
 Завантажити документ в лот
     [Arguments]  ${username}  ${filepath}  ${tender_uaid}  ${lot_id}
-    [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до лоту з lot_id в описі для тендера tender_uaid   
-	log to console  Завантажити документ в лот
-	debug
+    [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до лоту з lot_id в описі для тендера tender_uaid
+	webclient.header натиснути на елемент за назвою  Коригувати
+	webclient.активувати вкладку  Документи
+	#  Стати на комірку з потрібним лотом
+	${lot_row_locator}  set variable  xpath=//*[@data-name="TREEDOCS"]//td[contains(text(),"${lot_id}")]/ancestor::tr[1]
+	click element  ${lot_row_locator}
+	wait until page contains element  ${lot_row_locator}[contains(@class,"rowselected")]  5
+	#  Додаєм документ
+	webclient.натиснути додати документ
+	loading дочекатись закінчення загрузки сторінки
+	webclient.загрузити документ  ${filepath}
+	webclient.header натиснути на елемент за назвою  Зберегти
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
+	run keyword if  'below' not in '${mode}'  run keywords
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+	...  dialog box натиснути кнопку  Ні
+	webclient.screen заголовок повинен містити  Завантаження документації
+	click element   ${screen_root_selector}//*[@alt="Close"]
+    sleep  60
 	
 	
 Видалити лот
@@ -1104,7 +1222,18 @@ get_item_deliveryAddress_value
     [Documentation]  Видалити лот з lot_id в описі для тендера tender_uaid.   
 	log to console  Видалити лот
 	debug
-	
+	header натиснути на елемент за назвою  Змінити
+	header натиснути на елемент за назвою  Коригувати
+	# ЛОТИ
+	видалити lot по id  ${lot_id}
+	#  Зберегти
+    webclient.header натиснути на елемент за назвою  Зберегти
+	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword and ignore error  dialog box натиснути кнопку  Так
+	run keyword if  'below' not in '${mode}'  run keywords
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+	...  dialog box натиснути кнопку  Ні
+
 
 Отримати інформацію з документа до лоту
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${doc_id}  ${field}
@@ -1321,15 +1450,15 @@ get_item_deliveryAddress_value
     
 Відповісти на вимогу про виправлення умов закупівлі
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}
-    [Documentation]  Відповісти на вимогу complaintID про виправлення умов закупівлі для тендера tender_uaid, використовуючи при цьому дані answer_data.  
-	log to console  Відповісти на вимогу про виправлення умов закупівлі
+    [Documentation]  Відповісти на вимогу complaintID про виправлення умов закупівлі для тендера tender_uaid, використовуючи при цьому дані answer_data.
 	webclient.знайти тендер у webclient  ${tender_uaid}
 	#  знаходимо потрібну вимогу
 	${tab_status}  run keyword and return status  webclient.активувати вкладку  Звернення за умовами тендеру
 	run keyword if  "${tab_status}" == "False"    webclient.активувати вкладку  Оскарження умов тендеру
 	webclient.header натиснути на елемент за назвою  Перечитати
 	${complaintID_search_field}  set variable  xpath=((//*[@data-type="GridView"])[2]//td//input)[1]
-    input text  ${complaintID_search_field}  ${complaintID}
+    clear input by JS  ${complaintID_search_field}
+    Input Type Flex  ${complaintID_search_field}  ${complaintID}
 	press key   ${complaintID_search_field}  \\13
 	loading дочекатись закінчення загрузки сторінки
 	#  вносимо відповідь на вимогу

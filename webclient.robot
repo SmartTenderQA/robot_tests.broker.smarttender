@@ -112,10 +112,22 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 	заповнити flex input  ${locator}  ${title}  check=${True}
 
 
+заповнити поле для lot title_en
+	[Arguments]  ${title}
+	${locator}  set variable  //*[@data-name="LOT_TITLE_EN"]//input
+	заповнити flex input  ${locator}  ${title}
+
+
 заповнити поле для lot description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="LOT_DESCRIPTION"]//textarea
-	заповнити simple input  ${locator}  ${description}  #check=${False}
+	заповнити simple input  ${locator}  ${description}
+
+
+заповнити поле для lot description_en
+	[Arguments]  ${description}
+	${locator}  set variable  //*[@data-name="LOT_DESCRIPTION_EN"]//textarea
+	заповнити simple input  ${locator}  ${description}
 
 
 заповнити поле для lot value.amount
@@ -726,6 +738,30 @@ click screen header
 	[Arguments]  ${index}=1
 	${locator}  set variable  xpath=(${active_tab_in_screen}//*[@data-type="GridView"]//*[@class="dxr-group mygroup"]//*[@title="Додати"])[${index}]
 	click element  ${locator}
+	loading дочекатись закінчення загрузки сторінки
+
+
+видалити item по id
+	[Arguments]  ${item_id}  ${index}=1
+	#  Стати на комірку з потрібним предметом
+	${item_row_locator}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//td[contains(text(),"${item_id}")]/ancestor::tr[1]
+	click element  ${item_row_locator}
+	wait until page contains element  ${item_row_locator}[contains(@class,"rowselected")]  5
+    #  Видалити
+	${del_btn}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//*[@title="Видалити"][${index}]
+	click element  ${del_btn}
+	loading дочекатись закінчення загрузки сторінки
+
+
+видалити lot по id
+	[Arguments]  ${lot_id}  ${index}=1
+	#  Стати на комірку з потрібним предметом
+	${lot_row_locator}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//td[contains(text(),"${lot_id}")]/ancestor::tr[1]
+	click element  ${lot_row_locator}
+	wait until page contains element  ${lot_row_locator}[contains(@class,"rowselected")]  5
+    #  Видалити
+	${del_btn}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//*[@title="Видалити"][${index}]
+	click element  ${del_btn}
 	loading дочекатись закінчення загрузки сторінки
 
 
