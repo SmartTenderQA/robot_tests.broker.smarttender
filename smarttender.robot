@@ -452,10 +452,10 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	webclient.header натиснути на елемент за назвою  Додати
 	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
-	debug
-#	webclient.screen заголовок повинен містити  Завантаження документації
-#    click element   ${screen_root_selector}//*[@alt="Close"]
-#	webclient.пошук тендера по title  ${tender_data['title']}
+	webclient.screen заголовок повинен містити  Завантаження документації
+    click element   ${screen_root_selector}//*[@alt="Close"]
+#	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+#	dialog box натиснути кнопку  Ні
 
 
 Заповнити поля для items по lot_id
