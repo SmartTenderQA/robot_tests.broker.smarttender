@@ -133,7 +133,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	# ПРЕДМЕТИ
 	${count_item}  set variable  1
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
+	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк  index=2
 	\  Заповнити поля предмету  ${item}
 	\  ${count_item}  evaluate  ${count_item} + 1
 
@@ -459,7 +459,6 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 Оголосити закупівлю negotiation multilot
 	[Arguments]  ${tender_data}
-	log to console  Оголосити закупівлю negotiation multilot
 	webclient.робочий стіл натиснути на елемент за назвою  Переговорная процедура(тестовые)
 	webclient.header натиснути на елемент за назвою  Очистити
 	webclient.header натиснути на елемент за назвою  OK
@@ -485,20 +484,31 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${lot_index}  set variable  1
 	:FOR  ${lot}  IN  @{tender_data['lots']}
 	\  run keyword if  '${lot_index}' != '1'  run keywords
-	\  ...  webclient.додати item бланк  AND
+	\  ...  webclient.додати item бланк  index=2  AND
 	\  ...  Змінити номенклатуру на лот
 	\  Заповнити поля лоту  ${lot}
 	\  ${lot_id}  set variable  ${lot['id']}
 	\  Заповнити поля для items по lot_id  ${lot_id}  @{tender_data['items']}
 	\  ${lot_index}  evaluate  ${lot_index}+1
-	debug
+
+	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
+	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
+
+    webclient.додати тендерну документацію
+	webclient.header натиснути на елемент за назвою  Додати
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+	webclient.screen заголовок повинен містити  Завантаження документації
+    click element   ${screen_root_selector}//*[@alt="Close"]
+#	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+#	dialog box натиснути кнопку  Ні
 
 
 Заповнити поля для items по lot_id
 	[Arguments]  ${lot_id}  @{items}
 	:FOR  ${item}  IN  @{items}
 	\  run keyword if  '${lot_id}' == '${item['relatedLot']}'  run keywords
-	\  ...  webclient.додати item бланк  AND
+	\  ...  webclient.додати item бланк  index=2  AND
 	\  ...  Заповнити поля предмету  ${item}
 
 
@@ -1806,12 +1816,24 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${award_num}
     [Documentation]  Перевести постачальника під номером award_num для тендера tender_uaid в статус active.
 	знайти тендер у webclient  ${tender_uaid}
-	активувати вкладку  Пропозиції
-	grid вибрати рядок за номером  ${award_num}+1
+
+	${status}  run keyword and return status  активувати вкладку  Пропозиції
+	run keyword if  ${status} == ${False}  run keywords  активувати вкладку  Предложения (м)  AND  set variable  1  ELSE  set variable  0
+	${row_with_foledr_for_multilot}  set variable if  ${status} == ${False}  1  0
+
+	grid вибрати рядок за номером  ${award_num}+1+${row_with_foledr_for_multilot}
 	header натиснути на елемент за назвою  Кваліфікація
 	click element  //*[contains(text(), "Визначити переможцем")]
 	wait until page contains  Визнаний переможцем
 	Заповнити текст рішення квалиіфікації  Визначення переможцем
+
+	${list_of_file_args}  create_fake_doc
+	${file_path}  set variable  ${list_of_file_args[0]}
+	run keyword if  '${mode}' == 'belowThreshold'  run keywords
+	...  click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]  AND
+	...  loading дочекатись закінчення загрузки сторінки  AND
+	...  загрузити документ  ${file_path}
+
 	header натиснути на елемент за назвою  Зберегти
 	dialog box заголовок повинен містити  Ви впевнені у своєму рішенні?
 	dialog box натиснути кнопку  Так
@@ -1831,7 +1853,7 @@ get_item_deliveryAddress_value
     ...  знайти тендер у webclient  ${tender_uaid}  AND
 	...  активувати вкладку  Пропозиції  AND
 	...  grid вибрати рядок за номером  ${award_num}+1  AND
-    ...  header натиснути на елемент за назвою  Надіслати вперед  AND
+	...  header натиснути на елемент за назвою  Надіслати вперед  AND
     ...  header натиснути на елемент за назвою  Прикріпити договір
     run keyword  редагувати поле угоди ${fieldname}  ${fieldvalue}
 
@@ -1862,6 +1884,14 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
     [Documentation]  Перевести договір під номером contract_num до тендера tender_uaid в статус active.
     debug
+
+    знайти тендер у webclient  ${tender_uaid}
+	${status}  run keyword and return status  активувати вкладку  Пропозиції
+	run keyword if  ${status} == ${False}  run keywords  активувати вкладку  Предложения (м)  AND  set variable  1  ELSE  set variable  0
+	${row_with_foledr_for_multilot}  set variable if  ${status} == ${False}  1  0
+
+	grid вибрати рядок за номером  ${award_num}+1+${row_with_foledr_for_multilot}
+    header натиснути на елемент за назвою  Прикріпити договір
 	${id}  evaluate  str(uuid.uuid4())  uuid
 	заповнити поле для угоди id  ${id}
 	${date}  get current date  result_format=%d.%m.%Y
