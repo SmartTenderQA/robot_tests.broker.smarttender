@@ -5,6 +5,7 @@ Library  	DateTime
 *** Variables ***
 ${active_tab_in_screen}  			//*[@id="pcModalMode_PW-1"]//*[@class="dxtc-content"]/div[@style="" or (not(@style) and @id)]
 ${milestone_active_row}				(//*[contains(@class, "rowselected")])[last()]
+${enum_active_row}                  //*[@data-name="GRID_CRITERIONVALUES"]//tr[contains(@class,"rowselected")]
 ${milestone_dropdown_list}			//*[@class="dhxcombolist_material" and not(contains(@style, 'display: none;'))]
 ${screen_root_selector}             //*[(@id="pcCustomDialog_PW-1" or @id="pcModalMode_PW-1") and contains(@style, "visibility: visible;")]
 ${locator_for_click_tab_tbsk}	    //*[contains(@class, "dxtc-tab")]
@@ -109,13 +110,13 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 заповнити поле для lot title
 	[Arguments]  ${title}
 	${locator}  set variable  //*[@data-name="LOT_TITLE"]//input
-	заповнити flex input  ${locator}  ${title}  check=${True}
+	заповнити simple input  ${locator}  ${title}
 
 
 заповнити поле для lot title_en
 	[Arguments]  ${title}
 	${locator}  set variable  //*[@data-name="LOT_TITLE_EN"]//input
-	заповнити flex input  ${locator}  ${title}
+	заповнити simple input  ${locator}  ${title}
 
 
 заповнити поле для lot description
@@ -155,13 +156,13 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
-	заповнити flex input  ${locator}  ${description}  #check=${False}
+	заповнити simple input  ${locator}  ${description}  #check=${False}
 
 
 заповнити поле для item description_en
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="RESOURSENAME_EN"]//input
-	заповнити flex input  ${locator}  ${description}
+	заповнити simple input  ${locator}  ${description}
 
 
 заповнити поле для item quantity
@@ -211,7 +212,7 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 заповнити поле для item deliveryAddress.locality
 	[Arguments]  ${deliveryAddress.locality}
 	${locator}  set variable  //*[@data-name="CITY_KOD"]//input
-	заповнити flex autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${False}
+	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${False}
 
 
 заповнити поле для item deliveryDate.startDate
@@ -226,6 +227,38 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 	${locator}  set variable  //*[@data-name="DDATETO"]//input
 	${formated_date}  convert date  ${deliveryDate.endDate}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S+03:00
 	заповнити поле з датою  ${locator}  ${formated_date}
+
+
+##################################################
+################## FEATURES #####################
+##################################################
+вибрати рівень прив'язки для feature
+    [Arguments]  ${featureOf}
+    webclient.вибрати значення з випадаючого списку  //*[@data-name="CRITERIONBINDINGLEVEL"]  ${featureOf}
+
+
+заповнити поле для feature title
+    [Arguments]  ${title}
+    ${locator}  set variable  //*[@data-name="CRITERIONNAME"]//input
+    заповнити simple input  ${locator}  ${title}
+
+
+заповнити поле для feature description
+    [Arguments]  ${description}
+    ${locator}  set variable  //*[@data-name="CRITERIONDESCRIPTION"]//textarea
+    заповнити simple input  ${locator}  ${description}
+
+
+заповнити поле для feature enum title
+    [Arguments]  ${title}
+    ${locator}  set variable  ${enum_active_row}//td[2]
+    ввести значення в поле в гріді  ${locator}  ${title}
+
+
+заповнити поле для feature enum value
+    [Arguments]  ${value}
+    ${locator}  set variable  ${enum_active_row}//td[4]
+    ввести значення в поле в гріді  ${locator}  "${value}"
 
 
 ##################################################
@@ -604,7 +637,7 @@ dialog box заголовок повинен містити
 вибрати значення з випадаючого списку
 	[Arguments]  ${locator}  ${text}
 	${dropdown_table_locator}  set variable  //*[contains(@class,"dxpcDropDown_DevEx") and contains(@style,"visibility: visible")]
-	wait until keyword succeeds  10x  1s  run keywords
+	wait until keyword succeeds  3x  1s  run keywords
 	...  click element  ${locator}  AND
 	...  wait until element is visible  ${dropdown_table_locator}  AND
 	...  click element  ${dropdown_table_locator}//*[contains(text(), "${text}")]  AND
@@ -737,6 +770,7 @@ click screen header
 додати item бланк
 	[Arguments]  ${index}=1
 	${locator}  set variable  xpath=(${active_tab_in_screen}//*[@data-type="GridView"]//*[@class="dxr-group mygroup"]//*[@title="Додати"])[${index}]
+	loading дочекатися відображення елемента на сторінці  ${locator}
 	click element  ${locator}
 	loading дочекатись закінчення загрузки сторінки
 

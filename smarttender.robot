@@ -90,6 +90,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${SPACE}multilot  ${EMPTY}
 	run keyword  Оголосити закупівлю ${mode}${multilot}  ${tender_data}
 	${tender_uaid}  webclient.отримати номер тендера
+	set global variable  ${tender_data}
 	[Return]  ${tender_uaid}
 	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"  run keywords
 	...  capture page screenshot        AND
@@ -112,6 +113,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+
 	:FOR  ${field}  in
 	...  enquiryPeriod.endDate
 	...  tenderPeriod.startDate
@@ -124,12 +126,20 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  mainProcurementCategory
 	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
 
+    # ДОНОРИ
+	${is_funders}  ${funders}  run keyword and ignore error  set variable  ${tender_data['funders']}
+	run keyword if  '${is_funders}' == 'PASS'  smarttender.вибрати донора  ${funders}
+
 	# ПРЕДМЕТИ
 	${count_item}  set variable  1
 	:FOR  ${item}  IN  @{tender_data['items']}
 	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
 	\  Заповнити поля предмету  ${item}
 	\  ${count_item}  evaluate  ${count_item} + 1
+
+    # ЯКІСНІ ПОКАЗНИКИ
+    ${is_features}  ${features}  run keyword and ignore error  set variable  ${tender_data['features']}
+	run keyword if  '${is_features}' == 'PASS'  smarttender.додати якісні показники  ${features}
 
 	# УМОВИ ОПЛАТИ
 	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
@@ -150,6 +160,65 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	webclient.пошук тендера по title  ${tender_data['title']}
 
 
+Оголосити закупівлю belowThreshold multilot		#Допорог мультилот
+	[Arguments]  ${tender_data}
+	log  голосити закупівлю belowThreshold multilot  WARN
+	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати
+	webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+	# ОСНОВНІ ПОЛЯ
+	${enquiryPeriod.endDate}  set variable  ${tender_data['enquiryPeriod']['endDate']}
+	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
+	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+
+	:FOR  ${field}  in
+	...  enquiryPeriod.endDate
+	...  tenderPeriod.startDate
+	...  tenderPeriod.endDate
+	...  title
+	...  description
+	...  mainProcurementCategory
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+    # ДОНОРИ
+	${is_funders}  ${funders}  run keyword and ignore error  set variable  ${tender_data['funders']}
+	run keyword if  '${is_funders}' == 'PASS'  smarttender.вибрати донора  ${funders}
+
+    # ЛОТИ
+	:FOR  ${lot}  IN  @{tender_data['lots']}
+	\  Заповнити поля лоту  ${lot}
+
+	# ПРЕДМЕТИ
+	:FOR  ${item}  IN  @{tender_data['items']}
+	\  webclient.додати item бланк
+	\  Заповнити поля предмету  ${item}
+
+    # ЯКІСНІ ПОКАЗНИКИ
+    ${is_features}  ${features}  run keyword and ignore error  set variable  ${tender_data['features']}
+	run keyword if  '${is_features}' == 'PASS'  smarttender.додати якісні показники  ${features}
+
+	# УМОВИ ОПЛАТИ
+	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
+	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
+
+    webclient.додати тендерну документацію
+	webclient.header натиснути на елемент за назвою  Додати
+    ${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+    webclient.screen заголовок повинен містити  Завантаження документації
+    click element   ${screen_root_selector}//*[@alt="Close"]
+	webclient.пошук тендера по title  ${tender_data['title']}
+
+
 Оголосити закупівлю openeu		#Відкриті торги з публікацією англійською мовою
 	[Arguments]  ${tender_data}
 	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
@@ -167,6 +236,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${title_en}  set variable  ${tender_data['title_en']}
 	${description_en}  set variable  ${tender_data['description_en']}
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+
 	:FOR  ${field}  in
 	...  tenderPeriod.endDate
 	...  value.amount
@@ -179,12 +249,20 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  mainProcurementCategory
 	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
 
+    # ДОНОРИ
+	${is_funders}  ${funders}  run keyword and ignore error  set variable  ${tender_data['funders']}
+	run keyword if  '${is_funders}' == 'PASS'  smarttender.вибрати донора  ${funders}
+
 	# ПРЕДМЕТИ
 	${count_item}  set variable  1
 	:FOR  ${item}  IN  @{tender_data['items']}
 	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
 	\  Заповнити поля предмету  ${item}
 	\  ${count_item}  evaluate  ${count_item} + 1
+
+    # ЯКІСНІ ПОКАЗНИКИ
+    ${is_features}  ${features}  run keyword and ignore error  set variable  ${tender_data['features']}
+	run keyword if  '${is_features}' == 'PASS'  smarttender.додати якісні показники  ${features}
 
 	# УМОВИ ОПЛАТИ
 	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
@@ -230,14 +308,22 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  mainProcurementCategory
 	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
 
+    # ДОНОРИ
+	${is_funders}  ${funders}  run keyword and ignore error  set variable  ${tender_data['funders']}
+	run keyword if  '${is_funders}' == 'PASS'  smarttender.вибрати донора  ${funders}
+
     # ЛОТИ
 	:FOR  ${lot}  IN  @{tender_data['lots']}
 	\  Заповнити поля лоту  ${lot}
 
 	# ПРЕДМЕТИ
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  webclient.додати item бланк
+	\  webclient.додати item бланк  index=2
 	\  Заповнити поля предмету  ${item}
+
+    # ЯКІСНІ ПОКАЗНИКИ
+    ${is_features}  ${features}  run keyword and ignore error  set variable  ${tender_data['features']}
+	run keyword if  '${is_features}' == 'PASS'  smarttender.додати якісні показники  ${features}
 
 	# УМОВИ ОПЛАТИ
 	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
@@ -278,6 +364,10 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  mainProcurementCategory
 	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
 
+    # ДОНОРИ
+	${is_funders}  ${funders}  run keyword and ignore error  set variable  ${tender_data['funders']}
+	run keyword if  '${is_funders}' == 'PASS'  smarttender.вибрати донора  ${funders}
+
     # ЛОТИ
 	:FOR  ${lot}  IN  @{tender_data['lots']}
 	\  Заповнити поля лоту  ${lot}
@@ -286,6 +376,10 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	:FOR  ${item}  IN  @{tender_data['items']}
 	\  webclient.додати item бланк
 	\  Заповнити поля предмету  ${item}
+
+    # ЯКІСНІ ПОКАЗНИКИ
+    ${is_features}  ${features}  run keyword and ignore error  set variable  ${tender_data['features']}
+	run keyword if  '${is_features}' == 'PASS'  smarttender.додати якісні показники  ${features}
 
 	# УМОВИ ОПЛАТИ
 	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
@@ -356,59 +450,11 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	webclient.пошук тендера по title  ${tender_data['title']}
 
 
-Оголосити закупівлю belowThreshold multilot		#Допорог мультилот
-	[Arguments]  ${tender_data}
-	log  голосити закупівлю belowThreshold multilot  WARN
-	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
-	webclient.header натиснути на елемент за назвою  Очистити
-	webclient.header натиснути на елемент за назвою  OK
-	webclient.header натиснути на елемент за назвою  Додати
-	webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
-	# ОСНОВНІ ПОЛЯ
-	${enquiryPeriod.endDate}  set variable  ${tender_data['enquiryPeriod']['endDate']}
-	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
-	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
-	${title}  set variable  ${tender_data['title']}
-	${description}  set variable  ${tender_data['description']}
-	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
-
-	# Донари
-	:FOR  ${funders}  IN  @{tender_data['funders']}
+вибрати донора
+    [Arguments]  ${funders}
+    :FOR  ${funder}  IN  @{funders}
 	\  операція над чекбоксом  ${True}  //*[@data-name="FUNDERS_CB"]//input
 	\  заповнити flex autocomplete field  //*[@data-name="FUNDERID"]//input  ${funders['identifier']['legalName']}  check=${False}
-
-	:FOR  ${field}  in
-	...  enquiryPeriod.endDate
-	...  tenderPeriod.startDate
-	...  tenderPeriod.endDate
-	...  title
-	...  description
-	...  mainProcurementCategory
-	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
-
-    # ЛОТИ
-	:FOR  ${lot}  IN  @{tender_data['lots']}
-	\  Заповнити поля лоту  ${lot}
-
-	# ПРЕДМЕТИ
-	:FOR  ${item}  IN  @{tender_data['items']}
-	\  webclient.додати item бланк
-	\  Заповнити поля предмету  ${item}
-
-	# УМОВИ ОПЛАТИ
-	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
-	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
-    webclient.додати тендерну документацію
-	webclient.header натиснути на елемент за назвою  Додати
-    ${status}  ${ret}  run keyword and ignore error
-	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
-	...  dialog box натиснути кнопку  Так
-	dialog box заголовок повинен містити  Оголосити закупівлю?
-	dialog box натиснути кнопку  Так
-    webclient.screen заголовок повинен містити  Завантаження документації
-    click element   ${screen_root_selector}//*[@alt="Close"]
-	webclient.пошук тендера по title  ${tender_data['title']}
 
 
 Оголосити закупівлю negotiation multilot
@@ -510,6 +556,60 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 	:FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}
+
+
+додати якісні показники
+    [Arguments]  ${features}
+    webclient.операція над чекбоксом  True  //*[@data-name="ISCRITERIA"]//input
+    ${count_features}  set variable  1
+	:FOR  ${feature}  IN  @{features}
+	\  run keyword if  '${count_features}' == '1'  webclient.активувати вкладку  Якісні показники
+	\  Заповнити якісні показники  ${feature}
+	\  ${count_features}  evaluate  ${count_features} + 1
+
+
+Заповнити якісні показники
+    [Arguments]  ${feature}
+    ${title}        set variable  ${feature["title"]}
+    ${description}  set variable  ${feature["description"]}
+    ${featureOf_cdb}    set variable  ${feature["featureOf"]}
+    ${relatedItem_status}  ${relatedItem}  run keyword and ignore error  set variable  ${feature["relatedItem"]}
+    ${enums}  set variable  ${feature["enum"]}
+
+    ${featureOf_dict}  create dictionary
+    ...  lot=Лот
+    ...  tenderer=Учасник тендеру
+    ...  item=Номеклатура
+    ${featureOf}    set variable  ${featureOf_dict["${featureOf_cdb}"]}
+
+    ${field_list}  create list
+  	...  title
+  	...  description
+
+  	додати item бланк
+  	вибрати рівень прив'язки для feature  ${featureOf}
+	#${relatedItem_name}  run keyword if  '${relatedItem_status}' == 'PASS'  run keyword  отримати найменування предка для ${featureOf_cdb}  ${relatedItem}
+	#вибрати предка для feature  ${relatedItem_name}
+
+  	:FOR  ${field}  IN  @{field_list}
+  	\  run keyword  заповнити поле для feature ${field}  ${${field}}
+
+    :FOR  ${enum}  IN  @{enums}
+    \  додати item бланк  index=2
+    \  заповнити поле для feature enum title  ${enum['title']}
+    \  заповнити поле для feature enum value  ${enum['value']}
+
+
+отримати найменування предка для lot
+    [Arguments]  ${relatedItem}
+    log to console  отримати найменування предка для lot
+    debug
+
+
+отримати найменування предка для item
+    [Arguments]  ${relatedItem}
+    log to console  отримати найменування предка для item
+    debug
 
 
 додати умови оплати
@@ -921,11 +1021,15 @@ ${view auction link}                       //*[@data-qa="link-view"]
     [Documentation]  Змінити значення поля fieldname на fieldvalue для тендера tender_uaid.
 	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
+	run keyword and ignore error  header натиснути на елемент за назвою  Коригувати
 	run keyword  webclient.заповнити поле ${fieldname}  ${fieldvalue}
 	header натиснути на елемент за назвою  Зберегти
-	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword and ignore error  dialog box натиснути кнопку  Так
-	
+    ${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
+	run keyword if  'below' not in '${mode}'  run keywords
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+	...  dialog box натиснути кнопку  Ні
+
 	
 Додати предмет закупівлі
     [Arguments]  ${username}  ${tender_uaid}  ${item}
@@ -1086,19 +1190,33 @@ get_item_deliveryAddress_value
 	[Return]  ${item_field_value}
 
 
+нецінові_сторінка_детальної отримати title
+    [Arguments]  ${feature_block}
+	${selector}  set variable  xpath=${feature_block}//*[@class="expander-title"]
+	${feature_field_value}  get text  ${selector}
+	[Return]  ${feature_field_value}
+
+
+нецінові_сторінка_детальної отримати description
+    [Arguments]  ${feature_block}
+	${selector}  set variable  xpath=${feature_block}//*[@class="feature-description"]
+	${feature_field_value}  get text  ${selector}
+	[Return]  ${feature_field_value}
+
+
 Видалити предмет закупівлі
     [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${lot_id}=${Empty}
     [Documentation]  Видалити з тендера tender_uaid предмет з item_id в описі (предмет може бути прив'язаним до лоту з lot_id в описі, якщо lot_id != Empty).    
 	log to console  Видалити предмет закупівлі
-	debug
+	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
 	# ПРЕДМЕТИ
 	видалити item по id  ${item_id}
 	#  Зберегти
     webclient.header натиснути на елемент за назвою  Зберегти
-	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword and ignore error  dialog box натиснути кнопку  Так
+	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
     ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
@@ -1115,7 +1233,7 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${lot}  ${item}
     [Documentation]  Додати лот lot з предметом item до тендера tender_uaid.   
 	log to console  Створити лот із предметом закупівлі
-	debug
+	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
 	# ЛОТИ
@@ -1126,8 +1244,8 @@ get_item_deliveryAddress_value
 	Заповнити поля предмету  ${item}
     #  Зберегти
     webclient.header натиснути на елемент за назвою  Зберегти
-	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword and ignore error  dialog box натиснути кнопку  Так
+	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
     ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
@@ -1153,6 +1271,8 @@ get_item_deliveryAddress_value
 Змінити лот
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінити значення поля fieldname лоту з lot_id в описі для тендера tender_uaid на fieldvalue
+    log to console  Змінити лот
+	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
 	#  Стати на комірку з потрібним лотом
@@ -1160,11 +1280,19 @@ get_item_deliveryAddress_value
 	click element  ${lot_row_locator}
 	wait until page contains element  ${lot_row_locator}[contains(@class,"rowselected")]  5
 	#  Змінити поле лоту
+	#  Костиль. Чомусь після ddjle value.amount, поле minimalStep очищається,
+	#  тому зберігаємо значення поля minimalStep для повторного вводу
+	${minimalStep_locator}  set variable  //*[@data-name="LOT_MINSTEP"]//input
+	${minimalStep}  get element attribute  ${minimalStep_locator}@value
+	#####################################################################
     run keyword  webclient.заповнити поле для lot ${fieldname}  ${fieldvalue}
+    #  Повторно вводимо minimalStep якщо ${fieldname} == value.amount
+    run keyword if  "${fieldname}" == "value.amount"
+    ...  run keyword  webclient.заповнити поле для lot minimalStep.amount  ${minimalStep}
     #  Зберегти
     webclient.header натиснути на елемент за назвою  Зберегти
-	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword and ignore error  dialog box натиснути кнопку  Так
+	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
     ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
@@ -1174,7 +1302,7 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${item}
     [Documentation]  Додати предмет item в лот з lot_id в описі для тендера tender_uaid.   
 	log to console  Додати предмет закупівлі в лот
-	debug
+	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
 	#  Стати на комірку з потрібним лотом
@@ -1186,8 +1314,8 @@ get_item_deliveryAddress_value
 	Заповнити поля предмету  ${item}
     #  Зберегти
     webclient.header натиснути на елемент за назвою  Зберегти
-	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword and ignore error  dialog box натиснути кнопку  Так
+	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
     ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
@@ -1196,6 +1324,9 @@ get_item_deliveryAddress_value
 Завантажити документ в лот
     [Arguments]  ${username}  ${filepath}  ${tender_uaid}  ${lot_id}
     [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до лоту з lot_id в описі для тендера tender_uaid
+    log to console  Завантажити документ в лот
+    знайти тендер у webclient  ${tender_uaid}
+	header натиснути на елемент за назвою  Змінити
 	webclient.header натиснути на елемент за назвою  Коригувати
 	webclient.активувати вкладку  Документи
 	#  Стати на комірку з потрібним лотом
@@ -1207,8 +1338,8 @@ get_item_deliveryAddress_value
 	loading дочекатись закінчення загрузки сторінки
 	webclient.загрузити документ  ${filepath}
 	webclient.header натиснути на елемент за назвою  Зберегти
-	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword and ignore error  dialog box натиснути кнопку  Так
+	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
     ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
@@ -1221,15 +1352,15 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}
     [Documentation]  Видалити лот з lot_id в описі для тендера tender_uaid.   
 	log to console  Видалити лот
-	debug
+	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
 	# ЛОТИ
 	видалити lot по id  ${lot_id}
 	#  Зберегти
     webclient.header натиснути на елемент за назвою  Зберегти
-	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword and ignore error  dialog box натиснути кнопку  Так
+	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
     ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
@@ -1310,9 +1441,11 @@ get_item_deliveryAddress_value
 	
 Отримати інформацію із нецінового показника
     [Arguments]  ${username}  ${tender_uaid}  ${feature_id}  ${field_name}
-    [Documentation]  Отримати значення поля field_name з нецінового показника з feature_id в описі для тендера tender_uaid.   
-	log to console  Отримати інформацію із нецінового показника
-	debug
+    [Documentation]  Отримати значення поля field_name з нецінового показника з feature_id в описі для тендера tender_uaid.
+	${feature_block}  set variable  //*[@data-qa="feature-header"]//*[contains(text(),"${feature_id}")]/ancestor::*[contains(@data-qa,"feature-list")]
+	loading дочекатися відображення елемента на сторінці  ${feature_block}
+	smarttender.розгорнути всі експандери
+    ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field_name}  ${feature_block}
     [Return]  ${feature_field_name}
     
    
@@ -1508,7 +1641,7 @@ get_item_deliveryAddress_value
     [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до тендера tender_uaid.
 	знайти тендер у webclient  ${tender_uaid}
 	webclient.header натиснути на елемент за назвою  Змінити
-	run keyword if  '${mode}' == 'reporting'  webclient.header натиснути на елемент за назвою  Коригувати
+	run keyword and ignore error  webclient.header натиснути на елемент за назвою  Коригувати
 	webclient.активувати вкладку  Документи
 	webclient.натиснути додати документ
 	loading дочекатись закінчення загрузки сторінки
@@ -1517,8 +1650,8 @@ get_item_deliveryAddress_value
 	run keyword if  'below' not in '${mode}'  run keywords
     ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
-	run keyword and ignore error  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword and ignore error  dialog box натиснути кнопку  Так
+	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
     sleep  60
