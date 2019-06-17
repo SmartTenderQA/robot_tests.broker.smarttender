@@ -364,6 +364,12 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	webclient.header натиснути на елемент за назвою  OK
 	webclient.header натиснути на елемент за назвою  Додати
 	webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+
+	# Донари
+	:FOR  ${funders}  IN  @{tender_data['funders']}
+	\  операція над чекбоксом  ${True}  //*[@data-name="FUNDERS_CB"]//input
+	\  заповнити flex autocomplete field  //*[@data-name="FUNDERID"]//input  ${funders['identifier']['legalName']}  check=${False}
+
 	# ОСНОВНІ ПОЛЯ
 	${enquiryPeriod.endDate}  set variable  ${tender_data['enquiryPeriod']['endDate']}
 	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
@@ -371,11 +377,6 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
-
-	# Донари
-	:FOR  ${funders}  IN  @{tender_data['funders']}
-	\  операція над чекбоксом  ${True}  //*[@data-name="FUNDERS_CB"]//input
-	\  заповнити flex autocomplete field  //*[@data-name="FUNDERID"]//input  ${funders['identifier']['legalName']}  check=${False}
 
 	:FOR  ${field}  in
 	...  enquiryPeriod.endDate
@@ -454,8 +455,81 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
-#	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
-#	dialog box натиснути кнопку  Ні
+
+
+Оголосити закупівлю open_competitive_dialogue multilot
+	[Arguments]  ${tender_data}
+	${procurementMethodType_translated}  set variable if  "${tender_data['procurementMethodType']}" == "competitiveDialogueEU"
+	...  Конкурентний діалог з публікацією англійською мовою 1-ий етап
+	...  Конкурентний діалог 1-ий етап
+	webclient.робочий стіл натиснути на елемент за назвою  Конкурентний діалог(тестові)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати
+	webclient.вибрати тип процедури  ${procurementMethodType_translated}
+	webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+
+	# ОСНОВНІ ПОЛЯ
+	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+	${title_en}  set variable  ${tender_data['title_en']}
+	${description_en}  set variable  ${tender_data['description_en']}
+
+	${list_of_fields}  create list
+	...  tenderPeriod.endDate
+	...  title
+	...  description
+	...  mainProcurementCategory
+
+	run keyword if  "${tender_data['procurementMethodType']}" == "competitiveDialogueEU"
+	...  append to list  ${list_of_fields}
+	...  title_en
+	...  description_en
+
+	:FOR  ${field}  in  @{list_of_fields}
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+	# ЛОТИ
+	${lot_index}  set variable  1
+	:FOR  ${lot}  IN  @{tender_data['lots']}
+	\  run keyword if  '${lot_index}' != '1'  run keywords
+	\  ...  webclient.додати item бланк  index=2  AND
+	\  ...  Змінити номенклатуру на лот
+	\  Заповнити поля лоту  ${lot}
+	\  ${lot_id}  set variable  ${lot['id']}
+	\  Заповнити поля для items по lot_id  ${lot_id}  @{tender_data['items']}
+	\  ${lot_index}  evaluate  ${lot_index}+1
+
+	# УМОВИ ОПЛАТИ
+	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
+	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
+
+	webclient.header натиснути на елемент за назвою  Додати
+    ${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+	${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  Увага! Бюджет перевищує 133 000 євро. Вам потрібно обрати тип процедури «Відкриті торги з публікаціє...
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box натиснути кнопку  Ні
+
+
+Оголосити закупівлю open_esco multilot
+	[Arguments]  ${tender_data}
+	webclient.робочий стіл натиснути на елемент за назвою  Открытые закупки энергосервиса (ESCO) (тестовые)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати
+	webclient.вибрати тип процедури  ${procurementMethodType_translated}
+	webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+
 
 
 Заповнити поля для items по lot_id
@@ -482,8 +556,12 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  value.amount
 	...  value.valueAddedTaxIncluded
 	run keyword if  '${minimalStep_status}' == 'PASS'  append to list  ${field_list}  minimalStep.amount
-	run keyword if  '${title_en_status}' == 'PASS' and '${mode}' == 'openeu'        append to list  ${field_list}  title_en
-	run keyword if  '${description_en_status}' == 'PASS' and '${mode}' == 'openeu'  append to list  ${field_list}  description_en
+	run keyword if
+	...  '${title_en_status}' == 'PASS' and '${mode}' == 'openeu' or '${title_en_status}' == 'PASS' and '${mode}' == 'open_competitive_dialogue'
+	...  append to list  ${field_list}  title_en
+	run keyword if
+	...  '${title_en_status}' == 'PASS' and '${mode}' == 'openeu' or '${title_en_status}' == 'PASS' and '${mode}' == 'open_competitive_dialogue'
+	...  append to list  ${field_list}  description_en
 
     :FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для lot ${field}  ${${field}}
@@ -515,8 +593,11 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  deliveryDate.startDate
 	...  deliveryDate.endDate
 
-	run keyword if  '${additionalClassifications_status}' == 'PASS'  append to list  ${field_list}  additionalClassifications.scheme  additionalClassifications.description
-	run keyword if  '${description_en_status}' == 'PASS' and '${mode}' == 'openeu'  append to list  ${field_list}  description_en
+	run keyword if  '${additionalClassifications_status}' == 'PASS'
+	...  append to list  ${field_list}  additionalClassifications.scheme  additionalClassifications.description
+	run keyword if
+	...  '${description_en_status}' == 'PASS' and '${mode}' == 'openeu' or '${description_en_status}' == 'PASS' and '${mode}' == 'open_competitive_dialogue'
+	...  append to list  ${field_list}  description_en
 
 	:FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}

@@ -635,7 +635,7 @@ dialog box заголовок повинен містити
 заповнити simple input continue
     [Arguments]  ${locator}  ${input_text}  ${check}  ${input_methon}
 	${text}  evaluate  u"""${input_text}"""
-#	clear input by JS  ${locator}
+	clear input by JS  ${locator}
 #	sleep  1
 	run keyword  ${input_methon}  ${locator}  ${text}
 	press key  ${locator}  \\13
