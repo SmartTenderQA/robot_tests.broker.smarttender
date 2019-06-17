@@ -104,6 +104,19 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 	заповнити фіксований випадаючий список  ${locator}  ${dict['${text}']}
 
 
+заповнити поле NBUdiscountRate
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@data-name="NBUDISCRAT"]//input
+	заповнити simple input  ${locator}  ${text}  check=${False}
+
+
+заповнити поле fundingKind
+	[Arguments]  ${key}
+	${locator}  set variable  //*[@data-name="FUNDING_KIND"]
+	${dict}  create dictionary  budget=З бюджетних коштів  other=За рахунок учасника
+	вибрати значення з випадаючого списку  ${locator}  ${dict['${key}']}
+
+
 ##################################################
 ######################LOTS#######################
 ##################################################
@@ -148,6 +161,20 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 	[Arguments]  ${bool}
 	${locator}  set variable  //*[@data-name="WITHVAT"]//input
 	операція над чекбоксом  ${bool}  ${locator}
+
+
+заповнити поле для lot minimalStepPercentage
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@data-name="LOT_MINSTEP_PERCENT"]//input
+	${value}  evaluate  ${text} * 100
+	заповнити simple input  ${locator}  ${value}
+
+
+заповнити поле для lot yearlyPaymentsPercentageRange
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@data-name="LOT_PERCENT_REDUCTION"]//input
+	${value}  evaluate  ${text} * 100
+	заповнити simple input  ${locator}  ${value}
 
 
 ##################################################
@@ -653,6 +680,7 @@ dialog box заголовок повинен містити
 заповнити фіксований випадаючий список continue
 	[Arguments]  ${locator}  ${text}
 	click element  ${locator}//td[3]
+	press key  ${locator}//td[2]//input  \\127
 	input text  ${locator}//td[2]//input  ${text}
 	click screen header
 	loading дочекатись закінчення загрузки сторінки
@@ -661,17 +689,12 @@ dialog box заголовок повинен містити
 
 
 заповнити simple input
-	[Arguments]  ${locator}  ${input_text}  ${check}=${True}
-	wait until keyword succeeds  5x  1s  заповнити simple input continue  ${locator}  ${input_text}  ${check}
-
-
-заповнити flex input
-	[Arguments]  ${locator}  ${input_text}  ${check}=${True}
-	wait until keyword succeeds  5x  1s  заповнити flex input continue  ${locator}  ${input_text}  ${check}
+	[Arguments]  ${locator}  ${input_text}  ${check}=${True}  ${input_methon}=input text
+	wait until keyword succeeds  5x  1s  заповнити simple input continue  ${locator}  ${input_text}  ${check}  ${input_methon}
 
 
 заповнити simple input continue
-    [Arguments]  ${locator}  ${input_text}  ${check}  ${input_methon}
+    [Arguments]  ${locator}  ${input_text}  ${check}  ${input_methon}=input text
 	${text}  evaluate  u"""${input_text}"""
 	clear input by JS  ${locator}
 #	sleep  1

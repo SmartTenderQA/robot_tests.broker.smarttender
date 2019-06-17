@@ -8,3 +8,4 @@ __pycache__/
 /[bs]dist/
 /*.egg-info/
 *.egg
+.idea/

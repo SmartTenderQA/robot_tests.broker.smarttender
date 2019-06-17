@@ -450,69 +450,6 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	webclient.пошук тендера по title  ${tender_data['title']}
 
 
-Оголосити закупівлю belowThreshold multilot		#Допорог мультилот
-	[Arguments]  ${tender_data}
-	log  голосити закупівлю belowThreshold multilot  WARN
-	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
-	webclient.header натиснути на елемент за назвою  Очистити
-	webclient.header натиснути на елемент за назвою  OK
-	webclient.header натиснути на елемент за назвою  Додати
-	webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
-
-	# Донари
-	:FOR  ${funders}  IN  @{tender_data['funders']}
-	\  операція над чекбоксом  ${True}  //*[@data-name="FUNDERS_CB"]//input
-	\  заповнити flex autocomplete field  //*[@data-name="FUNDERID"]//input  ${funders['identifier']['legalName']}  check=${False}
-
-	# ОСНОВНІ ПОЛЯ
-	${enquiryPeriod.endDate}  set variable  ${tender_data['enquiryPeriod']['endDate']}
-	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
-	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
-	${title}  set variable  ${tender_data['title']}
-	${description}  set variable  ${tender_data['description']}
-	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
-
-	:FOR  ${field}  in
-	...  enquiryPeriod.endDate
-	...  tenderPeriod.startDate
-	...  tenderPeriod.endDate
-	...  title
-	...  description
-	...  mainProcurementCategory
-	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
-
-    # ЛОТИ
-	:FOR  ${lot}  IN  @{tender_data['lots']}
-	\  Заповнити поля лоту  ${lot}
-
-	# ПРЕДМЕТИ
-	:FOR  ${item}  IN  @{tender_data['items']}
-	\  webclient.додати item бланк  index=2
-	\  Заповнити поля предмету  ${item}
-
-	# УМОВИ ОПЛАТИ
-	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
-	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
-    webclient.додати тендерну документацію
-	webclient.header натиснути на елемент за назвою  Додати
-    ${status}  ${ret}  run keyword and ignore error
-	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
-	...  dialog box натиснути кнопку  Так
-	dialog box заголовок повинен містити  Оголосити закупівлю?
-	dialog box натиснути кнопку  Так
-    webclient.screen заголовок повинен містити  Завантаження документації
-    click element   ${screen_root_selector}//*[@alt="Close"]
-	webclient.пошук тендера по title  ${tender_data['title']}
-
-
-вибрати донора
-    [Arguments]  ${funders}
-    :FOR  ${funder}  IN  @{funders}
-	\  операція над чекбоксом  ${True}  //*[@data-name="FUNDERS_CB"]//input
-	\  заповнити flex autocomplete field  //*[@data-name="FUNDERID"]//input  ${funders['identifier']['legalName']}  check=${False}
-
-
 Оголосити закупівлю negotiation multilot
 	[Arguments]  ${tender_data}
 	webclient.робочий стіл натиснути на елемент за назвою  Переговорная процедура(тестовые)
@@ -628,8 +565,63 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	webclient.header натиснути на елемент за назвою  Очистити
 	webclient.header натиснути на елемент за назвою  OK
 	webclient.header натиснути на елемент за назвою  Додати
-	webclient.вибрати тип процедури  ${procurementMethodType_translated}
 	webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+
+	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${title_en}  set variable  ${tender_data['title_en']}
+	${description_en}  set variable  ${tender_data['description_en']}
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+	${NBUdiscountRate}  set variable  ${tender_data['NBUdiscountRate']}
+	${fundingKind}  set variable  ${tender_data['fundingKind']}
+
+	:FOR  ${field}  in
+	...  tenderPeriod.endDate
+	...  title
+	...  description
+	...  title_en
+	...  description_en
+	...  mainProcurementCategory
+	...  NBUdiscountRate
+	...  fundingKind
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+	# ЛОТИ
+	${lot_index}  set variable  1
+	:FOR  ${lot}  IN  @{tender_data['lots']}
+	\  run keyword if  '${lot_index}' != '1'  run keywords
+	\  ...  webclient.додати item бланк  index=2  AND
+	\  ...  Змінити номенклатуру на лот
+	\  Заповнити поля лоту  ${lot}
+	\  ${lot_id}  set variable  ${lot['id']}
+	\  Заповнити поля для items по lot_id  ${lot_id}  @{tender_data['items']}
+	\  ${lot_index}  evaluate  ${lot_index}+1
+
+    # ЯКІСНІ ПОКАЗНИКИ
+    ${is_features}  ${features}  run keyword and ignore error  set variable  ${tender_data['features']}
+	run keyword if  '${is_features}' == 'PASS'  smarttender.додати якісні показники  ${features}
+
+    webclient.додати тендерну документацію
+	webclient.header натиснути на елемент за назвою  Додати
+    ${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+    webclient.screen заголовок повинен містити  Завантаження документації
+    click element   ${screen_root_selector}//*[@alt="Close"]
+    dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box натиснути кнопку  Ні
+	webclient.пошук тендера по title  ${tender_data['title']}
+
+
+вибрати донора
+    [Arguments]  ${funders}
+    :FOR  ${funder}  IN  @{funders}
+	\  операція над чекбоксом  ${True}  //*[@data-name="FUNDERS_CB"]//input
+	\  заповнити flex autocomplete field  //*[@data-name="FUNDERID"]//input  ${funders['identifier']['legalName']}  check=${False}
 
 
 
@@ -647,22 +639,25 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${description}  set variable  ${lot['description']}
 	${title_en_status}  ${title_en}              run keyword and ignore error  set variable  ${lot['title_en']}
 	${description_en_status}  ${description_en}  run keyword and ignore error  set variable  ${lot['description_en']}
-    ${value.amount}  set variable  ${lot['value']['amount']}
-	${value.valueAddedTaxIncluded}  set variable  ${lot['value']['valueAddedTaxIncluded']}
+    ${value_status}  ${value.amount}    run keyword and ignore error  set variable  ${lot['value']['amount']}
+	${value_status}  ${value.valueAddedTaxIncluded}    run keyword and ignore error  set variable  ${lot['value']['valueAddedTaxIncluded']}
 	${minimalStep_status}  ${minimalStep.amount}  run keyword and ignore error  set variable  ${lot['minimalStep']['amount']}
+	${minimalStepPercentage_status}  ${minimalStepPercentage}  run keyword and ignore error  set variable  ${lot['minimalStepPercentage']}
+	${yearlyPaymentsPercentageRange_status}  ${yearlyPaymentsPercentageRange}  run keyword and ignore error  set variable  ${lot['yearlyPaymentsPercentageRange']}
 
 	${field_list}  create list
 	...  title
 	...  description
-	...  value.amount
-	...  value.valueAddedTaxIncluded
-	run keyword if  '${minimalStep_status}' == 'PASS'  append to list  ${field_list}  minimalStep.amount
-	run keyword if
-	...  '${title_en_status}' == 'PASS' and '${mode}' == 'openeu' or '${title_en_status}' == 'PASS' and '${mode}' == 'open_competitive_dialogue'
-	...  append to list  ${field_list}  title_en
-	run keyword if
-	...  '${title_en_status}' == 'PASS' and '${mode}' == 'openeu' or '${title_en_status}' == 'PASS' and '${mode}' == 'open_competitive_dialogue'
-	...  append to list  ${field_list}  description_en
+	run keyword if  '${minimalStep_status}' == 'PASS'
+	...  append to list  ${field_list}  minimalStep.amount
+	run keyword if  '${minimalStepPercentage_status}' == 'PASS'
+	...  append to list  ${field_list}  minimalStepPercentage
+	run keyword if  '${yearlyPaymentsPercentageRange_status}' == 'PASS'
+	...  append to list  ${field_list}  yearlyPaymentsPercentageRange
+	run keyword if  '${title_en_status}' == 'PASS' and '${mode}' == 'openeu' or '${title_en_status}' == 'PASS' and '${mode}' == 'open_competitive_dialogue'
+	...  append to list  ${field_list}  title_en  description_en
+	run keyword if  '${value_status}' == 'PASS'
+	...  append to list  ${field_list}  value.amount  value.valueAddedTaxIncluded
 
     :FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для lot ${field}  ${${field}}
@@ -673,32 +668,35 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${description}  set variable  ${item['description']}
 	${description_en_status}  ${description_en}  run keyword and ignore error  set variable  ${item['description_en']}
 	${quantity}  set variable  ${item['quantity']}
-	${unit.name}  set variable  ${item['unit']['name']}
+	${unit.name_status}  ${unit.name}  run keyword and ignore error  set variable  ${item['unit']['name']}
 	${classification.id}  set variable  ${item['classification']['id']}
 	${additionalClassifications_status}  ${additionalClassifications.scheme}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['scheme']}
 	${additionalClassifications_status}  ${additionalClassifications.description}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['description']}
 	${deliveryAddress.postalCode}  set variable  ${item['deliveryAddress']['postalCode']}
 	${deliveryAddress.streetAddress}  set variable  ${item['deliveryAddress']['streetAddress']}
 	${deliveryAddress.locality}  set variable  ${item['deliveryAddress']['locality']}
-	${deliveryDate.startDate}  set variable  ${item['deliveryDate']['startDate']}
-	${deliveryDate.endDate}  set variable  ${item['deliveryDate']['endDate']}
+	${deliveryDate.startDate_status}  ${deliveryDate.startDate}  run keyword and ignore error  set variable  ${item['deliveryDate']['startDate']}
+	${deliveryDate.endDate_status}  ${deliveryDate.endDate}  run keyword and ignore error  set variable  ${item['deliveryDate']['endDate']}
 
 	${field_list}  create list
 	...  description
-	...  quantity
-	...  unit.name
 	...  classification.id
 	...  deliveryAddress.postalCode
 	...  deliveryAddress.streetAddress
 	...  deliveryAddress.locality
-	...  deliveryDate.startDate
-	...  deliveryDate.endDate
 
+	run keyword if  '${mode}' != 'open_esco'
+	...  append to list  ${field_list}  quantity
+	run keyword if  '${unit.name_status}' == 'PASS'
+	...  append to list  ${field_list}  unit.name
 	run keyword if  '${additionalClassifications_status}' == 'PASS'
 	...  append to list  ${field_list}  additionalClassifications.scheme  additionalClassifications.description
-	run keyword if
-	...  '${description_en_status}' == 'PASS' and '${mode}' == 'openeu' or '${description_en_status}' == 'PASS' and '${mode}' == 'open_competitive_dialogue'
+#	Зачем завязка на конкретній тип торгов. С єтим очень тяжело работать?
+#	run keyword if  '${description_en_status}' == 'PASS' and '${mode}' == 'openeu' or '${description_en_status}' == 'PASS' and '${mode}' == 'open_competitive_dialogue'
+	run keyword if  '${description_en_status}' == 'PASS'
 	...  append to list  ${field_list}  description_en
+	run keyword if  '${deliveryDate.startDate_status}' == 'PASS'
+	...  append to list  ${field_list}  deliveryDate.startDate  deliveryDate.endDate
 
 	:FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}
