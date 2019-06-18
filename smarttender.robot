@@ -87,10 +87,10 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	[Arguments]   ${username}  ${tender_data}
 	[Documentation]   Створити тендер з початковими даними tender_data. Повернути uaid створеного тендера.
 	${tender_data}  get from dictionary  ${tender_data}  data
+	set global variable  ${tender_data}
 	${multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${SPACE}multilot  ${EMPTY}
 	run keyword  Оголосити закупівлю ${mode}${multilot}  ${tender_data}
 	${tender_uaid}  webclient.отримати номер тендера
-	set global variable  ${tender_data}
 	[Return]  ${tender_uaid}
 	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"  run keywords
 	...  capture page screenshot        AND
@@ -256,7 +256,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	# ПРЕДМЕТИ
 	${count_item}  set variable  1
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
+	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк  index=2
 	\  Заповнити поля предмету  ${item}
 	\  ${count_item}  evaluate  ${count_item} + 1
 
@@ -374,7 +374,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 	# ПРЕДМЕТИ
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  webclient.додати item бланк
+	\  webclient.додати item бланк  index=2
 	\  Заповнити поля предмету  ${item}
 
     # ЯКІСНІ ПОКАЗНИКИ
@@ -648,16 +648,16 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${field_list}  create list
 	...  title
 	...  description
+	run keyword if  '${title_en_status}' == 'PASS'
+	...  append to list  ${field_list}  title_en  description_en
+	run keyword if  '${value_status}' == 'PASS'
+	...  append to list  ${field_list}  value.valueAddedTaxIncluded  value.amount
 	run keyword if  '${minimalStep_status}' == 'PASS'
 	...  append to list  ${field_list}  minimalStep.amount
 	run keyword if  '${minimalStepPercentage_status}' == 'PASS'
 	...  append to list  ${field_list}  minimalStepPercentage
 	run keyword if  '${yearlyPaymentsPercentageRange_status}' == 'PASS'
 	...  append to list  ${field_list}  yearlyPaymentsPercentageRange
-	run keyword if  '${title_en_status}' == 'PASS' and '${mode}' == 'openeu' or '${title_en_status}' == 'PASS' and '${mode}' == 'open_competitive_dialogue'
-	...  append to list  ${field_list}  title_en  description_en
-	run keyword if  '${value_status}' == 'PASS'
-	...  append to list  ${field_list}  value.amount  value.valueAddedTaxIncluded
 
     :FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для lot ${field}  ${${field}}
