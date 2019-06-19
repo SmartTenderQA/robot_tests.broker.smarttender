@@ -183,7 +183,7 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
-	заповнити simple input  ${locator}  ${description}  #check=${False}
+	заповнити simple input  ${locator}  ${description}  input_methon=Input Type Flex  #check=${False}
 
 
 заповнити поле для item description_en
@@ -690,12 +690,12 @@ dialog box заголовок повинен містити
 
 заповнити simple input
 	[Arguments]  ${locator}  ${input_text}  ${check}=${True}  ${input_methon}=input text
-	wait until keyword succeeds  5x  1s  заповнити simple input continue  ${locator}  ${input_text}  ${check}  ${input_methon}
+	wait until keyword succeeds  10x  1s  заповнити simple input continue  ${locator}  ${input_text}  ${check}  ${input_methon}
 
 
 заповнити simple input continue
     [Arguments]  ${locator}  ${input_text}  ${check}  ${input_methon}=input text
-	${text}  evaluate  u"""${input_text}"""
+	${text}  evaluate  """${input_text}""".decode('UTF-8')
 	clear input by JS  ${locator}
 #	sleep  1
 	run keyword  ${input_methon}  ${locator}  ${text}
