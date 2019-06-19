@@ -781,12 +781,24 @@ click screen header
 
 видалити lot по id
 	[Arguments]  ${lot_id}  ${index}=1
-	#  Стати на комірку з потрібним предметом
+	#  Стати на комірку з потрібним лотом
 	${lot_row_locator}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//td[contains(text(),"${lot_id}")]/ancestor::tr[1]
 	click element  ${lot_row_locator}
 	wait until page contains element  ${lot_row_locator}[contains(@class,"rowselected")]  5
     #  Видалити
 	${del_btn}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//*[@title="Видалити"][${index}]
+	click element  ${del_btn}
+	loading дочекатись закінчення загрузки сторінки
+
+
+видалити feature по id
+	[Arguments]  ${feature_id}  ${index}=1
+	#  Стати на комірку з потрібним показником
+	${feature_row_locator}  set variable  xpath=//*[@data-name="GRID_CRITERIA"]//td[contains(text(),"${feature_id}")]/ancestor::tr[1]
+	click element  ${feature_row_locator}
+	wait until page contains element  ${feature_row_locator}[contains(@class,"rowselected")]  5
+    #  Видалити
+	${del_btn}  set variable  xpath=//*[@data-name="GRID_CRITERIA"]//*[@title="Видалити"][${index}]
 	click element  ${del_btn}
 	loading дочекатись закінчення загрузки сторінки
 

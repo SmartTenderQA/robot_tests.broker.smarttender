@@ -649,7 +649,9 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  title
 	...  description
 	run keyword if  '${title_en_status}' == 'PASS'
-	...  append to list  ${field_list}  title_en  description_en
+	...  append to list  ${field_list}  title_en
+	run keyword if  '${description_en_status}' == 'PASS'
+	...  append to list  ${field_list}  description_en
 	run keyword if  '${value_status}' == 'PASS'
 	...  append to list  ${field_list}  value.valueAddedTaxIncluded  value.amount
 	run keyword if  '${minimalStep_status}' == 'PASS'
@@ -713,7 +715,10 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 
 Заповнити якісні показники
-    [Arguments]  ${feature}
+    [Arguments]  ${feature}  ${relatedItem_id}=None
+    run keyword if  '${relatedItem_id}' != 'None'  run keywords
+    ...  log to console  relatedItem_id       AND
+    ...  debug
     ${title}        set variable  ${feature["title"]}
     ${description}  set variable  ${feature["description"]}
     ${featureOf_cdb}    set variable  ${feature["featureOf"]}
@@ -1350,8 +1355,7 @@ get_item_deliveryAddress_value
 
 Видалити предмет закупівлі
     [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${lot_id}=${Empty}
-    [Documentation]  Видалити з тендера tender_uaid предмет з item_id в описі (предмет може бути прив'язаним до лоту з lot_id в описі, якщо lot_id != Empty).    
-	log to console  Видалити предмет закупівлі
+    [Documentation]  Видалити з тендера tender_uaid предмет з item_id в описі (предмет може бути прив'язаним до лоту з lot_id в описі, якщо lot_id != Empty).
 	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
@@ -1375,13 +1379,14 @@ get_item_deliveryAddress_value
 	
 Створити лот із предметом закупівлі
     [Arguments]  ${username}  ${tender_uaid}  ${lot}  ${item}
-    [Documentation]  Додати лот lot з предметом item до тендера tender_uaid.   
-	log to console  Створити лот із предметом закупівлі
+    [Documentation]  Додати лот lot з предметом item до тендера tender_uaid.
 	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
 	# ЛОТИ
-	Заповнити поля лоту  ${lot}
+	webclient.додати item бланк
+	Змінити номенклатуру на лот
+	Заповнити поля лоту  ${lot['data']}
 
 	# ПРЕДМЕТИ
 	webclient.додати item бланк
@@ -1415,7 +1420,6 @@ get_item_deliveryAddress_value
 Змінити лот
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінити значення поля fieldname лоту з lot_id в описі для тендера tender_uaid на fieldvalue
-    log to console  Змінити лот
 	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
@@ -1494,8 +1498,7 @@ get_item_deliveryAddress_value
 	
 Видалити лот
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}
-    [Documentation]  Видалити лот з lot_id в описі для тендера tender_uaid.   
-	log to console  Видалити лот
+    [Documentation]  Видалити лот з lot_id в описі для тендера tender_uaid.
 	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
@@ -1567,20 +1570,55 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${feature}
     [Documentation]  Додати дані feature про не ціновий показник до тендера tender_uaid   
 	log to console  Додати не ціновий показник на тендер
+	знайти тендер у webclient  ${tender_uaid}
+	header натиснути на елемент за назвою  Змінити
+	header натиснути на елемент за назвою  Коригувати
 	debug
+	webclient.активувати вкладку  Якісні показники
+	Заповнити якісні показники  ${feature}
+    header натиснути на елемент за назвою  Зберегти
+    ${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
+	run keyword if  'below' not in '${mode}'  run keywords
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+	...  dialog box натиснути кнопку  Ні
+
 	
 	
 Додати не ціновий показник на предмет
     [Arguments]  ${username}  ${tender_uaid}  ${feature}  ${item_id}
     [Documentation]  Додати дані feature про неціновий показник до предмету з item_id в описі для тендера tender_uaid.   
 	log to console  Додати не ціновий показник на предмет
+	знайти тендер у webclient  ${tender_uaid}
+	header натиснути на елемент за назвою  Змінити
+	header натиснути на елемент за назвою  Коригувати
 	debug
+	webclient.активувати вкладку  Якісні показники
+	Заповнити якісні показники  ${feature}  ${item_id}
+    header натиснути на елемент за назвою  Зберегти
+    ${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
+	run keyword if  'below' not in '${mode}'  run keywords
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+	...  dialog box натиснути кнопку  Ні
+
 
 Додати не ціновий показник на лот
     [Arguments]  ${username}  ${tender_uaid}  ${feature}  ${lot_id}
     [Documentation]  Додати дані feature про неціновий показник до лоту з lot_id в описі для тендера tender_uaid.   
 	log to console  Додати не ціновий показник на лот
+	знайти тендер у webclient  ${tender_uaid}
+	header натиснути на елемент за назвою  Змінити
+	header натиснути на елемент за назвою  Коригувати
 	debug
+	webclient.активувати вкладку  Якісні показники
+	Заповнити якісні показники  ${feature}  ${lot_id}
+    header натиснути на елемент за назвою  Зберегти
+    ${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
+	run keyword if  'below' not in '${mode}'  run keywords
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+	...  dialog box натиснути кнопку  Ні
 	
 	
 Отримати інформацію із нецінового показника
@@ -1597,8 +1635,20 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${feature_id}  ${obj_id}=${Empty}
     [Documentation]  Видалити неціновий показник з feature_id в описі для тендера tender_uaid.   
 	log to console  Видалити неціновий показник
-	debug
-	
+    знайти тендер у webclient  ${tender_uaid}
+	header натиснути на елемент за назвою  Змінити
+	header натиснути на елемент за назвою  Коригувати
+	webclient.активувати вкладку  Якісні показники
+	#  Видалити
+	видалити feature по id  ${feature_id}
+	#  Зберегти
+	header натиснути на елемент за назвою  Зберегти
+    ${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
+	run keyword if  'below' not in '${mode}'  run keywords
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+	...  dialog box натиснути кнопку  Ні
+
 	
 Задати запитання на предмет
     [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${question}
@@ -1791,11 +1841,11 @@ get_item_deliveryAddress_value
 	loading дочекатись закінчення загрузки сторінки
 	webclient.загрузити документ  ${filepath}
 	webclient.header натиснути на елемент за назвою  Зберегти
+	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
     ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
-	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
     sleep  60
