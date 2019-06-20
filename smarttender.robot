@@ -602,6 +602,10 @@ ${view auction link}                       //*[@data-qa="link-view"]
     ${is_features}  ${features}  run keyword and ignore error  set variable  ${tender_data['features']}
 	run keyword if  '${is_features}' == 'PASS'  smarttender.додати якісні показники  ${features}
 
+	# УМОВИ ОПЛАТИ
+	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
+	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
+
     webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
     ${status}  ${ret}  run keyword and ignore error
@@ -617,6 +621,52 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	webclient.пошук тендера по title  ${tender_data['title']}
 
 
+Оголосити закупівлю open_framework multilot
+	[Arguments]  ${tender_data}
+	webclient.робочий стіл натиснути на елемент за назвою  Рамкові угоди(тестові)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+	webclient.header натиснути на елемент за назвою  Додати
+
+	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${title_en}  set variable  ${tender_data['title_en']}
+	${description_en}  set variable  ${tender_data['description_en']}
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
+	${maxAwardsCount}  set variable  ${tender_data['maxAwardsCount']}
+	${agreementDuration}  set variable  ${tender_data['agreementDuration']}
+
+	:FOR  ${field}  in
+	...  tenderPeriod.endDate
+	...  title
+	...  description
+	...  title_en
+	...  description_en
+	...  mainProcurementCategory
+	...  maxAwardsCount
+	...  agreementDuration
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+	# ЛОТИ
+	${lot_index}  set variable  1
+	:FOR  ${lot}  IN  @{tender_data['lots']}
+	\  run keyword if  '${lot_index}' != '1'  run keywords
+	\  ...  webclient.додати item бланк  index=1  AND
+	\  ...  Змінити номенклатуру на лот
+	\  Заповнити поля лоту  ${lot}
+	\  ${lot_id}  set variable  ${lot['id']}
+	\  Заповнити поля для items по lot_id  ${lot_id}  @{tender_data['items']}
+	\  ${lot_index}  evaluate  ${lot_index}+1
+
+    # ЯКІСНІ ПОКАЗНИКИ
+    ${is_features}  ${features}  run keyword and ignore error  set variable  ${tender_data['features']}
+	run keyword if  '${is_features}' == 'PASS'  smarttender.додати якісні показники  ${features}
+
+
+
+
+
 вибрати донора
     [Arguments]  ${funders}
     :FOR  ${funder}  IN  @{funders}
@@ -624,12 +674,11 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	\  заповнити flex autocomplete field  //*[@data-name="FUNDERID"]//input  ${funders['identifier']['legalName']}  check=${False}
 
 
-
 Заповнити поля для items по lot_id
 	[Arguments]  ${lot_id}  @{items}
 	:FOR  ${item}  IN  @{items}
 	\  run keyword if  '${lot_id}' == '${item['relatedLot']}'  run keywords
-	\  ...  webclient.додати item бланк  index=2  AND
+	\  ...  webclient.додати item бланк  index=1  AND
 	\  ...  Заповнити поля предмету  ${item}
 
 
