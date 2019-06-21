@@ -133,7 +133,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	# ПРЕДМЕТИ
 	${count_item}  set variable  1
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк  index=2
+	\  run keyword if  '${count_item}' != '1'  webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	\  Заповнити поля предмету  ${item}
 	\  ${count_item}  evaluate  ${count_item} + 1
 
@@ -195,7 +195,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 	# ПРЕДМЕТИ
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  webclient.додати item бланк
+	\  webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	\  Заповнити поля предмету  ${item}
 
     # ЯКІСНІ ПОКАЗНИКИ
@@ -256,7 +256,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	# ПРЕДМЕТИ
 	${count_item}  set variable  1
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк  index=2
+	\  run keyword if  '${count_item}' != '1'  webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	\  Заповнити поля предмету  ${item}
 	\  ${count_item}  evaluate  ${count_item} + 1
 
@@ -318,7 +318,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 	# ПРЕДМЕТИ
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  webclient.додати item бланк  index=2
+	\  webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	\  Заповнити поля предмету  ${item}
 
     # ЯКІСНІ ПОКАЗНИКИ
@@ -374,7 +374,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 	# ПРЕДМЕТИ
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  webclient.додати item бланк  index=2
+	\  webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	\  Заповнити поля предмету  ${item}
 
     # ЯКІСНІ ПОКАЗНИКИ
@@ -431,7 +431,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 	# ПРЕДМЕТИ
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  webclient.додати item бланк  2
+	\  webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	\  Заповнити поля предмету  ${item}
 
 
@@ -482,7 +482,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	# ПРЕДМЕТИ
 	${count_item}  set variable  1
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  run keyword if  '${count_item}' != '1'  webclient.додати item бланк
+	\  run keyword if  '${count_item}' != '1'  webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	\  Заповнити поля предмету  ${item}
 	\  ${count_item}  evaluate  ${count_item} + 1
 
@@ -534,7 +534,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${lot_index}  set variable  1
 	:FOR  ${lot}  IN  @{tender_data['lots']}
 	\  run keyword if  '${lot_index}' != '1'  run keywords
-	\  ...  webclient.додати item бланк  index=2  AND
+	\  ...  webclient.додати бланк  GRID_ITEMS_HIERARCHY  AND
 	\  ...  Змінити номенклатуру на лот
 	\  Заповнити поля лоту  ${lot}
 	\  ${lot_id}  set variable  ${lot['id']}
@@ -590,7 +590,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${lot_index}  set variable  1
 	:FOR  ${lot}  IN  @{tender_data['lots']}
 	\  run keyword if  '${lot_index}' != '1'  run keywords
-	\  ...  webclient.додати item бланк  index=2  AND
+	\  ...  webclient.додати бланк  GRID_ITEMS_HIERARCHY  AND
 	\  ...  Змінити номенклатуру на лот
 	\  Заповнити поля лоту  ${lot}
 	\  ${lot_id}  set variable  ${lot['id']}
@@ -648,7 +648,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${lot_index}  set variable  1
 	:FOR  ${lot}  IN  @{tender_data['lots']}
 	\  run keyword if  '${lot_index}' != '1'  run keywords
-	\  ...  webclient.додати item бланк  index=2  AND
+	\  ...  webclient.додати бланк  GRID_ITEMS_HIERARCHY  AND
 	\  ...  Змінити номенклатуру на лот
 	\  Заповнити поля лоту  ${lot}
 	\  ${lot_id}  set variable  ${lot['id']}
@@ -710,7 +710,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${lot_index}  set variable  1
 	:FOR  ${lot}  IN  @{tender_data['lots']}
 	\  run keyword if  '${lot_index}' != '1'  run keywords
-	\  ...  webclient.додати item бланк  index=1  AND
+	\  ...  webclient.додати бланк  GRID_ITEMS_HIERARCHY  AND
 	\  ...  Змінити номенклатуру на лот
 	\  Заповнити поля лоту  ${lot}
 	\  ${lot_id}  set variable  ${lot['id']}
@@ -750,7 +750,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	[Arguments]  ${lot_id}  @{items}
 	:FOR  ${item}  IN  @{items}
 	\  run keyword if  '${lot_id}' == '${item['relatedLot']}'  run keywords
-	\  ...  webclient.додати item бланк  index=1  AND
+	\  ...  webclient.додати бланк  GRID_ITEMS_HIERARCHY  AND
 	\  ...  Заповнити поля предмету  ${item}
 
 
@@ -844,7 +844,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 
 Заповнити якісні показники
-    [Arguments]  ${feature}  ${relatedItem_id}=None                                   AND
+    [Arguments]  ${feature}  ${relatedItem_id}=None
     ${title}        set variable  ${feature["title"]}
     ${description}  set variable  ${feature["description"]}
     ${featureOf_cdb}    set variable  ${feature["featureOf"]}
@@ -861,7 +861,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
   	...  title
   	...  description
 
-  	додати item бланк
+  	webclient.додати бланк  GRID_CRITERIA
   	вибрати рівень прив'язки для feature  ${featureOf}
 	run keyword if  '${relatedItem_status}' == 'PASS'
 	...  вибрати предка для feature  ${featureOf_cdb}  ${relatedItem}
@@ -870,7 +870,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
   	\  run keyword  заповнити поле для feature ${field}  ${${field}}
 
     :FOR  ${enum}  IN  @{enums}
-    \  додати item бланк  index=2
+    \  додати бланк  GRID_CRITERIONVALUES
     \  заповнити поле для feature enum title  ${enum['title']}
     \  заповнити поле для feature enum value  ${enum['value']}
 
@@ -958,7 +958,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 	run keyword if  '${description_status}' == 'PASS'  append to list  ${field_list}  description
 
-  	додати item бланк  index=2
+  	webclient.додати бланк  GRID_PAYMENT_TERMS
   	:FOR  ${field}  IN  @{field_list}
   	\  run keyword  заповнити поле для milestone ${field}  ${${field}}
 
@@ -1572,12 +1572,12 @@ get_item_deliveryAddress_value
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
 	# ЛОТИ
-	webclient.додати item бланк
+	webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	Змінити номенклатуру на лот
 	Заповнити поля лоту  ${lot['data']}
 
 	# ПРЕДМЕТИ
-	webclient.додати item бланк
+	webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	Заповнити поля предмету  ${item}
     #  Зберегти
     webclient.header натиснути на елемент за назвою  Зберегти
@@ -1618,7 +1618,7 @@ get_item_deliveryAddress_value
 	click element  ${lot_row_locator}
 	wait until page contains element  ${lot_row_locator}[contains(@class,"rowselected")]  5
 	#  Змінити поле лоту
-	#  Костиль. Чомусь після ddjle value.amount, поле minimalStep очищається,
+	#  Костиль. Чомусь після вводу value.amount, поле minimalStep очищається,
 	#  тому зберігаємо значення поля minimalStep для повторного вводу
 	${minimalStep_locator}  set variable  //*[@data-name="LOT_MINSTEP"]//input
 	${minimalStep}  get element attribute  ${minimalStep_locator}@value
@@ -1648,7 +1648,7 @@ get_item_deliveryAddress_value
 	click element  ${lot_row_locator}
 	wait until page contains element  ${lot_row_locator}[contains(@class,"rowselected")]  5
 	# ПРЕДМЕТИ
-	webclient.додати item бланк
+	webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	Заповнити поля предмету  ${item}
     #  Зберегти
     webclient.header натиснути на елемент за назвою  Зберегти

@@ -782,13 +782,12 @@ click screen header
 	click element  //*[@id="pcModalMode_PWH-1"]
 
 
-додати item бланк
-	[Arguments]  ${index}=1
-	${locator}  set variable  xpath=(${active_tab_in_screen}//*[@data-type="GridView"]//*[@class="dxr-group mygroup"]//*[@title="Додати"])[${index}]
-	#loading дочекатися відображення елемента на сторінці  ${locator}
-	${click_status}  run keyword and return status  click element  ${locator}
+додати бланк
+	[Arguments]  ${grid_name}
+	${locator}  set variable  xpath=//*[@data-name="${grid_name}"]//*[@title="Додати"]
+	loading дочекатися відображення елемента на сторінці  ${locator}  2
+    click element  ${locator}
 	loading дочекатись закінчення загрузки сторінки
-    run keyword if  '${click_status}' =='False'  webclient.додати item бланк  index=2
 
 
 видалити item по id
