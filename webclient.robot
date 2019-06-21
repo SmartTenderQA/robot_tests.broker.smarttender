@@ -117,6 +117,26 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 	вибрати значення з випадаючого списку  ${locator}  ${dict['${key}']}
 
 
+заповнити поле maxAwardsCount
+	[Arguments]  ${text}
+	${locator}  set variable  //*[@data-name="MAXWINNERCOUNT"]//input
+	заповнити simple input  ${locator}  ${text}
+
+
+заповнити поле agreementDuration
+	[Arguments]  ${agreementDuration}
+	${reg}  evaluate  re.search(r'P(?P<year>\\d)Y(?P<month>\\d)M(?P<day>\\d)DT.*', '${agreementDuration}')  re
+	${year}  evaluate  ${reg.group('year')}
+	${month}  evaluate  ${reg.group('month')}
+	${day}  evaluate  ${reg.group('day')}
+	${year_locator}  set variable  //*[@data-name="DURAGRYEARS"]//input
+	${month_locator}  set variable  //*[@data-name="DURAGRMONTH"]//input
+	${day_locator}  set variable  //*[@data-name="DURAGRDAYS"]//input
+	заповнити simple input  ${year_locator}  ${year}
+	заповнити simple input  ${month_locator}  ${month}
+	заповнити simple input  ${day_locator}  ${day}
+
+
 ##################################################
 ######################LOTS#######################
 ##################################################
@@ -183,8 +203,7 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
-	заповнити simple input  ${locator}  ${description}  input_methon=Input Type Flex  #check=${False}
-
+	заповнити autocomplete field  ${locator}  ${description}  input_methon=Input Type Flex
 
 заповнити поле для item description_en
 	[Arguments]  ${description}
@@ -239,7 +258,7 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 заповнити поле для item deliveryAddress.locality
 	[Arguments]  ${deliveryAddress.locality}
 	${locator}  set variable  //*[@data-name="CITY_KOD"]//input
-	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${False}
+	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${True}  input_methon=Input Type Flex
 
 
 заповнити поле для item deliveryDate.startDate
@@ -658,7 +677,8 @@ dialog box заголовок повинен містити
 	...  click element  xpath=${locator}  AND
 	...  click element  xpath=${locator}  AND
 	...  input text  xpath=${locator}//input|${locator}//textarea  ${text}  AND
-	...  press key  //body  \\09  AND
+#	...  press key  //body  \\09  AND
+	...  click screen header  AND
 	...  loading дочекатись закінчення загрузки сторінки
 
 
@@ -700,6 +720,7 @@ dialog box заголовок повинен містити
 #	sleep  1
 	run keyword  ${input_methon}  ${locator}  ${text}
 	press key  ${locator}  \\13
+#	click screen header
 #	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
 	${get}  set variable  ${get.replace('\n', '')}
@@ -719,7 +740,8 @@ dialog box заголовок повинен містити
 	click element  ${locator}
 	clear input by JS  ${locator}
 	run keyword  ${input_methon}  ${locator}  ${text}
-	press key  //body  \\13
+#	press key  //body  \\13
+	click screen header
 	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=2
 	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}
 	loading дочекатись закінчення загрузки сторінки
@@ -749,7 +771,8 @@ dialog box заголовок повинен містити
 	clear input by JS  ${locator}
 	input text  ${locator}  ${date}
 #	sleep  .5
-	press key  //body  \\13
+#	press key  //body  \\13
+	click screen header
 #	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
 	should be equal  "${get}"  "${date}"
