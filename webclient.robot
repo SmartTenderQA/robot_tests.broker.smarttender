@@ -203,8 +203,7 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
-	заповнити simple input  ${locator}  ${description}  input_methon=Input Type Flex  #check=${False}
-
+	заповнити autocomplete field  ${locator}  ${description}  input_methon=Input Type Flex
 
 заповнити поле для item description_en
 	[Arguments]  ${description}
@@ -259,7 +258,7 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 заповнити поле для item deliveryAddress.locality
 	[Arguments]  ${deliveryAddress.locality}
 	${locator}  set variable  //*[@data-name="CITY_KOD"]//input
-	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${False}
+	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${True}  input_methon=Input Type Flex
 
 
 заповнити поле для item deliveryDate.startDate
@@ -720,8 +719,8 @@ dialog box заголовок повинен містити
 	clear input by JS  ${locator}
 #	sleep  1
 	run keyword  ${input_methon}  ${locator}  ${text}
-#	press key  ${locator}  \\13
-	click screen header
+	press key  ${locator}  \\13
+#	click screen header
 #	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
 	${get}  set variable  ${get.replace('\n', '')}
