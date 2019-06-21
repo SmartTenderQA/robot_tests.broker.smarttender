@@ -287,11 +287,11 @@ PublicPortal:
 SmartTender:
     intervals:
         default:
-            enquiry: [0, 10]
+            enquiry: [0, 15]
             tender:  [0, 20]
         belowThreshold:
-            enquiry: [10, 25]
-            tender:  [0, 15]
+            enquiry: [0, 8]
+            tender:  [0, 10]
             accelerator: 1440
         openua:
             accelerator: 1440

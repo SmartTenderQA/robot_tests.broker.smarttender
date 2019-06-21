@@ -705,7 +705,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${field_list}  create list
 	...  title
 	...  description
-	run keyword if  '${title_en_status}' == 'PASS'
+	run keyword if  ('${title_en_status}' == 'PASS') and ('below' not in '${mode}')
 	...  append to list  ${field_list}  title_en
 	run keyword if  '${description_en_status}' == 'PASS'
 	...  append to list  ${field_list}  description_en
@@ -750,9 +750,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	...  append to list  ${field_list}  unit.name
 	run keyword if  '${additionalClassifications_status}' == 'PASS'
 	...  append to list  ${field_list}  additionalClassifications.scheme  additionalClassifications.description
-#	Зачем завязка на конкретній тип торгов. С єтим очень тяжело работать?
-#	run keyword if  '${description_en_status}' == 'PASS' and '${mode}' == 'openeu' or '${description_en_status}' == 'PASS' and '${mode}' == 'open_competitive_dialogue'
-	run keyword if  '${description_en_status}' == 'PASS'
+	run keyword if  ('${description_en_status}' == 'PASS') and ('below' not in '${mode}')
 	...  append to list  ${field_list}  description_en
 	run keyword if  '${deliveryDate.startDate_status}' == 'PASS'
 	...  append to list  ${field_list}  deliveryDate.startDate  deliveryDate.endDate
@@ -774,8 +772,8 @@ ${view auction link}                       //*[@data-qa="link-view"]
 Заповнити якісні показники
     [Arguments]  ${feature}  ${relatedItem_id}=None
     run keyword if  '${relatedItem_id}' != 'None'  run keywords
-    ...  log to console  relatedItem_id       AND
-    ...  debug
+    ...  log to console  Заповнити якісні показники with relatedItem_id       AND
+    ...  log to console  ${relatedItem_id}                                    AND
     ${title}        set variable  ${feature["title"]}
     ${description}  set variable  ${feature["description"]}
     ${featureOf_cdb}    set variable  ${feature["featureOf"]}
@@ -794,8 +792,8 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
   	додати item бланк
   	вибрати рівень прив'язки для feature  ${featureOf}
-	#${relatedItem_name}  run keyword if  '${relatedItem_status}' == 'PASS'  run keyword  отримати найменування предка для ${featureOf_cdb}  ${relatedItem}
-	#вибрати предка для feature  ${relatedItem_name}
+	run keyword if  '${relatedItem_status}' == 'PASS'
+	...  вибрати предка для feature  ${featureOf_cdb}  ${relatedItem}
 
   	:FOR  ${field}  IN  @{field_list}
   	\  run keyword  заповнити поле для feature ${field}  ${${field}}
@@ -806,16 +804,40 @@ ${view auction link}                       //*[@data-qa="link-view"]
     \  заповнити поле для feature enum value  ${enum['value']}
 
 
+вибрати предка для feature
+    [Arguments]  ${featureOf_cdb}  ${relatedItem}
+    оновити дані тендера з ЦБД
+    ${relatedItem_name}  run keyword  отримати найменування предка для ${featureOf_cdb}  ${relatedItem}
+    webclient.вибрати значення з випадаючого списку  //*[@data-name="CRITERIONBINDING"]  ${relatedItem_name}
+
+
 отримати найменування предка для lot
     [Arguments]  ${relatedItem}
-    log to console  отримати найменування предка для lot
-    debug
+    :FOR  ${lot}  IN  @{tender_data['lots']}
+    \  ${lot_id}    set variable  ${lot['id']}
+    \  ${is_equal}  run keyword and return status  should be true  "${lot_id}" == "${relatedItem}"
+    \  ${lot_title}  set variable if  ${is_equal}  ${lot['title']}
+    \  exit for loop if  ${is_equal}
+    [Return]  ${lot_title}
 
 
 отримати найменування предка для item
     [Arguments]  ${relatedItem}
-    log to console  отримати найменування предка для item
-    debug
+    :FOR  ${item}  IN  @{tender_data['items']}
+    \  ${item_id}   set variable  ${item['id']}
+    \  ${is_equal}  run keyword and return status  should be true  "${item_id}" == "${relatedItem}"
+    \  ${item_description}  set variable if  ${is_equal}  ${item['description']}
+    \  exit for loop if  ${is_equal}
+    [Return]  ${item_description}
+
+
+отримати дані тендеру з cdb по id
+    [Arguments]  ${id}
+    Create Session  api  https://lb-api-sandbox.prozorro.gov.ua/api/2.4/tenders/${id}
+	${data}  Get Request  api  \
+	${data}  Set Variable  ${data.json()}
+	${cdb_data}  Set Variable  ${data['data']}
+	[Return]  ${cdb_data}
 
 
 додати умови оплати
@@ -1284,6 +1306,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 Отримати інформацію із предмету
     [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name з предмету з item_id в описі для тендера tender_uaid.
+    перейти до сторінки детальної інформаціїї
     ${item_block}        set variable  //*[@data-qa="nomenclature-title"][contains(text(),"${item_id}")]/ancestor::div[@class="ivu-row"][1]
 	${item_field_value}  run keyword  smarttender.предмети_сторінка_детальної_інформації отримати ${field_name}  ${item_block}
     [Return]  ${item_field_value}
@@ -1490,7 +1513,7 @@ get_item_deliveryAddress_value
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  wait until keyword succeeds  20  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 
 	
@@ -1506,6 +1529,8 @@ get_item_deliveryAddress_value
     ...  '${field_name}' == 'minimalStep.amount'                    (//*[@data-qa="budget-min-step"]//span)[4]
     ...  '${field_name}' == 'minimalStep.currency'                  (//*[@data-qa="budget-min-step"]//span)[last()]
     ...  '${field_name}' == 'minimalStep.valueAddedTaxIncluded'     //*[@data-qa="budget-vat-title"]
+    перейти до сторінки детальної інформаціїї
+    перейти до лоту за необхідністю  ${lot_id}
     ${field_value}  get text  xpath=${field_selector}
     ${converted_field_value}  convert_page_values  ${field_name}  ${field_value}
     [Return]  ${converted_field_value}
@@ -1566,7 +1591,6 @@ get_item_deliveryAddress_value
 Завантажити документ в лот
     [Arguments]  ${username}  ${filepath}  ${tender_uaid}  ${lot_id}
     [Documentation]  Завантажити документ, який знаходиться по шляху filepath, до лоту з lot_id в описі для тендера tender_uaid
-    log to console  Завантажити документ в лот
     знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	webclient.header натиснути на елемент за назвою  Коригувати
@@ -1667,7 +1691,6 @@ get_item_deliveryAddress_value
 	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
-	debug
 	webclient.активувати вкладку  Якісні показники
 	Заповнити якісні показники  ${feature}
     header натиснути на елемент за назвою  Зберегти
@@ -1686,7 +1709,6 @@ get_item_deliveryAddress_value
 	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
-	debug
 	webclient.активувати вкладку  Якісні показники
 	Заповнити якісні показники  ${feature}  ${item_id}
     header натиснути на елемент за назвою  Зберегти
@@ -1704,7 +1726,6 @@ get_item_deliveryAddress_value
 	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	header натиснути на елемент за назвою  Коригувати
-	debug
 	webclient.активувати вкладку  Якісні показники
 	Заповнити якісні показники  ${feature}  ${lot_id}
     header натиснути на елемент за назвою  Зберегти
@@ -1718,6 +1739,7 @@ get_item_deliveryAddress_value
 Отримати інформацію із нецінового показника
     [Arguments]  ${username}  ${tender_uaid}  ${feature_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name з нецінового показника з feature_id в описі для тендера tender_uaid.
+	перейти до сторінки детальної інформаціїї
 	${feature_block}  set variable  //*[@data-qa="feature-header"]//*[contains(text(),"${feature_id}")]/ancestor::*[contains(@data-qa,"feature-list")]
 	loading дочекатися відображення елемента на сторінці  ${feature_block}
 	smarttender.розгорнути всі експандери
@@ -1775,7 +1797,10 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name із запитання з question_id в описі для тендера tender_uaid.
     #на той стороне решили не ждать, можно зарепортить
-    run keyword if  "${TEST_NAME}" == "Відображення заголовку анонімного запитання на тендер без відповіді"
+    ${test_list}  create list
+    ...  Відображення заголовку анонімного запитання на тендер без відповіді
+    ...  Відображення заголовку анонімного запитання на всі лоти без відповіді
+    run keyword if  u"${TEST_NAME}" in @{test_list}
     ...  Wait Until Keyword Succeeds  10m  5s  smarttender.Дочекатись синхронізації
     перейти до сторінки детальної інформаціїї
     smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
@@ -2868,6 +2893,13 @@ Input Type Flex
   \    Press Key    ${locator}    ${text[${item}]}
 
 
+оновити дані тендера з ЦБД
+    ${cdb_status}  ${cdb}  run keyword and ignore error  отримати дані тендеру з cdb по id  ${tender_cdb_id}
+    run keyword if  '${cdb_status}' == 'PASS'  run keywords
+    ...  Set Global Variable  ${tender_data}  ${cdb}
+    ...  log  ${tender_data}
+
+
 #################################################
 #################################################
 дочекатися статусу тендера
@@ -2916,12 +2948,19 @@ cтатус тендера повинен бути
 	${selector}  run keyword if  '${mode}' == 'reporting'
 	...  set variable  xpath=(//div[@class="panel-body"])[${tender_number}]//a@href
     ...  ELSE  set variable  //*[@id="tenders"]//*[@class="head"][${tender_number}]//*[@href]@href
+
+	#  Зберігаємо лінк на сторінку детальної тендеру
 	${link}  get element attribute  ${selector}
 	set global variable  ${tender_detail_page}  ${link}
 	log  tender_link: ${link}  WARN
 	go to  ${link}
 	loading дочекатись закінчення загрузки сторінки
 	log location
+
+	#  Зберігаємо id в ЦБД
+	${tender_cdb_id}  get text  //*[@data-qa="prozorro-id"]//*[@data-qa="value"]
+    set global variable  ${tender_cdb_id}
+	log  tender_cdb_id: ${tender_cdb_id}  WARN
 
 
 loading дочекатись закінчення загрузки сторінки
@@ -2992,11 +3031,15 @@ loading дочекатися зникнення елемента зі сторі
     ...  loading дочекатись закінчення загрузки сторінки
 
 
+перейти до лоту за необхідністю
+    [Arguments]  ${lot_id}
+    ${is_lots_list}  run keyword and return status  Page Should Contain Element  //*[@data-qa="lot-list-block"]
+    run keyword if  ${is_lots_list}  open button  xpath=//*[@data-qa="lot-list-block"]//a[contains(text(),"${lot_id}")]
+
+
 ################################################################################
 #                           ПОДАТИ ПРОПОЗИЦІЮ                                  #
 ################################################################################
-
-
 пропозиція_перевірити кнопку подачі пропозиції
     ${button}  Set Variable  xpath=//*[@class='show-control button-lot']|//*[@data-qa="bid-button"]
     loading дочекатися відображення елемента на сторінці  ${button}
@@ -3141,8 +3184,6 @@ loading дочекатися зникнення елемента зі сторі
 ################################################################################
 #                               GET AUCTION HREF                               #
 ################################################################################
-
-
 отримати посилання на участь та прегляд аукціону для учасника
 	Element Should Not Be Visible  ${view auction btn}   Ой! Що тут робить кнопка "Перегляд аукціону"
 	Wait Until Element Is Visible  ${go to auction btn}  10
@@ -3183,6 +3224,8 @@ loading дочекатися зникнення елемента зі сторі
 	Wait Until Page Does Not Contain Element  ${auction loading}  30
 	Sleep  1
 ################################################################################
+
+
 Змінити номенклатуру на лот
 	wait until keyword succeeds  5x  .1  run keywords
 	...  click element  ${active_tab_in_screen}//*[contains(@class, "rowselected")]//*[text()="Номенклатура"]  AND

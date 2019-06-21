@@ -665,7 +665,7 @@ dialog box заголовок повинен містити
 вибрати значення з випадаючого списку
 	[Arguments]  ${locator}  ${text}
 	${dropdown_table_locator}  set variable  //*[contains(@class,"dxpcDropDown_DevEx") and contains(@style,"visibility: visible")]
-	wait until keyword succeeds  10x  1s  run keywords
+	wait until keyword succeeds  3x  1s  run keywords
 	...  click element  ${locator}  AND
 	...  wait until element is visible  ${dropdown_table_locator}  AND
 	...  click element  ${dropdown_table_locator}//*[contains(text(), "${text}")]  AND
@@ -762,9 +762,10 @@ click screen header
 додати item бланк
 	[Arguments]  ${index}=1
 	${locator}  set variable  xpath=(${active_tab_in_screen}//*[@data-type="GridView"]//*[@class="dxr-group mygroup"]//*[@title="Додати"])[${index}]
-	loading дочекатися відображення елемента на сторінці  ${locator}
-	click element  ${locator}
+	#loading дочекатися відображення елемента на сторінці  ${locator}
+	${click_status}  run keyword and return status  click element  ${locator}
 	loading дочекатись закінчення загрузки сторінки
+    run keyword if  '${click_status}' =='False'  webclient.додати item бланк  index=2
 
 
 видалити item по id
@@ -798,6 +799,7 @@ click screen header
 	click element  ${feature_row_locator}
 	wait until page contains element  ${feature_row_locator}[contains(@class,"rowselected")]  5
     #  Видалити
+    debug
 	${del_btn}  set variable  xpath=//*[@data-name="GRID_CRITERIA"]//*[@title="Видалити"][${index}]
 	click element  ${del_btn}
 	loading дочекатись закінчення загрузки сторінки
