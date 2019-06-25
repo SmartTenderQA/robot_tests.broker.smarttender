@@ -721,21 +721,19 @@ ${view auction link}                       //*[@data-qa="link-view"]
     ${is_features}  ${features}  run keyword and ignore error  set variable  ${tender_data['features']}
 	run keyword if  '${is_features}' == 'PASS'  smarttender.додати якісні показники  ${features}
 
-	debug
-#	webclient.додати тендерну документацію
-#	webclient.header натиснути на елемент за назвою  Додати
-#    ${status}  ${ret}  run keyword and ignore error
-#	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
-#	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
-#	...  dialog box натиснути кнопку  Так
-#	dialog box заголовок повинен містити  Оголосити закупівлю?
-#	dialog box натиснути кнопку  Так
-#    webclient.screen заголовок повинен містити  Завантаження документації
-#    click element   ${screen_root_selector}//*[@alt="Close"]
-#    dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
-#	dialog box натиснути кнопку  Ні
-#	webclient.пошук тендера по title  ${tender_data['title']}
-
+	webclient.додати тендерну документацію
+	webclient.header натиснути на елемент за назвою  Додати
+    ${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+    webclient.screen заголовок повинен містити  Завантаження документації
+    click element   ${screen_root_selector}//*[@alt="Close"]
+    dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box натиснути кнопку  Ні
+	webclient.пошук тендера по title  ${tender_data['title']}
 
 
 
@@ -831,6 +829,8 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 	:FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}
+#	\  log to console  ${field}
+#	\  debug
 
 
 додати якісні показники
