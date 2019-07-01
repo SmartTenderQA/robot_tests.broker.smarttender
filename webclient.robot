@@ -220,13 +220,13 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 заповнити поле для item unit.name
 	[Arguments]  ${unit.name}
 	${locator}  set variable  //*[@data-name="EDI"]//input
-	заповнити autocomplete field  ${locator}  ${unit.name}
+	заповнити autocomplete field  ${locator}  ${unit.name}  action_after_input=press enter
 
 
 заповнити поле для item classification.id
 	[Arguments]  ${classification.id}
 	${locator}  set variable  //*[@data-name="MAINCLASSIFICATION"]//input
-	заповнити autocomplete field  ${locator}  ${classification.id}  #check=${False}
+	заповнити autocomplete field  ${locator}  ${classification.id}  check=${True}  action_after_input=press enter
 
 
 заповнити поле для item additionalClassifications.scheme
@@ -304,6 +304,7 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 заповнити поле для feature enum value
     [Arguments]  ${value}
     ${locator}  set variable  ${enum_active_row}//td[4]
+    ${value}  evaluate  ${value}*100
     ввести значення в поле в гріді  ${locator}  "${value}"
 
 
@@ -741,25 +742,25 @@ dialog box заголовок повинен містити
 
 
 заповнити autocomplete field
-	[Arguments]  ${locator}  ${input_text}  ${check}=${True}  ${input_methon}=input text
-	wait until keyword succeeds  5x  1s  заповнити autocomplete field continue  ${locator}  ${input_text}  ${check}  input text
+	[Arguments]  ${locator}  ${input_text}  ${check}=${True}  ${input_methon}=input text  ${action_after_input}=click screen header
+	wait until keyword succeeds  5x  1s  заповнити autocomplete field continue  ${locator}  ${input_text}  ${check}  input text  ${action_after_input}
 
 
 заповнити autocomplete field continue
-	[Arguments]  ${locator}  ${input_text}  ${check}  ${input_methon}
+	[Arguments]  ${locator}  ${input_text}  ${check}  ${input_methon}  ${action_after_input}
 	${dropdown_list}  set variable  //*[@class="ade-list-back" and contains(@style, "left")]
 	${item_in_dropdown_list}  set variable  //*[@class="dhxcombo_option dhxcombo_option_selected"]
 	${text}  evaluate  u"""${input_text}"""
 	click element  ${locator}
 	clear input by JS  ${locator}
 	run keyword  ${input_methon}  ${locator}  ${text}
-#	press key  //body  \\13
-	click screen header
-	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=2
+	run keyword if  '${action_after_input}' == 'click screen header'  click screen header  ELSE
+	...  press key  //body  \\13
+	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=2s
 	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
-	run keyword if  ${check}  should contain  "${get}"  "${text}"
+	run keyword if  ${check}  should contain  ${get}  ${text}
 
 
 операція над чекбоксом
