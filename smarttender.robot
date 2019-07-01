@@ -162,7 +162,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 
 Оголосити закупівлю belowThreshold multilot		#Допорог мультилот
 	[Arguments]  ${tender_data}
-	log  голосити закупівлю belowThreshold multilot  WARN
+	log  Оголосити закупівлю belowThreshold multilot  WARN
 	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
 	webclient.header натиснути на елемент за назвою  Очистити
 	webclient.header натиснути на елемент за назвою  OK
@@ -1352,6 +1352,41 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	[Return]  ${field_value}
 
 
+сторінка_детальної_інформації отримати items
+	[Arguments]  ${field_name}
+	${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
+	${number}  	evaluate  '${reg.group('number')}'
+	${field}  	evaluate  '${reg.group('field')}'
+    перейти до сторінки детальної інформаціїї
+    ${item_block}   set variable  (//*[@data-qa="nomenclature-title"]/ancestor::div[@class="ivu-row"][1])[${number}+1]
+	${field_value}  run keyword  smarttender.предмети_сторінка_детальної_інформації отримати ${field}  ${item_block}
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати lots
+	[Arguments]  ${field_name}
+	${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
+	${number}  	evaluate  '${reg.group('number')}'
+	${field}  	evaluate  '${reg.group('field')}'
+    перейти до сторінки детальної інформаціїї
+    перейти до лоту за необхідністю  index=${number}+1
+    ${field_value}  run keyword  smarttender.сторінка_детальної_інформації отримати ${field}
+    ${converted_field_value}  convert_page_values  ${field}  ${field_value}
+    [Return]  ${converted_field_value}
+
+
+сторінка_детальної_інформації отримати features
+	[Arguments]  ${field_name}
+	${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
+	${number}  	evaluate  '${reg.group('number')}'
+	${field}  	evaluate  '${reg.group('field')}'
+	перейти до сторінки детальної інформаціїї
+    ${feature_block}  set variable  (//*[contains(@data-qa,"feature-list")])[${number}+1]
+	smarttender.розгорнути всі експандери
+    ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field}  ${feature_block}
+    [Return]  ${feature_field_name}
+
+
 Внести зміни в тендер
     [Arguments]  ${username}  ${tender_uaid}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінити значення поля fieldname на fieldvalue для тендера tender_uaid.
@@ -1591,22 +1626,40 @@ get_item_deliveryAddress_value
 Отримати інформацію із лоту
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name з лоту з lot_id в описі для тендера tender_uaid.
+    перейти до сторінки детальної інформаціїї
+    ${is_multilot}  run keyword and return status  Page Should Contain Element  //*[@data-qa="lot-list-block"]
+    ${field_value}  run keyword if  ${is_multilot}  run keywords
+    ...  перейти до лоту за необхідністю  lot_id=${lot_id}          AND
+    ...  Отримати інформацію із лоту multilot  ${field_name}
+    ...  ELSE
+    ...  Отримати інформацію із лоту single  ${field_name}
+    [Return]  ${field_value}
+
+
+
+Отримати інформацію із лоту single
+    [Arguments]  ${field_name}
     ${field_selector}      set variable if
     ...  '${field_name}' == 'description'                           //*[@data-qa="lot-description"]
-    ...  '${field_name}' == 'title'                                 //*[@data-qa="lot-title"]  # and contains(text(), "${lot_id}")
+    ...  '${field_name}' == 'title'                                 //*[@data-qa="lot-title"]
     ...  '${field_name}' == 'value.amount'                          //*[@data-qa="budget-amount"]
     ...  '${field_name}' == 'value.currency'                        //*[@data-qa="budget-currency"]
     ...  '${field_name}' == 'value.valueAddedTaxIncluded'           //*[@data-qa="budget-vat-title"]
     ...  '${field_name}' == 'minimalStep.amount'                    (//*[@data-qa="budget-min-step"]//span)[4]
     ...  '${field_name}' == 'minimalStep.currency'                  (//*[@data-qa="budget-min-step"]//span)[last()]
     ...  '${field_name}' == 'minimalStep.valueAddedTaxIncluded'     //*[@data-qa="budget-vat-title"]
-    перейти до сторінки детальної інформаціїї
-    перейти до лоту за необхідністю  ${lot_id}
-    ${field_value}  get text  xpath=${field_selector}
+    ${field_value}  get text  ${field_selector}
     ${converted_field_value}  convert_page_values  ${field_name}  ${field_value}
     [Return]  ${converted_field_value}
-    
-    
+
+
+Отримати інформацію із лоту multilot
+    [Arguments]  ${field_name}
+    ${field_value}  run keyword  smarttender.сторінка_детальної_інформації отримати lots  ${field_name}
+    ${converted_field_value}  convert_page_values  ${field_name}  ${field_value}
+    [Return]  ${converted_field_value}
+
+
 Змінити лот
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінити значення поля fieldname лоту з lot_id в описі для тендера tender_uaid на fieldvalue
@@ -1632,7 +1685,7 @@ get_item_deliveryAddress_value
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 
 	
@@ -1812,7 +1865,6 @@ get_item_deliveryAddress_value
     [Documentation]  Отримати значення поля field_name з нецінового показника з feature_id в описі для тендера tender_uaid.
 	перейти до сторінки детальної інформаціїї
 	${feature_block}  set variable  //*[@data-qa="feature-header"]//*[contains(text(),"${feature_id}")]/ancestor::*[contains(@data-qa,"feature-list")]
-	loading дочекатися відображення елемента на сторінці  ${feature_block}
 	smarttender.розгорнути всі експандери
     ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field_name}  ${feature_block}
     [Return]  ${feature_field_name}
@@ -2008,10 +2060,30 @@ get_item_deliveryAddress_value
 
 Відповісти на вимогу про виправлення визначення переможця
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}  ${award_index}
-    [Documentation]  Відповісти на вимогу complaintID про виправлення визначення переможця під номером award_index для тендера tender_uaid, використовуючи при цьому дані answer_data.  
-	log to console  Відповісти на вимогу про виправлення визначення переможця
-	debug
-	
+    [Documentation]  Відповісти на вимогу complaintID про виправлення визначення переможця під номером award_index для тендера tender_uaid, використовуючи при цьому дані answer_data.
+    webclient.знайти тендер у webclient  ${tender_uaid}
+    #  знаходимо потрібну вимогу
+    webclient.активувати вкладку  Звернення  index=2
+    webclient.header натиснути на елемент за назвою  Перечитати
+	${complaintID_search_field}  set variable  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[2]//td//input)[1]
+    clear input by JS  ${complaintID_search_field}
+    Input Type Flex  ${complaintID_search_field}  ${complaintID}
+	press key   ${complaintID_search_field}  \\13
+	loading дочекатись закінчення загрузки сторінки
+	#  вносимо відповідь на вимогу
+	webclient.header натиснути на елемент за назвою  Змінити
+	${answer_data}             set variable  ${answer_data['data']}
+	${resolutionType}          conver_resolutionType  ${answer_data['resolutionType']}
+	${resolution locator}      set variable  //*[@data-name="RESOLUTION"]//textarea
+	${resolutionType locator}  set variable  //*[@data-name="RESOLUTYPE"]//input[@class]
+	webclient.заповнити simple input                 ${resolution locator}      ${answer_data['resolution']}
+	webclient.вибрати значення з випадаючого списку  ${resolutionType locator}  ${resolutionType}
+	#  зберігаємо та відправляємо вимогу
+    webclient.header натиснути на елемент за назвою  Зберегти
+    dialog box заголовок повинен містити  Надіслати відповідь
+	dialog box натиснути кнопку  Так
+
+
 
 Підтвердити вирішення вимоги про виправлення визначення переможця
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${confirmation_data}  ${award_index}
@@ -2174,8 +2246,10 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${document}  ${tender_uaid}  ${award_num}
     [Documentation]  Завантажити документ, який знаходиться по шляху document до постачальника під номером award_num для тендера tender_uaid.
 	знайти тендер у webclient  ${tender_uaid}
-	активувати вкладку  Пропозиції
-	grid вибрати рядок за номером  ${award_num}+1
+	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
+	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
+	header натиснути на елемент за назвою  Перечитати
+	вибрати переможця за номером  ${award_num}+1
 	header натиснути на елемент за назвою  Кваліфікація
 	click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]
 	loading дочекатись закінчення загрузки сторінки
@@ -2190,12 +2264,11 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${award_num}
     [Documentation]  Перевести постачальника під номером award_num для тендера tender_uaid в статус active.
 	знайти тендер у webclient  ${tender_uaid}
-
-	${status}  run keyword and return status  активувати вкладку  Пропозиції
-	run keyword if  ${status} == ${False}  run keywords  активувати вкладку  Предложения (м)  AND  set variable  1  ELSE  set variable  0
-	${row_with_foledr_for_multilot}  set variable if  ${status} == ${False}  1  0
-
-	grid вибрати рядок за номером  ${award_num}+1+${row_with_foledr_for_multilot}
+	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
+	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
+	header натиснути на елемент за назвою  Перечитати
+	log to console  Підтвердити постачальника
+	вибрати переможця за номером  ${award_num}+1
 	header натиснути на елемент за назвою  Кваліфікація
 	click element  //*[contains(text(), "Визначити переможцем")]
 	wait until page contains  Визнаний переможцем
@@ -2257,20 +2330,31 @@ get_item_deliveryAddress_value
 Підтвердити підписання контракту
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
     [Documentation]  Перевести договір під номером contract_num до тендера tender_uaid в статус active.
-    debug
-
+    log to console  Підтвердити підписання контракту
     знайти тендер у webclient  ${tender_uaid}
-	${status}  run keyword and return status  активувати вкладку  Пропозиції
-	run keyword if  ${status} == ${False}  run keywords  активувати вкладку  Предложения (м)  AND  set variable  1  ELSE  set variable  0
-	${row_with_foledr_for_multilot}  set variable if  ${status} == ${False}  1  0
-
-	grid вибрати рядок за номером  ${award_num}+1+${row_with_foledr_for_multilot}
+	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
+	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
+	header натиснути на елемент за назвою  Перечитати
+	вибрати переможця за номером  ${contract_num}+1
     header натиснути на елемент за назвою  Прикріпити договір
+    #  Заповнюємо поля договору
 	${id}  evaluate  str(uuid.uuid4())  uuid
 	заповнити поле для угоди id  ${id}
 	${date}  get current date  result_format=%d.%m.%Y
 	заповнити поле для угоди date  ${date}
-
+    #   Визначаємо суму без ПДВ залежно від чек-боксу (тендер з ПДВ чи без)
+    ${amount_input}  set variable  xpath=(//*[contains(text(),"Сума за договором")]//following-sibling::*[@data-type]//*[self::textarea or self::input])[1]
+    ${amount}  get element attribute  ${amount_input}@value
+    ${amount}            evaluate  '${amount}'.replace(' ', '')
+    ${amount minus 20%}  evaluate  "%.2f" % (${amount} / 1.2)
+    ${checkbox}         set variable  //*[@data-type="CheckBox" and contains(., "з ПДВ")]
+	${checkbox status}  get element attribute  ${checkbox}//span@class
+	${amount without tax}  set variable if
+	...  "Unchecked" in "${checkbox status}"  ${amount}
+	...  "Checked" in "${checkbox status}"    ${amount minus 20%}
+	${amount_tax_input}  set variable  xpath=(//*[contains(text(),"Сума без ПДВ")]//following-sibling::*[@data-type]//*[self::textarea or self::input])[1]
+	заповнити simple input  ${amount_tax_input}  ${amount without tax}  check=${False}
+	#  Додаємо документ
 	click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]
 	loading дочекатись закінчення загрузки сторінки
 	${list_of_file_args}  create_fake_doc
@@ -3103,10 +3187,13 @@ loading дочекатися зникнення елемента зі сторі
 
 
 перейти до лоту за необхідністю
-    [Arguments]  ${lot_id}
-    ${is_lots_list}  run keyword and return status  Page Should Contain Element  //*[@data-qa="lot-list-block"]
-    run keyword if  ${is_lots_list}  open button  xpath=//*[@data-qa="lot-list-block"]//a[contains(text(),"${lot_id}")]
-
+    [Arguments]  ${lot_id}=None  ${index}=None
+    [Documentation]  В залежності від аргументу переходимо до лоту по lot_id або по index
+    ${is_lots_list}  run keyword and return status  element should be visible  //*[@data-qa="lot-list-block"]
+    run keyword if  ${is_lots_list} and ${lot_id} != None
+    ...  open button  xpath=//*[@data-qa="lot-list-block"]//a[contains(text(),"${lot_id}")]
+    run keyword if  ${is_lots_list} and ${index} != None
+    ...  open button  xpath=(//*[@data-qa="lot-list-block"]//a)[${index}]
 
 ################################################################################
 #                           ПОДАТИ ПРОПОЗИЦІЮ                                  #

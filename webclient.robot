@@ -226,7 +226,7 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 заповнити поле для item classification.id
 	[Arguments]  ${classification.id}
 	${locator}  set variable  //*[@data-name="MAINCLASSIFICATION"]//input
-	заповнити autocomplete field  ${locator}  ${classification.id}  check=${False}
+	заповнити autocomplete field  ${locator}  ${classification.id}  #check=${False}
 
 
 заповнити поле для item additionalClassifications.scheme
@@ -550,10 +550,15 @@ check for open screen
 
 загрузити документ
 	[Arguments]  ${file_path}
+	${ok_btn}  set variable  //*[@id="pcModalMode_PW-1"]//*[text()="ОК"]
 	choose file  //*[@id="pcModalMode_PW-1"]//input  ${file_path}
 	loading дочекатись закінчення загрузки сторінки
-	click element  //*[@id="pcModalMode_PW-1"]//*[text()="ОК"]
+	click element  ${ok_btn}
 	loading дочекатись закінчення загрузки сторінки
+    ${is_visible}  run keyword and return status  element should be visible  ${ok_btn}
+    run keyword if  ${is_visible}  run keywords
+    ...  click element  ${ok_btn}                   AND
+    ...  loading дочекатись закінчення загрузки сторінки
 
 
 знайти тендер у webclient
@@ -638,6 +643,13 @@ grid вибрати рядок за номером
     loading дочекатися відображення елемента на сторінці  xpath=${grid_selector}${row_sitfp}\[${row_number}]\[contains(@class,"selected")]
 
 
+вибрати переможця за номером
+    [Arguments]  ${award_num}
+    ${winners}  set variable
+    ...  //*[@data-placeid="BIDS"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//*[@data-placeid="BIDS"]//div[text()="Постачальник"]/ancestor::td[1]/preceding-sibling::*)][text()]
+    Wait Until Keyword Succeeds  10  2  Click Element  xpath=(${winners})[${award_num}]
+
+
 screen заголовок повинен містити
 	[Arguments]  ${text}
 	${selector}  set variable  ${screen_root_selector}//*[@id="pcModalMode_PWH-1T" or @id="pcCustomDialog_PWH-1T"]
@@ -658,6 +670,7 @@ dialog box заголовок повинен містити
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@id="IMMessageBox_PWH-1"]//*[@class="dxpc-headerContent"]
 	${title}  get text  ${locator}
+	capture page screenshot
 	should contain  ${title}  ${text}
 
 
@@ -821,22 +834,21 @@ click screen header
 	click element  ${feature_row_locator}
 	wait until page contains element  ${feature_row_locator}[contains(@class,"rowselected")]  5
     #  Видалити
-    debug
 	${del_btn}  set variable  xpath=//*[@data-name="GRID_CRITERIA"]//*[@title="Видалити"][${index}]
 	click element  ${del_btn}
 	loading дочекатись закінчення загрузки сторінки
 
 
 активувати вкладку
-	[Arguments]  ${tab_name}
+	[Arguments]  ${tab_name}  ${index}=1
 	[Documentation]  Активирует вкладку по содержащую _tab_name_ в имени.
 	${tab}  webclient.get tab selector by name  ${tab_name}
 	${view_status}  webclient.get view status  ${tab}
 	${tab_status}  webclient.get tab status  ${tab}
 	Run Keyword If
 	...  "${tab_status}" == "none"  											run keywords
-	...  		click element  ${tab}											AND
+	...  		click element  xpath=(${tab})[${index}]									AND
 	...  		loading дочекатись закінчення загрузки сторінки  						ELSE IF
 	...  "${tab_status}" == "active" and "${view_status}" == "none"  			run keywords
-	...  		click element  ${tab}/following-sibling::*						AND
+	...  		click element  xpath=(${tab})[${index}]/following-sibling::*			AND
 	...  		loading дочекатись закінчення загрузки сторінки
