@@ -170,7 +170,6 @@ ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 	заповнити simple input  ${locator}  ${amount}  check=${False}
 
 
-
 заповнити поле для lot minimalStep.amount
 	[Arguments]  ${minimalStep}
 	${locator}  set variable  //*[@data-name="LOT_MINSTEP"]//input
@@ -573,8 +572,9 @@ check for open screen
 	...  webclient.header натиснути на елемент за назвою  Очистити  AND
 	...  webclient.header натиснути на елемент за назвою  OK  AND
 	...  loading дочекатися відображення елемента на сторінці  ${grid_search_field}  AND
-	...  input text  ${grid_search_field}  ${tender_uaid}  AND
-	...  press key  ${grid_search_field}  \\13  AND
+	...  заповнити simple input  ${grid_search_field}  ${tender_uaid}   AND
+	#...  input text  ${grid_search_field}  ${tender_uaid}  AND
+	#...  press key  ${grid_search_field}  \\13  AND
 	...  loading дочекатись закінчення загрузки сторінки
 
 
@@ -589,8 +589,9 @@ check for open screen
 	...  webclient.header натиснути на елемент за назвою  Очистити  AND
 	...  webclient.header натиснути на елемент за назвою  OK  AND
 	...  loading дочекатися відображення елемента на сторінці  ${grid_search_field}  AND
-	...  input text  ${grid_search_field}  ${tender_uaid}  AND
-	...  press key  ${grid_search_field}  \\13  AND
+	...  заповнити simple input  ${grid_search_field}  ${tender_uaid}   AND
+	#...  input text  ${grid_search_field}  ${tender_uaid}  AND
+	#...  press key  ${grid_search_field}  \\13  AND
 	...  loading дочекатись закінчення загрузки сторінки
 
 
@@ -649,6 +650,13 @@ grid вибрати рядок за номером
     ${winners}  set variable
     ...  //*[@data-placeid="BIDS"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//*[@data-placeid="BIDS"]//div[text()="Постачальник"]/ancestor::td[1]/preceding-sibling::*)][text()]
     Wait Until Keyword Succeeds  10  2  Click Element  xpath=(${winners})[${award_num}]
+
+
+вибрати учасника за номером
+    [Arguments]  ${qualification_num}
+    ${participants}  set variable
+    ...  //*[@data-placeid="CRITERIA"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//*[@data-placeid="CRITERIA"]//div[text()="ЄДРПОУ"]/ancestor::td[1]/preceding-sibling::*)][text()]
+    Wait Until Keyword Succeeds  10  2  Click Element  xpath=(${participants})[${qualification_num}]
 
 
 screen заголовок повинен містити
@@ -738,7 +746,9 @@ dialog box заголовок повинен містити
 #	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
 	${get}  set variable  ${get.replace('\n', '')}
-	run keyword if  ${check}  should be equal  "${get}"  "${text}"
+	#  run keyword if  'AMOUNT' in '${locator}' or 'MINSTEP' in '${locator}'
+	should not be empty  ${get}
+	run keyword if  ${check}  should be equal as strings  "${get}"  "${text}"
 
 
 заповнити autocomplete field
