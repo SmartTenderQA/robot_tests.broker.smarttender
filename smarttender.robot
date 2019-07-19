@@ -674,8 +674,11 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	dialog box натиснути кнопку  Так
     webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
-    dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
-	dialog box натиснути кнопку  Ні
+    # Тут опционально появляется вопрос о ЕЦП
+    ${status}  ${ret}  run keyword and ignore error
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+    run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Ні
 	webclient.пошук тендера по title  ${tender_data['title']}
 
 
