@@ -14,6 +14,7 @@ ${grid}								//*[@data-type="GridView"]
 ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 ${plan_cursor_row}               	//*[@data-name="GRIDTABLE"]//tr[contains(@class,"Row")]
 ${plan_block}                    	//div[@data-name="GRIDTABLE"]
+${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//tr[contains(@class,"Row")]
 
 
 *** Keywords ***

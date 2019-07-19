@@ -144,6 +144,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	# УМОВИ ОПЛАТИ
 	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
 	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
+	...  ELSE                                     smarttender.додати умови оплати fake
 
 	webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
@@ -205,6 +206,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	# УМОВИ ОПЛАТИ
 	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
 	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
+	...  ELSE  debug                                 #   smarttender.додати умови оплати fake  multilot=${True}
 
     webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
@@ -912,6 +914,40 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${data}  Set Variable  ${data.json()}
 	${cdb_data}  Set Variable  ${data['data']}
 	[Return]  ${cdb_data}
+
+
+додати умови оплати fake
+    [Arguments]  ${multilot}=False
+    webclient.активувати вкладку  Умови оплати
+	run keyword if  ${multilot}  Заповнити умови оплати multilot fake
+	...  ELSE                    Заповнити умови оплати fake
+
+
+Заповнити умови оплати multilot fake
+    ${lots_amount}  Get Matching Xpath Count  ${lot_row}
+  	:FOR  ${lot_number}  IN RANGE  1  ${lots_amount}+1
+  	\  click element  xpath=(${lot_row})[${lot_number}]
+  	\  loading дочекатись закінчення загрузки сторінки
+  	\  Заповнити умови оплати fake
+
+
+Заповнити умови оплати fake
+	${code}  set variable            Аванс
+	${title}  set variable           Виконання робіт
+	${duration.type}  set variable   Робочий
+	${duration.days}  evaluate       random.randint(2, 20)  random
+	${percentage}  set variable      100
+
+	${field_list}  create list
+  	...  code
+  	...  title
+  	...  duration.type
+  	...  duration.days
+  	...  percentage
+
+  	webclient.додати бланк  GRID_PAYMENT_TERMS
+  	:FOR  ${field}  IN  @{field_list}
+  	\  run keyword  заповнити поле для milestone ${field}  ${${field}}
 
 
 додати умови оплати
