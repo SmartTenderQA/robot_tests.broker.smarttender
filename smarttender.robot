@@ -789,7 +789,7 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${description}  set variable  ${item['description']}
 	${description_en_status}  ${description_en}  run keyword and ignore error  set variable  ${item['description_en']}
 	${quantity}  set variable  ${item['quantity']}
-	${unit.name_status}  ${unit.name}  run keyword and ignore error  set variable  ${item['unit']['name']}
+	${unit.name_status}  ${unit.name}  run keyword and ignore error  replace_unit_name_dict  ${item['unit']['name']}
 	${classification.id}  set variable  ${item['classification']['id']}
 	${additionalClassifications_status}  ${additionalClassifications.scheme}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['scheme']}
 	${additionalClassifications_status}  ${additionalClassifications.description}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['description']}
@@ -985,7 +985,17 @@ ${view auction link}                       //*[@data-qa="link-view"]
     log to console  Чекаємо пока пройде синхронізація
     log to console            .............
     ##########################################################
-	Wait Until Keyword Succeeds  10m  5s  smarttender.Дочекатись синхронізації
+    ${test_list}  create list
+    ...  Можливість створення лоту із прив’язаним предметом закупівлі
+    ...  Можливість внести зміни у тендер після запитання
+    ...  Можливість внести зміни у лот після запитання
+    ...  Відображення статусу першої пропозиції кваліфікації
+    ...  Відображення статусу другої пропозиції кваліфікації
+    run keyword if  "${TEST_NAME}" not in @{test_list}
+	...  Wait Until Keyword Succeeds  10m  5s  smarttender.Дочекатись синхронізації
+	...  ELSE  run keywords
+	...  reload page        AND
+	...  loading дочекатись закінчення загрузки сторінки
 	log to console                ${\n}
     log to console      WAKE UP!!!
 
@@ -1358,6 +1368,11 @@ ${view auction link}                       //*[@data-qa="link-view"]
 	${number}  	evaluate  '${reg.group('number')}'
 	${field}  	evaluate  '${reg.group('field')}'
     перейти до сторінки детальної інформаціїї
+    log to console  отримати items
+    debug
+    ${relatedItem}  set variable  ${tender_data['items'][${number}]['relatedLot']}
+    ${lot_title}  отримати найменування предка для lot  ${relatedItem}
+    перейти до лоту за необхідністю  lot_id=${lot_title}
     ${item_block}   set variable  (//*[@data-qa="nomenclature-title"]/ancestor::div[@class="ivu-row"][1])[${number}+1]
 	${field_value}  run keyword  smarttender.предмети_сторінка_детальної_інформації отримати ${field}  ${item_block}
     [Return]  ${field_value}
@@ -2063,9 +2078,11 @@ get_item_deliveryAddress_value
     [Documentation]  Відповісти на вимогу complaintID про виправлення визначення переможця під номером award_index для тендера tender_uaid, використовуючи при цьому дані answer_data.
     webclient.знайти тендер у webclient  ${tender_uaid}
     #  знаходимо потрібну вимогу
-    webclient.активувати вкладку  Звернення  index=2
+    ${tab_status}  run keyword and return status  webclient.активувати вкладку  Звернення за умовами тендеру
+	run keyword if  "${tab_status}" == "False"    webclient.активувати вкладку  Оскарження умов тендеру
     webclient.header натиснути на елемент за назвою  Перечитати
 	${complaintID_search_field}  set variable  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[2]//td//input)[1]
+    loading дочекатися відображення елемента на сторінці  ${complaintID_search_field}
     clear input by JS  ${complaintID_search_field}
     Input Type Flex  ${complaintID_search_field}  ${complaintID}
 	press key   ${complaintID_search_field}  \\13
@@ -2198,6 +2215,19 @@ get_item_deliveryAddress_value
     [Documentation]  Завантажити документ, який знаходиться по шляху document, до кваліфікації під номером qualification_num до тендера tender_uaid  
 	log to console  Завантажити документ у кваліфікацію
 	debug
+	знайти тендер у webclient  ${tender_uaid}
+    активувати вкладку  Прекваліфікація
+	header натиснути на елемент за назвою  Перечитати
+	вибрати учасника за номером  ${qualification_num}+1
+
+    header натиснути на елемент за назвою  Прийняти рішення прекваліфікації
+	click element  //div[@data-name][@title="Додати протокол"]
+	loading дочекатись закінчення загрузки сторінки
+	загрузити документ  ${document}
+	Заповнити текст рішення квалиіфікації  Загрузка документа без кваліфікації учасника
+	header натиснути на елемент за назвою  Зберегти
+	dialog box заголовок повинен містити  Увага!
+	dialog box натиснути кнопку  Так
 
 
 Підтвердити кваліфікацію
