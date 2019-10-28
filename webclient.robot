@@ -864,3 +864,10 @@ click screen header
 	...  "${tab_status}" == "active" and "${view_status}" == "none"  			run keywords
 	...  		click element  xpath=(${tab})[${index}]/following-sibling::*			AND
 	...  		loading дочекатись закінчення загрузки сторінки
+
+
+Перейти за посиланням "Натисніть для переходу"
+    ${value}  Get Element Attribute  xpath=//a[contains(text(), 'Натисніть для переходу') and @href]  onclick
+    ${href}  evaluate  re.search("[^']+.(?P<href>.+)[']+", "${value}").group("href")  re
+	smart go to  ${href}
+	[Return]  ${href}

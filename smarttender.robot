@@ -39,6 +39,31 @@ ${participate in auction link}             //*[@data-qa="link-participate"]
 ${view auction link}                       //*[@data-qa="link-view"]
 ######################################
 
+#########  ELEMENTS  #################
+${selectInputNew_input}           //div[@class="select-input-new"]//input
+${selectOptions_item}             //*[@class="select-options-items"]
+${number_input}                   //div[contains(@class,"number-input-new")]//input
+${ivu_datePicker_input}                      //*[contains(@class, "ivu-input-wrapper")]//input
+${ivu_datePicker_close}                      //*[contains(@class,"ivu-icon-ios-close")]
+######################################
+
+
+#########  PLAN EDIT PAGE  ###########
+${tender_type_root}                 //*[@data-qa="plan-detail-BiddingTypeId"]
+${year_root}                        //*[@data-qa="plan-detail-PurchaseYearFrom"]
+${year_from_root}                   //*[@data-qa="plan-detail-PurchaseYearTo"]
+${plan_desc_input}                  //*[@data-qa="plan-detail-Title"]//input
+${amount_root}                      //*[@data-qa="plan-detail-Amount"]
+${currency_root}                    //*[@data-qa="plan-detail-CurrencyId"]
+${plan_start_root}                  //*[@data-qa="plan-detail-TenderStartDate"]
+${bayer_root}                       //*[@data-qa="purchaser-PurchaserOrganizationId"]
+${cpv_input}                        //*[@class="ivu-tabs ivu-tabs-card"]//input
+${breakdown_root}                   //*[@data-qa="financing-card-Title"]
+${plan_item_title_input}            //*[@data-qa="nomenclature-Title"]//input
+${plan_item_quantity_root}          //*[@data-qa="nomenclature-Quantity"]
+${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
+######################################
+
 
 *** Keywords ***
 Підготувати клієнт для користувача
@@ -2544,7 +2569,7 @@ get_item_deliveryAddress_value
 	webclient.header натиснути на елемент за назвою  Очистити
 	webclient.header натиснути на елемент за назвою  OK
 	webclient.header натиснути на елемент за назвою  Додати план закупівель
-
+	webclient.Перейти за посиланням "Натисніть для переходу"
 
 	${procurementMethodType_en}  			set variable  					${tender_data['tender']['procurementMethodType']}
 	${procurementMethodType}  				get_en_procurement_method_type  ${procurementMethodType_en}
@@ -2554,6 +2579,7 @@ get_item_deliveryAddress_value
 	${budget_id}  							set variable  					${tender_data['classification']['id']}  	####  ?????
 	${additionalClassifications_status}  	${additionalClassifications}  	run keyword and ignore error  set variable  ${tender_data['additionalClassifications']}
 
+    debug
 	create_plan заповнити "Тип процедури закупівлі"  							${procurementMethodType}
 	create_plan заповнити "Орієнтований початок процедури закупівлі"  			${tenderPeriod_startDate_not_formated}
 	create_plan заповнити "Конкретна назва предмету закупівлі"  				${budget_description}
@@ -3458,3 +3484,260 @@ loading дочекатися зникнення елемента зі сторі
 	...  click element  ${active_tab_in_screen}//*[contains(@class, "rowselected")]//*[text()="Номенклатура"]  AND
 	...  click element  ${active_tab_in_screen}//*[contains(@class, "rowselected")]//*[text()="Номенклатура"]  AND
 	...  click element  //*[@class="dhxcombo_option_text" and text()= "Лот"]
+
+
+
+############################################################
+#####                   PLAN EDIT                      #####
+############################################################
+plan edit обрати "Тип процедури закупівлі"
+    [Arguments]  ${tender_type}
+    selectInputNew open dropdown by click  root=${tender_type_root}
+    selectInputNew select item by name  ${tender_type}  root=${tender_type_root}
+
+
+plan edit заповнити "Рік"
+    [Arguments]  ${year}
+    number-input input text  ${year}  root=${year_root}
+
+
+plan edit заповнити "Конкретна назва предмету закупівлі"
+    [Arguments]  ${value}
+    clear input by JS  ${plan_desc_input}
+    input text  ${plan_desc_input}   ${value}
+
+
+plan edit заповнити "Рік з"
+    [Arguments]  ${year_from_root}
+    number-input input text  ${year}  root=${year_root}
+
+
+plan edit заповнити "Очікувана вартість закупівлі"
+    [Arguments]  ${amount}
+    number-input input text  ${amount}  root=${amount_root}  check=${False}
+
+
+plan edit обрати "Валюта"
+    [Arguments]  ${value}
+    ${get}  selectInputNew get value  root=${currency_root}
+    return from keyword if  "${get}" == "${value}"
+    selectInputNew open dropdown by click         root=${currency_root}
+    selectInputNew select item by name  ${value}  root=${currency_root}
+
+
+plan edit заповнити "Дата старту закупівлі"
+    [Arguments]  ${year}
+    ${current_month}  get current date  result_format=%m
+    ${date}  set variable  ${year}-${current_month}
+    ivu-datePicker input text  ${date}  root=${plan_start_root}  check=${False}
+    press keys  NONE  TAB
+
+
+plan edit обрати "Замовник"
+    [Arguments]  ${value}=${NONE}  ${index}=${NONE}
+    [Documentation]  По умолчанию выбираем из списка по имени, но можем и по индексу,
+    ...  передав например аргумент select_by=1
+    selectInputNew open dropdown by click         root=${bayer_root}
+    run keyword if  ${index} != ${NONE}
+    ...  selectInputNew select item by index  ${index}  root=${bayer_root}
+    ...  ELSE
+    ...  selectInputNew select item by name   ${value}  root=${bayer_root}
+
+
+plan edit обрати "Код ДК021" плану
+    [Arguments]  ${code}
+    button class=button click by text  ДК021
+    loading дочекатися відображення елемента на сторінці  ${cpv_input}
+    input text  ${cpv_input}  ${code}
+    ${cpv_item}  set variable  //a[contains(text(),"${code}")]
+    loading дочекатися відображення елемента на сторінці  ${cpv_item}
+    click element  ${cpv_item}
+    button type=button click by text  Обрати  root_xpath=//a[contains(text(),"${code}")]/ancestor::div[@class="ivu-tabs-tabpane"]
+    sleep  1
+    page should contain  ${code}
+
+
+plan edit натиснути Додати в блоці ${name}
+    ${root}  set variable  //h4[.="${name}"]/../..
+    button class=button click by text  Додати  root_xpath=${root}
+
+
+plan edit обрати "Джерело фінансування"
+    [Arguments]  ${value}
+    scroll page to element xpath  ${breakdown_root}
+    selectInputNew open dropdown by click          root=${breakdown_root}
+    selectInputNew select item by name  ${value}   root=${breakdown_root}
+
+
+plan edit вказати "Назва номенклатури"
+    [Arguments]  ${value}  ${index}=1
+    input text  (${plan_item_title_input})[${index}]  ${value}
+
+
+plan edit заповнити "Од. вим."
+    [Arguments]  ${value}  ${index}=1
+    selectInputNew open dropdown by click         root=(${plan_item_unit_name_root})[${index}]
+    selectInputNew select item by name  ${value}  root=(${plan_item_unit_name_root})[${index}]
+
+
+plan edit заповнити "Кількість"
+    [Arguments]  ${value}  ${index}=1
+    number-input input text  ${value}  root=(${plan_item_quantity_root})[${index}]  check=${False}
+
+
+plan edit обрати "Код ДК021" предмету
+    [Arguments]  ${code}
+    button class=button click by text  ДК021
+    loading дочекатися відображення елемента на сторінці  ${cpv_input}
+    input text  ${cpv_input}  ${code}
+    ${cpv_item}  set variable  //a[contains(text(),"${code}")]
+    loading дочекатися відображення елемента на сторінці  ${cpv_item}
+    click element  ${cpv_item}
+    button type=button click by text  Обрати  root_xpath=//a[contains(text(),"${code}")]/ancestor::div[@class="ivu-tabs-tabpane"]
+    sleep  1
+    page should contain  ${code}
+
+
+plan edit натиснути Зберегти
+    ${btn}  set variable  (//*[@class="action-buttons"]//*[@class="button"][contains(text(),"Зберегти")])[1]
+    click element  ${btn}
+    loading дочекатись закінчення загрузки сторінки
+
+
+plan edit натиснути Скасувати
+    ${btn}  set variable  (//*[@class="action-buttons"]//*[@class="button"][contains(text(),"Скасувати")])[1]
+    click element  ${btn}
+    loading дочекатись закінчення загрузки сторінки
+############################################################
+############################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+############################################################
+############################################################
+#####                   ELEMENTS                       #####
+############################################################
+############################################################
+selectInputNew get value
+    [Arguments]  ${root}=${EMPTY}
+    ${value}  get element attribute  xpath=${root}${selectInputNew_input}@value
+    [Return]  ${value}
+
+
+selectInputNew open dropdown by click
+    [Arguments]  ${root}=${EMPTY}
+    click element  xpath=${root}${selectInputNew_input}
+    loading дочекатися відображення елемента на сторінці  xpath=${selectOptions_item}
+
+
+selectInputNew select item by name
+    [Arguments]  ${text}  ${root}=${EMPTY}  ${check}=${True}
+    ${selector}  set variable  xpath=${root}${selectOptions_item}\[contains(text(),"${text}")]
+    sleep  1
+    press keys  ${selector}  RETURN
+	sleep  1
+	return from keyword if  ${check} != ${True}
+	${value}  selectInputNew get value  ${root}
+	should be equal as strings  ${value}  ${text}
+
+
+selectInputNew select item by index
+    [Arguments]  ${index}  ${root}=${EMPTY}
+    ${selector}  set variable  xpath=(${root}${selectOptions_item})[${index}]
+    sleep  1
+    press keys  ${selector}  RETURN
+	sleep  1
+
+
+number-input input text
+	[Arguments]  ${text}  ${root}=${EMPTY}  ${check}=${True}
+	click element  xpath=${root}${number_input}
+    ${value}  number-input get value  xpath=${root}
+    :FOR  ${i}  IN RANGE  ${value.__len__()}
+    \  press keys  NONE  BACKSPACE
+	input text  xpath=${root}${number_input}  ${text}
+	${value}  number-input get value  xpath=${root}
+	run keyword if  ${check}  should be equal as strings  ${value}  ${text}
+
+
+number-input get value
+	[Arguments]  ${root}=${EMPTY}
+	${input}  set variable  xpath=${root}${number_input}
+	${value}  get element attribute  ${input}@value
+	${value}  evaluate  '${value}'.replace(' ', '')
+	[Return]  ${value}
+
+
+ivu-datePicker input text
+	[Arguments]  ${text}  ${root}=${EMPTY}  ${field_number}=1  ${check}=${True}
+	comment  очищаем поле
+	${value}  __ivu-datePicker get value  ${root}  ${field_number}
+    run keyword if  "${value}" != "${EMPTY}"  __ivu-datePicker clear input  ${root}  ${field_number}
+
+    comment  вводим дату
+	input text  xpath=(${root}${ivu_datePicker_input})[${field_number}]  ${text}
+
+	comment  проверяем дату
+	return from keyword if  ${check} != ${True}
+	${value}  __ivu-datePicker get value  ${root}  ${field_number}
+	should be equal as strings  ${value}  ${text}
+
+
+ivu-datePicker choose period
+    [Arguments]  ${from}  ${to}  ${root}=${EMPTY}  ${field_number}=1  ${check}=${True}
+    comment  очищаем поле
+	${value}  __ivu-datePicker get value  ${root}  ${field_number}
+    run keyword if  "${value}" != "${EMPTY}"  __ivu-datePicker clear input  ${root}  ${field_number}
+
+    comment  вводим период
+	input text  xpath=(${root}${ivu_datePicker_input})[${field_number}]  ${from} - ${to}
+	press keys  ${root}  RETURN
+    sleep  1
+
+	comment  проверяем дату
+	return from keyword if  ${check} != ${True}
+	${value}  __ivu-datePicker get value  ${root}  ${field_number}
+	should be equal as strings  ${value}  ${from} - ${to}
+
+
+__ivu-datePicker get value
+    [Arguments]  ${root}=${EMPTY}  ${field_number}=1
+    ${value}  get element attribute  xpath=(${root}${ivu_datePicker_input})[${field_number}]@value
+    [Return]  ${value}
+
+
+__ivu-datePicker clear input
+    [Arguments]  ${root}=${EMPTY}  ${field_number}=1
+    mouse over  xpath=(${root}${ivu_datePicker_input})[${field_number}]
+    loading дочекатися відображення елемента на сторінці  ${root}${ivu_datePicker_close}
+    click element  xpath=${root}${ivu_datePicker_close}
+    ${value}  get element attribute  xpath=(${root}${ivu_datePicker_input})[${field_number}]@value
+    should be empty  ${value}
+
+
+button type=button click by text
+	[Arguments]  ${text}  ${count}=1  ${root_xpath}=${EMPTY}
+	${locator}  set variable  xpath=(${root_xpath}//button[@type="button" and contains(., "${text}")])[${count}]
+	click element  ${locator}
+	loading дочекатись закінчення загрузки сторінки
+
+
+button class=button click by text
+	[Arguments]  ${text}  ${count}=1  ${root_xpath}=${EMPTY}
+	${locator}  set variable  xpath=(${root_xpath}//button[@class="button" and contains(., "${text}")])[${count}]
+	click element  ${locator}
+	loading дочекатись закінчення загрузки сторінки
