@@ -2215,9 +2215,10 @@ get_item_deliveryAddress_value
 Подати цінову пропозицію
     [Arguments]  ${username}  ${tender_uaid}  ${bid}  ${lots_ids}=${None}  ${features_ids}=${None}
     [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_ids (якщо features_ids != None).
+    ${lot_number}  set variable if  "${lots_ids}" == "${None}"  1  ${lots_ids}
     smarttender.пропозиція_перевірити кнопку подачі пропозиції
-    smarttender.пропозиція_заповнити поле з ціною  1  1
-    smarttender.пропозиція_відмітити чекбокси за необхідністю
+    smarttender.пропозиція_заповнити поле з ціною  ${lot_number}  ${bid}
+    smarttender.пропозиція_відмітити чекбокси при наявності
     smarttender.пропозиція_подати пропозицію
 
 
@@ -3307,23 +3308,12 @@ loading дочекатися зникнення елемента зі сторі
 пропозиція_заповнити поле з ціною
     [Documentation]  takes lot number and coefficient
     ...  fill bid field with max available price
-    [Arguments]  ${lot number}  ${coefficient}
-    ${block}  set variable  //*[@class="ivu-card ivu-card-bordered"]
-    ${block number}  Set Variable  ${lot number}+1
-    ##############################################
-    #   Визначаємо мінімальний крок з даних на сторінці
-    ${a}  Get Text  xpath=(${block})\[${block number}]//div[@class="amount lead"][1]
-    ${a}  evaluate  re.search(u'(?P<amount>[\\d].+\\d\\s)', "${a}").group("amount")  re
-    ${a}  evaluate  float(str('${a}'.replace(" ", "")).replace(",", "."))
-    ${amount}=  Evaluate  int(${a}*${coefficient})
-    ##############################################
-    #${amount}  Run Keyword If  ${amount} == 0  Set Variable  1  ELSE
-    #...  Set Variable  ${amount}
+    [Arguments]  ${lot number}  ${amount}
     ${field number}=  Evaluate  ${lot number}-1
-    Input Text  xpath=//*[@id="lotAmount${field number}"]/input[1]  ${amount}
+    input text  xpath=//*[@id="lotAmount${field number}"]//input[1]  ${amount}
 
 
-пропозиція_відмітити чекбокси за необхідністю
+пропозиція_відмітити чекбокси при наявності
     ${checkbox1}   set variable         //*[@id="SelfEligible"]//input
     ${checkbox2}   set variable         //*[@id="SelfQualified"]//input
     ${is visible}  run keyword and return status  element should be visible  ${checkbox1}
