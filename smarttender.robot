@@ -2564,11 +2564,13 @@ get_item_deliveryAddress_value
 	log to console  Створити план
 	${tender_data}  get from dictionary  ${tender_data}  data
 
-	webclient.робочий стіл натиснути на елемент за назвою  Планы закупок(тестовые)
-	webclient.header натиснути на елемент за назвою  Очистити
-	webclient.header натиснути на елемент за назвою  OK
-	webclient.header натиснути на елемент за назвою  Додати план закупівель
-	webclient.Перейти за посиланням "Натисніть для переходу"
+	#webclient.робочий стіл натиснути на елемент за назвою  Планы закупок(тестовые)
+	#webclient.header натиснути на елемент за назвою  Очистити
+	#webclient.header натиснути на елемент за назвою  OK
+	#webclient.header натиснути на елемент за назвою  Додати план закупівель
+	#webclient.Перейти за посиланням "Натисніть для переходу"
+
+    smart go to  https://test.smarttender.biz/plan/add/test/
 
 	${procurementMethodType_en}  			set variable  					${tender_data['tender']['procurementMethodType']}
 	${procurementMethodType}  				get_en_procurement_method_type  ${procurementMethodType_en}
@@ -2586,7 +2588,10 @@ get_item_deliveryAddress_value
 	plan edit заповнити "Конкретна назва предмету закупівлі"                    ${budget_description}
     plan edit заповнити "Очікувана вартість закупівлі"                          ${budget_amount}
     plan edit обрати "Замовник"  index=1
-    plan edit обрати "Код ДК021" плану                                          ${budget_id}
+    plan edit обрати "Код ДК021"                                                ${budget_id}
+
+    run keyword if  '${additionalClassifications_status}' == 'PASS'
+    ...  plan edit Додати доп. класифікацію  ${additionalClassifications}
 
     comment  Джерело фінансування
     ${i}  set variable  0
@@ -2594,53 +2599,16 @@ get_item_deliveryAddress_value
     \  ${i}  evaluate  ${i} + 1
     \  plan edit натиснути Додати в блоці Джерело фінансування
     \  plan edit breakdown додати "Джерело фінансування"  ${breakdown}  ${i}
-    
-    log to console  додати номенклатуру
-    debug
-    
 
     comment  додати номенклатуру
-    plan edit натиснути Додати в блоці Номенклатури
-    plan edit вказати "Назва номенклатури"  ${item_plan_discription}
-    plan edit заповнити "Од. вим."          ${unit_name}
-    plan edit заповнити "Кількість"         ${item_quantity}
-    plan edit обрати "Код ДК021" предмету   ${main_classification}
+    ${i}  set variable  0
+    :FOR  ${item}  IN  @{tender_data['items']}
+    \  plan edit натиснути Додати в блоці Номенклатури
+    \  plan edit додати номенклатуру  ${item}  ${i}
+
+    plan edit натиснути Зберегти
 
 
-	create_plan заповнити "Орієнтований початок процедури закупівлі"  			${tenderPeriod_startDate_not_formated}
-	create_plan заповнити "Конкретна назва предмету закупівлі"  				${budget_description}
-	create_plan заповнити "Рік з"  												${tenderPeriod_startDate_not_formated}
-	create_plan заповнити "Очікувана вартість закупівлі"  						${budget_amount}
-	create_plan заповнити "Коди відповідних класифікаторів предмета закупівлі"  ${budget_id}
-	run keyword if  '${additionalClassifications_status}' == 'PASS'
-	...  Заповнити additionalClassifications для плану  						${additionalClassifications}
-
-	${row}  set variable  2
-	:FOR  ${item}  IN  @{tender_data['items']}
-	\  webclient.header натиснути на елемент за назвою  Додати елемент плану
-	\  ${classification_id}  	set variable  ${item['classification']['id']}
-	\  ${description}  			set variable  ${item['description']}
-	\  ${unit_name}  			set variable  ${item['unit']['name']}
-	\  ${quantity}  			set variable  ${item['quantity']}
-	\  ${deliveryDate}  		set variable  ${item['deliveryDate']['endDate']}
-
-	\  create_plan заповнити "Коди відповідних класифікаторів предмета закупівлі"
-	\  ...											${classification_id}  	row=${row}
-	\  create_plan заповнити "Назва номенклатури"  	${description}  		row=${row}
-	\  create_plan заповнити "Од. вим."  			${unit_name}  			row=${row}
-	\  create_plan заповнити "Кількість"  			${quantity}  			row=${row}
-	\  create_plan заповнити "Дата поставки"  		${deliveryDate}  		row=${row}
-	\  ${additionalClassifications_status}  ${additionalClassifications}  run keyword and ignore error  set variable  ${item['additionalClassifications']}
-	\  run keyword if  '${additionalClassifications_status}' == 'PASS'  Заповнити additionalClassifications для плану  ${additionalClassifications}  row=${row}
-	\  ${row}  evaluate  ${row} + 1
-
-	webclient.header натиснути на елемент за назвою  Зберегти
-	webclient.header натиснути на елемент за назвою  Синхронізувати з ProZorro
-	dialog box заголовок повинен містити  Накласти ЕЦП на план?
-	dialog box натиснути кнопку  Ні
-	screen заголовок повинен містити  Текстовий документ
-	click element   ${screen_root_selector}//*[@alt="Close"]
-	sleep  5
 	${planID}  webclient.отримати номер тендера
     [Return]  ${planID}
 
@@ -3568,8 +3536,8 @@ plan edit обрати "Замовник"
     ...  selectInputNew select item by name   ${value}  root=${bayer_root}
 
 
-plan edit обрати "Код ДК021" плану
-    [Arguments]  ${code}
+plan edit обрати "Код ДК021"
+    [Arguments]  ${code}  ${field_number}=1
     button class=button click by text  ДК021
     loading дочекатися відображення елемента на сторінці  ${cpv_input}
     input text  ${cpv_input}  ${code}
@@ -3581,13 +3549,26 @@ plan edit обрати "Код ДК021" плану
     page should contain  ${code}
 
 
+
+plan edit Додати доп. класифікацію
+    [Arguments]  ${additionalClassifications}  ${field_number}=1
+    return from keyword
+    :FOR  ${Classification}  IN  @{additionalClassifications}
+    \  ${description}  set variable  ${Classification['description']}
+    \  ${id}           set variable  ${Classification['id']}
+    \  ${scheme}       set variable  ${Classification['scheme']}
+    \  button class=button click by text  Дод. класифікація  count=${field_number}
+    \  log to console  plan edit Додати доп. класифікацію
+    \  debug
+
+
 plan edit натиснути Додати в блоці ${name}
     ${root}  set variable  //h4[.="${name}"]/../..
     button class=button click by text  Додати  root_xpath=${root}
 
 
 plan edit breakdown додати "Джерело фінансування"
-    [Arguments]  ${breakdown}  ${field_number}
+    [Arguments]  ${breakdown}  ${field_number}=1
     ${convert_dict}  create dictionary
     ...  state=Державний бюджет України
     ...  crimea=Бюджет Автономної Республіки Крим
@@ -3603,6 +3584,7 @@ plan edit breakdown додати "Джерело фінансування"
     ${amount}        set variable    ${breakdown['value']['amount']}
 
     comment  обрати джерело
+    scroll page to element xpath  xpath=(${breakdown_root})[${field_number}]
     selectInputNew open dropdown by click          root=(${breakdown_root})[${field_number}]
     selectInputNew select item by name  ${title}   root=(${breakdown_root})[${field_number}]
 
@@ -3613,35 +3595,47 @@ plan edit breakdown додати "Джерело фінансування"
     input text  xpath=(${breakdownDecription_input})[${field_number}]  ${description}
 
 
+plan edit додати номенклатуру
+    [Arguments]  ${item}  ${field_number}=1
+    ${classification_id}  	set variable  ${item['classification']['id']}
+	${description}  	    set variable  ${item['description']}
+	${unit_name}  			set variable  ${item['unit']['name']}
+	${quantity}  			set variable  ${item['quantity']}
+	${deliveryDate}  		set variable  ${item['deliveryDate']['endDate']}
+
+    log to console  plan edit додати номенклатуру
+    debug
+
+    plan edit вказати "Назва номенклатури"  ${description}  index=${field_number}
+    plan edit заповнити "Од. вим."          ${unit_name}    index=${field_number}
+    plan edit заповнити "Кількість"         ${quantity}     index=${field_number}
+    plan edit обрати "Код ДК021"            ${classification_id}  field_number=${field_number}+1
+
+
+    ${additionalClassifications_status}  ${additionalClassifications}  run keyword and ignore error  set variable  ${item['additionalClassifications']}
+	run keyword if  '${additionalClassifications_status}' == 'PASS'
+	...  plan edit Додати доп. класифікацію  ${additionalClassifications}  field_number=${field_number}+1
+
 
 
 plan edit вказати "Назва номенклатури"
     [Arguments]  ${value}  ${index}=1
-    input text  (${plan_item_title_input})[${index}]  ${value}
+    input text  xpath=(${plan_item_title_input})[${index}]  ${value}
 
 
 plan edit заповнити "Од. вим."
     [Arguments]  ${value}  ${index}=1
+    ${unit_name}  replace_unit_name_dict  ${value}
     selectInputNew open dropdown by click         root=(${plan_item_unit_name_root})[${index}]
-    selectInputNew select item by name  ${value}  root=(${plan_item_unit_name_root})[${index}]
+    click element  xpath=(${plan_item_unit_name_root})[${index}]//i[contains(@class, "smt-icon-search")]
+    sleep  1
+    input text     xpath=(${plan_item_unit_name_root})[${index}]//input  ${unit_name}
+    selectInputNew select item by name  ${unit_name}  root=(${plan_item_unit_name_root})[${index}]
 
 
 plan edit заповнити "Кількість"
     [Arguments]  ${value}  ${index}=1
-    number-input input text  ${value}  root=(${plan_item_quantity_root})[${index}]  check=${False}
-
-
-plan edit обрати "Код ДК021" предмету
-    [Arguments]  ${code}
-    button class=button click by text  ДК021
-    loading дочекатися відображення елемента на сторінці  ${cpv_input}
-    input text  ${cpv_input}  ${code}
-    ${cpv_item}  set variable  //a[contains(text(),"${code}")]
-    loading дочекатися відображення елемента на сторінці  ${cpv_item}
-    click element  ${cpv_item}
-    button type=button click by text  Обрати  root_xpath=//a[contains(text(),"${code}")]/ancestor::div[@class="ivu-tabs-tabpane"]
-    sleep  1
-    page should contain  ${code}
+    number-input input text  "${value}"  root=(${plan_item_quantity_root})[${index}]  check=${False}
 
 
 plan edit натиснути Зберегти
@@ -3795,3 +3789,14 @@ smart go to
 	[Arguments]  ${href}
 	go to  ${href}
 	loading дочекатись закінчення загрузки сторінки
+
+
+scroll page to element xpath
+	[Arguments]  ${locator}
+	${x}  Get Horizontal Position  ${locator}
+	${y}  Get Vertical Position  ${locator}
+	@{size}  Execute Javascript  var w = window, d = document, e = d.documentElement, g = d.getElementsByTagName('body')[0], x = w.innerWidth || e.clientWidth || g.clientWidth, y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+										...  return [x, y]
+	${x}  Evaluate  ${x}-${size[0]}/2
+	${y}  Evaluate  ${y}-${size[1]}/2
+	Execute JavaScript  window.scrollTo(${x},${y});
