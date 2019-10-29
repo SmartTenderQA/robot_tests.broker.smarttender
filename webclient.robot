@@ -21,22 +21,22 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле enquiryPeriod.endDate
 	[Arguments]  ${date}
 	${date_input}  set variable  //*[@data-name="DDM"]//input
-	${formated_date}  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S.%f+03:00
+	${formated_date}  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S.%f${time_zone}
 	заповнити поле з датою  ${date_input}  ${formated_date}
 
 
 заповнити поле tenderPeriod.startDate
 	[Arguments]  ${date}
 	${date_input}  set variable  //*[@data-name="D_SCH"]//input
-	${formated_date}  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S.%f+03:00
+	${formated_date}  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S.%f${time_zone}
 	заповнити поле з датою  ${date_input}  ${formated_date}
 
 
 заповнити поле tenderPeriod.endDate
 	[Arguments]  ${date}
 	${date_input}  set variable  //*[@data-name="D_SROK"]//input
-	${status}  ${formated_date}  run keyword and ignore error  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S.%f+03:00
-	${formated_date}  run keyword if  '${status}' == 'FAIL'  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S+03:00  ELSE  set variable  ${formated_date}
+	${status}  ${formated_date}  run keyword and ignore error  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S.%f${time_zone}
+	${formated_date}  run keyword if  '${status}' == 'FAIL'  convert date  ${date}  result_format=%d.%m.%Y %H:%M  date_format=%Y-%m-%dT%H:%M:%S${time_zone}  ELSE  set variable  ${formated_date}
 	заповнити поле з датою  ${date_input}  ${formated_date}
 
 
@@ -264,14 +264,14 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для item deliveryDate.startDate
 	[Arguments]  ${deliveryDate.startDate}
 	${locator}  set variable  //*[@data-name="DDATEFROM"]//input
-	${formated_date}  convert date  ${deliveryDate.startDate}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S+03:00
+	${formated_date}  convert date  ${deliveryDate.startDate}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	заповнити поле з датою  ${locator}  ${formated_date}
 
 
 заповнити поле для item deliveryDate.endDate
 	[Arguments]  ${deliveryDate.endDate}
 	${locator}  set variable  //*[@data-name="DDATETO"]//input
-	${formated_date}  convert date  ${deliveryDate.endDate}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S+03:00
+	${formated_date}  convert date  ${deliveryDate.endDate}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	заповнити поле з датою  ${locator}  ${formated_date}
 
 
@@ -382,8 +382,8 @@ create_plan заповнити "Тип процедури закупівлі"
 
 create_plan заповнити "Орієнтований початок процедури закупівлі"
 	[Arguments]  ${value}
-	${tenderPeriod_startDate_year}  convert date  ${value}  result_format=%Y  date_format=%Y-%m-%dT%H:%M:%S+03:00
-	${tenderPeriod_startDate_month_str}  convert date  ${value}  result_format=%m  date_format=%Y-%m-%dT%H:%M:%S+03:00
+	${tenderPeriod_startDate_year}  convert date  ${value}  result_format=%Y  date_format=%Y-%m-%dT%H:%M:%S${time_zone}
+	${tenderPeriod_startDate_month_str}  convert date  ${value}  result_format=%m  date_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	${tenderPeriod_startDate_month}  evaluate  str(int(${tenderPeriod_startDate_month_str}))
 	${locator}  set variable  xpath=(${plan_cursor_row})[1]//td[count(${plan_block}//div[contains(@title,"Орієнтований початок") and contains(@title,"процедури закупівлі")]/ancestor::td/preceding-sibling::*)+1]
 	click element  ${locator}
@@ -401,7 +401,7 @@ create_plan заповнити "Конкретна назва предмету �
 
 create_plan заповнити "Рік з"
 	[Arguments]  ${value}
-	${tenderPeriod_startDate_year}  convert date  ${value}  result_format=%Y  date_format=%Y-%m-%dT%H:%M:%S+03:00
+	${tenderPeriod_startDate_year}  convert date  ${value}  result_format=%Y  date_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	${locator}  set variable  (${plan_cursor_row})[1]//td[count(${plan_block}//div[contains(@title,"Примітки")]/ancestor::td/preceding-sibling::*)+2]
 	ввести значення в поле в гріді  ${locator}  ${tenderPeriod_startDate_year}
 
@@ -458,7 +458,7 @@ create_plan заповнити "Кількість"
 
 create_plan заповнити "Дата поставки"
 	[Arguments]  ${value}  ${row}=1
-	${deliveryDate}  convert date  ${value}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S+03:00
+	${deliveryDate}  convert date  ${value}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	${locator}  set variable  (${plan_cursor_row})[${row}]//td[count(${plan_block}//div[contains(@title,"Дата") and contains(@title,"поставки")]/ancestor::td/preceding-sibling::*)+3]
 	wait until keyword succeeds  5x  .1s  run keywords
 	...  click element  xpath=${locator}  AND
