@@ -63,7 +63,7 @@ ${plan_item_title_input}            //*[@data-qa="nomenclature-Title"]//input
 ${plan_item_quantity_root}          //*[@data-qa="nomenclature-Quantity"]
 ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
 ######################################
-
+${time_zone}                        +02:00
 
 *** Keywords ***
 Підготувати клієнт для користувача
@@ -84,9 +84,9 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
 
-	${tedner_data}  adapt_data  ${tender_data}
-	${status}  run keyword and return status  replace_delivery_address  ${tender_data}
-	${tender_data}  run keyword if  ${status}  replace_delivery_address  ${tender_data}  ELSE  set variable  ${tender_data}
+	${tender_data}  replace_unit_name  ${tender_data}
+	${tender_data}  replace_delivery_address  ${tender_data}
+    ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
 
 	log  ${tender_data}
 	log to console  ${tender_data}
@@ -1128,6 +1128,7 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
 
 сторінка_детальної_інформації отримати status
     [Arguments]  ${field_name}=None
+    run keyword if  "${field_name.lower()}" == "status"  reload page
 	${selector}  set variable  //*[@data-qa='status']
 	${field_value}  get text  ${selector}
 	${field_value}  convert_status  ${field_value}
@@ -1331,7 +1332,7 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
     [Arguments]  ${field_name}=None
 	${selector}  set variable  xpath=//*[@data-qa="enquiry-period"]//*[@data-qa="date-start"]
 	${field_value}  get text  ${selector}
-	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S+03:00
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	[Return]  ${field_value}
 
 
@@ -1339,7 +1340,7 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
     [Arguments]  ${field_name}=None
 	${selector}  set variable  xpath=//*[@data-qa="enquiry-period"]//*[@data-qa="date-end"]
 	${field_value}  get text  ${selector}
-	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S+03:00
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	[Return]  ${field_value}
 
 
@@ -1347,7 +1348,7 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
     [Arguments]  ${field_name}=None
 	${selector}  set variable  xpath=//*[@data-qa="tendering-period"]//*[@data-qa="date-start"]
 	${field_value}  get text  ${selector}
-	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S+03:00
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	[Return]  ${field_value}
 
 
@@ -1355,7 +1356,7 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
     [Arguments]  ${field_name}=None
 	${selector}  set variable  xpath=//*[@data-qa="tendering-period"]//*[@data-qa="date-end"]
 	${field_value}  get text  ${selector}
-	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S+03:00
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	[Return]  ${field_value}
 
 
@@ -1384,7 +1385,7 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
     ${field_value}  get text  ${funder_selector}${field_selector}
     ${converted_field_value}  convert_page_values  ${field}  ${field_value}
     ${converted_field_value}  run keyword if  '${field}' == 'deliveryDate.endDate'
-    ...  convert date  ${field_value}  date_format=%d.%m.%Y result_format=%Y-%m-%dT%H:%M:%S+03:00
+    ...  convert date  ${field_value}  date_format=%d.%m.%Y result_format=%Y-%m-%dT%H:%M:%S${time_zone}
     ...  ELSE  return from keyword  ${converted_field_value}
     [Return]  ${field_value}
 
@@ -1393,7 +1394,7 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
     [Arguments]  ${field_name}=None
 	${selector}  set variable  xpath=//*[@data-qa="auction-start"]//*[@data-qa="value"]
 	${field_value}  get text  ${selector}
-	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S+03:00
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	[Return]  ${field_value}
 
 
@@ -1405,7 +1406,7 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
 	${text}  get text  ${selector}
 	${reg}  evaluate  re.search(r"(?<= з )(?P<from>.*)(?= по)\\sпо\\s(?P<till>.*)", "${text}")  re
 	${date}  evaluate  '${reg.group('from')}'
-	${field_value}  convert date  ${date}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S+03:00
+	${field_value}  convert date  ${date}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	reload page
 	loading дочекатись закінчення загрузки сторінки
 	[Return]  ${field_value}
@@ -1420,7 +1421,7 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
 	${reg}  evaluate  re.search(r"(?<= з )(?P<from>.*)(?= по)\\sпо\\s(?P<till>.*)", "${text}")  re
 #	${reg}  evaluate  re.search(r"(?<= з )(?P<from>.*)(?= по)\\sпо\\s(?P<till>.*)(?=\\s\\()", "${text}")  re
 	${date}  evaluate  '${reg.group('till')}'
-	${field_value}  convert date  ${date}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S+03:00
+	${field_value}  convert date  ${date}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	reload page
 	loading дочекатись закінчення загрузки сторінки
 	[Return]  ${field_value}
@@ -1508,7 +1509,7 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
     [Arguments]  ${item_block}
 	${selector}  set variable  xpath=${item_block}//*[@data-qa="date-start"]
 	${item_field_value}  get text  ${selector}
-	${item_field_value}  convert date  ${item_field_value}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT%H:%M:%S+03:00
+	${item_field_value}  convert date  ${item_field_value}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	[Return]  ${item_field_value}
 
 
@@ -1516,7 +1517,7 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
     [Arguments]  ${item_block}
 	${selector}  set variable  xpath=${item_block}//*[@data-qa="date-end"]
 	${item_field_value}  get text  ${selector}
-	${item_field_value}  convert date  ${item_field_value}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT%H:%M:%S+03:00
+	${item_field_value}  convert date  ${item_field_value}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	[Return]  ${item_field_value}
 
 
@@ -2664,7 +2665,7 @@ get_item_deliveryAddress_value
 	знайти план у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Коригувати план закупівель
 	header натиснути на елемент за назвою  Коригувати
-	${value}  run keyword if  "${field_name}" == "items[0].deliveryDate.endDate"  convert date  ${value}  result_format=%Y-%m-%dT%H:%M:%S+03:00  date_format=%Y-%m-%dT%H:%M:%S.%f+03:00
+	${value}  run keyword if  "${field_name}" == "items[0].deliveryDate.endDate"  convert date  ${value}  result_format=%Y-%m-%dT%H:%M:%S${time_zone}  date_format=%Y-%m-%dT%H:%M:%S.%f${time_zone}
 	...  ELSE  set variable  ${value}
 	run keyword if
 	...  "${field_name}" == "budget.description"  create_plan заповнити "Конкретна назва предмету закупівлі"  ${value}  ELSE IF
@@ -2931,7 +2932,7 @@ get_item_deliveryAddress_value
 	${get_reg}  evaluate  re.findall(ur'\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2}', u'${get}')  re
 	${complaintPeriod.startDate}  evaluate  u'${get_reg[0]}'
 	${complaintPeriod.endDate}  evaluate  u'${get_reg[1]}'
-	${ret}  convert date  ${${field}}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S+03:00
+	${ret}  convert date  ${${field}}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	go back
 	loading дочекатись закінчення загрузки сторінки
 	[Return]  ${ret}
