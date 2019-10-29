@@ -867,7 +867,7 @@ click screen header
 
 
 Перейти за посиланням "Натисніть для переходу"
-    ${value}  Get Element Attribute  xpath=//a[contains(text(), 'Натисніть для переходу') and @href]  onclick
+    ${value}  Get Element Attribute  xpath=//a[contains(text(), 'Натисніть для переходу') and @href]@onclick
     ${href}  evaluate  re.search("[^']+.(?P<href>.+)[']+", "${value}").group("href")  re
 	smart go to  ${href}
 	[Return]  ${href}
