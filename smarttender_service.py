@@ -243,6 +243,7 @@ def convert_unit_name(value):
     units_map = {
         u'Штука': u'штуки',
         u'Упаковка': u'упаковка',
+        u'упаков': u'упаковка',
         u'Флакон': u'Флакон',
         u'Набір(товару)': u'набір',
         u'кг': u'кілограми'
@@ -358,12 +359,6 @@ def download_file_to_my_path(url, path):
         f.write(r.content)
 
 
-def adapt_data(tender_data):
-    tender_data = replace_unit_name(tender_data)
-    tender_data = replace_procuringEntity(tender_data)
-    return tender_data
-
-
 def replace_procuringEntity(tender_data):
     tender_data.data.procuringEntity = {
         "contactPoint": {
@@ -411,8 +406,8 @@ def replace_unit_name_dict(key):
 def replace_delivery_address(tender_data):
     list_of_keys = list(delivery_address_replace.keys())
 
-    for item in tender_data['data']['items']:
-        cdb_locality = item['deliveryAddress']['locality']
+    for item in tender_data['data'].get('items'):
+        cdb_locality = item.get('deliveryAddress').get('locality')
         if cdb_locality in list_of_keys:
             item['deliveryAddress']['region'] = delivery_address_replace[cdb_locality]['region']
             item['deliveryAddress']['locality'] = delivery_address_replace[cdb_locality]['locality']
