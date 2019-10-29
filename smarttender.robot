@@ -2571,13 +2571,42 @@ get_item_deliveryAddress_value
 	${procurementMethodType_en}  			set variable  					${tender_data['tender']['procurementMethodType']}
 	${procurementMethodType}  				get_en_procurement_method_type  ${procurementMethodType_en}
 	${tenderPeriod_startDate_not_formated}  set variable  					${tender_data['tender']['tenderPeriod']['startDate']}
+	${tender_start}          convert date  	${tenderPeriod_startDate_not_formated}  result_format=%Y  date_format=%Y-%m-%dT%H:%M:%S+02:00
+	${plan_strat}            convert date  	${tenderPeriod_startDate_not_formated}  result_format=%Y-%m  date_format=%Y-%m-%dT%H:%M:%S+02:00
 	${budget_description}  					set variable  					${tender_data['budget']['description']}
 	${budget_amount}  						set variable  					${tender_data['budget']['amount']}
 	${budget_id}  							set variable  					${tender_data['classification']['id']}  	####  ?????
 	${additionalClassifications_status}  	${additionalClassifications}  	run keyword and ignore error  set variable  ${tender_data['additionalClassifications']}
 
-    debug
-	create_plan заповнити "Тип процедури закупівлі"  							${procurementMethodType}
+    plan edit обрати "Тип процедури закупівлі"                                  ${procurementMethodType}
+	plan edit заповнити "Рік"                                                   ${tender_start}
+	plan edit заповнити "Дата старту закупівлі"                                 ${plan_strat}
+
+	plan edit заповнити "Конкретна назва предмету закупівлі"                    ${budget_description}
+	debug
+    plan edit заповнити "Очікувана вартість закупівлі"                          ${budget_amount}
+    plan edit обрати "Код ДК021" плану                                          ${budget_id}
+
+    comment  Джерело фінансування
+    :FOR  ${breakdown}  IN  @{tender_data['budget']['breakdown']}
+    \  debug
+    \  plan edit натиснути Додати в блоці Джерело фінансування
+    \  ${title}         set variable    ${breakdown['title']}
+    \  ${description}   set variable    ${breakdown['description']}
+    \  ${amount}        set variable    ${breakdown['value']['amount']}
+    \  plan edit breakdown обрати "Джерело фінансування"  ${title}
+    \  
+    \  
+    
+
+    comment  додати номенклатуру
+    plan edit натиснути Додати в блоці Номенклатури
+    plan edit вказати "Назва номенклатури"  ${item_plan_discription}
+    plan edit заповнити "Од. вим."          ${unit_name}
+    plan edit заповнити "Кількість"         ${item_quantity}
+    plan edit обрати "Код ДК021" предмету   ${main_classification}
+
+
 	create_plan заповнити "Орієнтований початок процедури закупівлі"  			${tenderPeriod_startDate_not_formated}
 	create_plan заповнити "Конкретна назва предмету закупівлі"  				${budget_description}
 	create_plan заповнити "Рік з"  												${tenderPeriod_startDate_not_formated}
@@ -3523,11 +3552,9 @@ plan edit обрати "Валюта"
 
 
 plan edit заповнити "Дата старту закупівлі"
-    [Arguments]  ${year}
-    ${current_month}  get current date  result_format=%m
-    ${date}  set variable  ${year}-${current_month}
-    ivu-datePicker input text  ${date}  root=${plan_start_root}  check=${False}
-    press keys  NONE  TAB
+    [Arguments]  ${value}
+    ivu-datePicker input text  ${value}  root=${plan_start_root}  check=${False}
+    press key  //body  \\09
 
 
 plan edit обрати "Замовник"
@@ -3559,11 +3586,29 @@ plan edit натиснути Додати в блоці ${name}
     button class=button click by text  Додати  root_xpath=${root}
 
 
-plan edit обрати "Джерело фінансування"
+plan edit breakdown обрати "Джерело фінансування"
     [Arguments]  ${value}
+    ${convert_dict}  create dictionary
+    ...  state=Державний бюджет України
+    ...  crimea=Бюджет Автономної Республіки Крим
+    ...  local=Місцевий бюджет
+    ...  own=Власний бюджет (кошти від господарської діяльності підприємства)
+    ...  fund=Бюджет цільових фондів (що не входять до складу Державного або місцевого бюджетів)
+    ...  loan=Кредити та позики міжнародних валютно-кредитних організацій
+    ...  other=Інше
     scroll page to element xpath  ${breakdown_root}
     selectInputNew open dropdown by click          root=${breakdown_root}
     selectInputNew select item by name  ${value}   root=${breakdown_root}
+
+
+plan edit breakdown вказати Опис
+    [Arguments]  ${value}
+
+
+
+plan edit breakdown вказати Сумму
+    [Arguments]  ${value}
+
 
 
 plan edit вказати "Назва номенклатури"
@@ -3645,7 +3690,7 @@ selectInputNew select item by name
     [Arguments]  ${text}  ${root}=${EMPTY}  ${check}=${True}
     ${selector}  set variable  xpath=${root}${selectOptions_item}\[contains(text(),"${text}")]
     sleep  1
-    press keys  ${selector}  RETURN
+    click element  ${selector}
 	sleep  1
 	return from keyword if  ${check} != ${True}
 	${value}  selectInputNew get value  ${root}
@@ -3656,18 +3701,20 @@ selectInputNew select item by index
     [Arguments]  ${index}  ${root}=${EMPTY}
     ${selector}  set variable  xpath=(${root}${selectOptions_item})[${index}]
     sleep  1
-    press keys  ${selector}  RETURN
+    click element  ${selector}
 	sleep  1
 
 
 number-input input text
 	[Arguments]  ${text}  ${root}=${EMPTY}  ${check}=${True}
 	click element  xpath=${root}${number_input}
-    ${value}  number-input get value  xpath=${root}
+    ${value}  number-input get value  ${root}
+    log to console  number-input input text
+    debug
     :FOR  ${i}  IN RANGE  ${value.__len__()}
-    \  press keys  NONE  BACKSPACE
+    \  press key  xpath=${root}${number_input}  \\08
 	input text  xpath=${root}${number_input}  ${text}
-	${value}  number-input get value  xpath=${root}
+	${value}  number-input get value  ${root}
 	run keyword if  ${check}  should be equal as strings  ${value}  ${text}
 
 
@@ -3676,6 +3723,7 @@ number-input get value
 	${input}  set variable  xpath=${root}${number_input}
 	${value}  get element attribute  ${input}@value
 	${value}  evaluate  '${value}'.replace(' ', '')
+	${value}  evaluate  str("${value}")
 	[Return]  ${value}
 
 
@@ -3702,7 +3750,7 @@ ivu-datePicker choose period
 
     comment  вводим период
 	input text  xpath=(${root}${ivu_datePicker_input})[${field_number}]  ${from} - ${to}
-	press keys  ${root}  RETURN
+	press key  ${root}  \\13
     sleep  1
 
 	comment  проверяем дату
@@ -3737,4 +3785,10 @@ button class=button click by text
 	[Arguments]  ${text}  ${count}=1  ${root_xpath}=${EMPTY}
 	${locator}  set variable  xpath=(${root_xpath}//button[@class="button" and contains(., "${text}")])[${count}]
 	click element  ${locator}
+	loading дочекатись закінчення загрузки сторінки
+
+
+smart go to
+	[Arguments]  ${href}
+	go to  ${href}
 	loading дочекатись закінчення загрузки сторінки
