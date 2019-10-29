@@ -59,6 +59,8 @@ ${plan_start_root}                  //*[@data-qa="plan-detail-TenderStartDate"]
 ${bayer_root}                       //*[@data-qa="purchaser-PurchaserOrganizationId"]
 ${cpv_input}                        //*[@class="ivu-tabs ivu-tabs-card"]//input
 ${breakdown_root}                   //*[@data-qa="financing-card-Title"]
+${breakdownAmount_root}             //*[@data-qa="financing-card-Amount"]
+${breakdownDecription_input}        //*[@data-qa="financing-card-Description"]//textarea
 ${plan_item_title_input}            //*[@data-qa="nomenclature-Title"]//input
 ${plan_item_quantity_root}          //*[@data-qa="nomenclature-Quantity"]
 ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
@@ -2581,22 +2583,20 @@ get_item_deliveryAddress_value
     plan edit обрати "Тип процедури закупівлі"                                  ${procurementMethodType}
 	plan edit заповнити "Рік"                                                   ${tender_start}
 	plan edit заповнити "Дата старту закупівлі"                                 ${plan_strat}
-
 	plan edit заповнити "Конкретна назва предмету закупівлі"                    ${budget_description}
-	debug
     plan edit заповнити "Очікувана вартість закупівлі"                          ${budget_amount}
+    plan edit обрати "Замовник"  index=1
     plan edit обрати "Код ДК021" плану                                          ${budget_id}
 
     comment  Джерело фінансування
+    ${i}  set variable  0
     :FOR  ${breakdown}  IN  @{tender_data['budget']['breakdown']}
-    \  debug
+    \  ${i}  evaluate  ${i} + 1
     \  plan edit натиснути Додати в блоці Джерело фінансування
-    \  ${title}         set variable    ${breakdown['title']}
-    \  ${description}   set variable    ${breakdown['description']}
-    \  ${amount}        set variable    ${breakdown['value']['amount']}
-    \  plan edit breakdown обрати "Джерело фінансування"  ${title}
-    \  
-    \  
+    \  plan edit breakdown додати "Джерело фінансування"  ${breakdown}  ${i}
+    
+    log to console  додати номенклатуру
+    debug
     
 
     comment  додати номенклатуру
@@ -3540,7 +3540,7 @@ plan edit заповнити "Рік з"
 
 plan edit заповнити "Очікувана вартість закупівлі"
     [Arguments]  ${amount}
-    number-input input text  ${amount}  root=${amount_root}  check=${False}
+    number-input input text  "${amount}"  root=${amount_root}  check=${False}
 
 
 plan edit обрати "Валюта"
@@ -3586,8 +3586,8 @@ plan edit натиснути Додати в блоці ${name}
     button class=button click by text  Додати  root_xpath=${root}
 
 
-plan edit breakdown обрати "Джерело фінансування"
-    [Arguments]  ${value}
+plan edit breakdown додати "Джерело фінансування"
+    [Arguments]  ${breakdown}  ${field_number}
     ${convert_dict}  create dictionary
     ...  state=Державний бюджет України
     ...  crimea=Бюджет Автономної Республіки Крим
@@ -3596,18 +3596,22 @@ plan edit breakdown обрати "Джерело фінансування"
     ...  fund=Бюджет цільових фондів (що не входять до складу Державного або місцевого бюджетів)
     ...  loan=Кредити та позики міжнародних валютно-кредитних організацій
     ...  other=Інше
-    scroll page to element xpath  ${breakdown_root}
-    selectInputNew open dropdown by click          root=${breakdown_root}
-    selectInputNew select item by name  ${value}   root=${breakdown_root}
 
+    ${title}         set variable    ${breakdown['title']}
+    ${title}         set variable    ${convert_dict['${title}']}
+    ${description}   set variable    ${breakdown['description']}
+    ${amount}        set variable    ${breakdown['value']['amount']}
 
-plan edit breakdown вказати Опис
-    [Arguments]  ${value}
+    comment  обрати джерело
+    selectInputNew open dropdown by click          root=(${breakdown_root})[${field_number}]
+    selectInputNew select item by name  ${title}   root=(${breakdown_root})[${field_number}]
 
+    comment  вказати Сумму
+    number-input input text  "${amount}"  root=(${breakdownAmount_root})[${field_number}]  check=${False}
 
+    comment  вказати Опис
+    input text  xpath=(${breakdownDecription_input})[${field_number}]  ${description}
 
-plan edit breakdown вказати Сумму
-    [Arguments]  ${value}
 
 
 
@@ -3709,9 +3713,8 @@ number-input input text
 	[Arguments]  ${text}  ${root}=${EMPTY}  ${check}=${True}
 	click element  xpath=${root}${number_input}
     ${value}  number-input get value  ${root}
-    log to console  number-input input text
-    debug
-    :FOR  ${i}  IN RANGE  ${value.__len__()}
+    ${len}  get length  "${value}"
+    :FOR  ${i}  IN RANGE  ${len}
     \  press key  xpath=${root}${number_input}  \\08
 	input text  xpath=${root}${number_input}  ${text}
 	${value}  number-input get value  ${root}
