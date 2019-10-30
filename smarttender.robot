@@ -1125,6 +1125,10 @@ ${tender_cdb_id}                    ${None}
 
 сторінка_детальної_інформації отримати status
     [Arguments]  ${field_name}=None
+    comment  Цей кейворд використовується квінтою при очікуванні статусу тендера. Потрібна перезагрузка сторінки для оновлення інформації.
+    reload page
+	loading дочекатись закінчення загрузки сторінки
+	##################################################
 	${selector}  set variable  //*[@data-qa='status']
 	${field_value}  get text  ${selector}
 	${field_value}  convert_status  ${field_value}
