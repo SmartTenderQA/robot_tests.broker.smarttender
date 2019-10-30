@@ -78,7 +78,6 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
 	# todo не забыть убрать
 	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
-	log to console  ${hub}
 	Run Keyword If  ${hub.__len__()} != 0
 			...  Create Webdriver  Chrome  alias=${username}
 	...  ELSE
@@ -2641,58 +2640,22 @@ get_item_deliveryAddress_value
 
 Внести зміни в план
 	[Arguments]  ${username}  ${tender_uaid}  ${field_name}  ${value}
-	log to console  Внести зміни в план
-	debug
-    Пошук плану по ідентифікатору  ${username}  ${tender_uaid}
-    
-	знайти план у webclient  ${tender_uaid}
-	header натиснути на елемент за назвою  Коригувати план закупівель
-	header натиснути на елемент за назвою  Коригувати
-	${value}  run keyword if  "${field_name}" == "items[0].deliveryDate.endDate"  convert date  ${value}  result_format=%Y-%m-%dT%H:%M:%S${time_zone}  date_format=%Y-%m-%dT%H:%M:%S.%f${time_zone}
-	...  ELSE  set variable  ${value}
+    button type=button click by text  Коригувати план
 	run keyword if
-	...  "${field_name}" == "budget.description"  create_plan заповнити "Конкретна назва предмету закупівлі"  ${value}  ELSE IF
-	...  "${field_name}" == "budget.amount"  create_plan заповнити "Очікувана вартість закупівлі"  ${value}  ELSE IF
-	...  "${field_name}" == "items[0].deliveryDate.endDate"  create_plan заповнити "Дата поставки"  ${value}  row=2  ELSE IF
-	...  "${field_name}" == "items[0].quantity"  create_plan заповнити "Кількість"  ${value}  row=2
-
-	header натиснути на елемент за назвою  Зберегти
-	dialog box заголовок повинен містити  Накласти ЕЦП на план?
-	dialog box натиснути кнопку  Ні
-	screen заголовок повинен містити  Текстовий документ
-	click element   ${screen_root_selector}//*[@alt="Close"]
+	...  "${field_name}" == "budget.description"  plan edit заповнити "Конкретна назва предмету закупівлі"  ${value}  ELSE IF
+	...  "${field_name}" == "budget.amount"       plan edit заповнити "Очікувана вартість закупівлі"        ${value}  ELSE IF
+	...  "${field_name}" == "budget.period"       no operation                                                        ELSE IF
+	...  "${field_name}" == "items[0].quantity"   plan edit заповнити "Кількість"                           ${value}  index=1
+    plan edit натиснути Зберегти
 
 
 Додати предмет закупівлі в план
  	[Arguments]  ${username}  ${tender_uaid}  ${item}
- 	log to console  Додати предмет закупівлі в план
- 	debug
-	header натиснути на елемент за назвою  Коригувати план закупівель
-	header натиснути на елемент за назвою  Коригувати
-
- 	webclient.header натиснути на елемент за назвою  Додати елемент плану
- 	${row}  set variable  4
-	${classification_id}  		set variable  ${item['classification']['id']}
-	${description}  			set variable  ${item['description']}
-	${unit_name_not_converted}  set variable  ${item['unit']['name']}
-	${unit_name}				evaluate  replace_unit_name_dict  u'${unit_name_not_converted}'
-	${quantity}  				set variable  ${item['quantity']}
-	${deliveryDate}  			set variable  ${item['deliveryDate']['endDate']}
-
-	create_plan заповнити "Коди відповідних класифікаторів предмета закупівлі"
-	...											${classification_id}  	row=${row}
-	create_plan заповнити "Назва номенклатури"  	${description}  		row=${row}
-	create_plan заповнити "Од. вим."  			${unit_name}  			row=${row}
-	create_plan заповнити "Кількість"  			${quantity}  			row=${row}
-	create_plan заповнити "Дата поставки"  		${deliveryDate}  		row=${row}
-	${additionalClassifications_status}  ${additionalClassifications}  run keyword and ignore error  set variable  ${item['additionalClassifications']}
-	run keyword if  '${additionalClassifications_status}' == 'PASS'  Заповнити additionalClassifications для плану  ${additionalClassifications}  row=${row}
-
-	header натиснути на елемент за назвою  Зберегти
-	dialog box заголовок повинен містити  Накласти ЕЦП на план?
-	dialog box натиснути кнопку  Ні
-	screen заголовок повинен містити  Текстовий документ
-	click element   ${screen_root_selector}//*[@alt="Close"]
+	button type=button click by text  Коригувати план
+    plan edit натиснути Додати в блоці Номенклатури
+    ${items_count}  Get Matching Xpath Count  ${plan_item_title_input}
+    plan edit додати номенклатуру  ${item}  field_number=${items_count}
+    plan edit натиснути Зберегти
 
 
 Пошук плану по ідентифікатору
@@ -2751,7 +2714,6 @@ get_item_deliveryAddress_value
 
 
 сторінка_планів виконати пошук
-    debug
     click element  //*[@id="btnFind"]
     loading дочекатись закінчення загрузки сторінки
     ${location}  get location
