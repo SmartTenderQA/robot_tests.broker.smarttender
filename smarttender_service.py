@@ -413,3 +413,18 @@ def replace_delivery_address(tender_data):
             item['deliveryAddress']['locality'] = delivery_address_replace[cdb_locality]['locality']
 
     return tender_data
+
+
+def sync_tender_by_cdb_id(cdb_id):
+    url = "https://test.smarttender.biz/api/qa/synctender"
+    payload = "{CdbId:'" + str(cdb_id) + "'}"
+    headers = {
+        'Content-Type': "application/json",
+        'Authorization': "Basic cWEuYXBpLnNtdEBnbWFpbC5jb206UUF3ZXJ0eV8=",
+        'Accept': 'text/plain',
+        'Content-Encoding': 'utf-8'
+        }
+
+    response = requests.request("POST", url, data=payload, headers=headers)
+
+    return response.status_code

@@ -64,6 +64,8 @@ ${plan_item_quantity_root}          //*[@data-qa="nomenclature-Quantity"]
 ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
 ######################################
 ${time_zone}                        +02:00
+${tender_cdb_id}                    ${None}
+
 
 *** Keywords ***
 Підготувати клієнт для користувача
@@ -1042,13 +1044,6 @@ ${time_zone}                        +02:00
 Оновити сторінку з тендером
 	[Arguments]   ${username}  ${tender_uaid}
     [Documentation]   Оновити сторінку з тендером для отримання потенційно оновлених даних.
-    ##########################################################
-    #todo  убрать вывод в консоль
-    log to console                ${\n}
-    log to console      zzzzzZZZZZZZZZZZZZZzzzzz
-    log to console  Чекаємо пока пройде синхронізація
-    log to console            .............
-    ##########################################################
     ${test_list}  create list
     ...  Можливість створення лоту із прив’язаним предметом закупівлі
     ...  Можливість внести зміни у тендер після запитання
@@ -1056,11 +1051,11 @@ ${time_zone}                        +02:00
     ...  Відображення статусу першої пропозиції кваліфікації
     ...  Відображення статусу другої пропозиції кваліфікації
     run keyword if  "${TEST_NAME}" not in @{test_list}
-	...  Wait Until Keyword Succeeds  10m  5s  smarttender.Дочекатись синхронізації
+	...  smarttender.Синхронізувати тендер
 	...  ELSE  run keywords
 	...  reload page        AND
 	...  loading дочекатись закінчення загрузки сторінки
-	log to console                ${\n}
+	log to console      ${\n}
     log to console      WAKE UP!!!
 
 
@@ -2000,7 +1995,7 @@ get_item_deliveryAddress_value
     ...  Відображення заголовку анонімного запитання на тендер без відповіді
     ...  Відображення заголовку анонімного запитання на всі лоти без відповіді
     run keyword if  u"${TEST_NAME}" in @{test_list}
-    ...  Wait Until Keyword Succeeds  10m  5s  smarttender.Дочекатись синхронізації
+    ...  smarttender.Синхронізувати тендер
     перейти до сторінки детальної інформаціїї
     smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
 	${question_block}  set variable  //*[contains(text(),"${question_id}")]/ancestor::div[@class="ivu-card-body"][1]
@@ -3270,7 +3265,32 @@ loading дочекатися зникнення елемента зі сторі
 	...  Element Should Not Be Visible  ${locator}  Oops!${\n}Element "${locator}" is visible after ${timeout} (s/m).
 
 
-Дочекатись синхронізації
+Синхронізувати тендер
+    [Documentation]  Если известен номер тендера в ЦБД синхронизируем принудительно єтот тендер,
+    ...  если нет, просто ждем плановой синхронизации
+    log to console  ${\n}
+    log to console  zzzzzZZZZZZZZZZZZZZzzzzz
+    log to console  Чекаємо пока пройде синхронізація
+    ##########################################################
+    Wait Until Keyword Succeeds  10m  5s  run keyword if  "${tender_cdb_id}" == "${None}"
+    ...  _Дочекатись синхронізації  ELSE
+    ...  _синхронізувати тендер за номером в ЦБД
+    reload page
+	loading дочекатись закінчення загрузки сторінки
+
+
+_синхронізувати тендер за номером в ЦБД
+    [Documentation]  Синхронізуємо тендер за id в ЦБД post запитом, доки не отримаеємо відповідь 200
+    ...  оголошення ${tender_cdb_id} у 'сторінка_торгів перейти за першим результатом пошуку'
+    ${responce}  sync_tender_by_cdb_id  ${tender_cdb_id}
+    should be equal as integers  ${responce}  ${200}  msg=${\n}response.status_code != 200, наступна спроба...
+    log to console  ${\n}
+    log to console  Тендер ${tender_cdb_id} успішно синхронізован
+    log to console  response.status_code == 200
+    log to console  ...................................................
+
+
+_Дочекатись синхронізації
 	${url}  Set Variable  http://test.smarttender.biz/ws/webservice.asmx/Execute?calcId=_QA.GET.LAST.SYNCHRONIZATION&args={"SEGMENT":3}
 	${response}  evaluate  requests.get('${url}').content  requests
 	${a}  Replace String  ${response}   \n  ${Empty}
@@ -3287,8 +3307,8 @@ loading дочекатися зникнення елемента зі сторі
 	${status}  Run Keyword if  ${status} and '${DateEnd}' != '${EMPTY}' and '${WorkStatus}' != 'working' and '${WorkStatus}' != 'fail' and '${Success}' == 'true'
 	...  Set Variable  Pass
 	Should Be Equal  ${status}  Pass
-	reload page
-	loading дочекатись закінчення загрузки сторінки
+	log to console  Синхронізація після ${TENDER['LAST_MODIFICATION_DATE']} пройшла успішно.
+    log to console  ...................................................
 
 
 сторінка_детальної_інформації активувати вкладку
