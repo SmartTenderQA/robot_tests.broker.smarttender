@@ -3,7 +3,8 @@
 
 import re
 import requests
-
+from dateutil.parser import parse
+from dateutil.parser import parserinfo
 
 unitname_dict_smartweb = {
     u'кілограми': u'кг',
@@ -199,9 +200,16 @@ def convert_plan_page_values(field, value):
                 ret = int(text.group('quantity'))
     elif 'classification.scheme' in field:
         ret = re.search(u'(\W+\d+)', value).group(0)
+    elif 'deliveryDate.endDate' == field:
+        ret = convert_date_from_smart_format(value)
     else:
         ret = value
     return ret
+
+
+def convert_date_from_smart_format(s):
+    dt = parse(s, parserinfo(True, False))
+    return dt.strftime('%Y-%m-%dT%H:%M:%S+02:00')
 
 
 def get_only_numbers(value):

@@ -2783,36 +2783,42 @@ get_item_deliveryAddress_value
 план_сторінка_детальної_інформації отримати budget.id
     [Arguments]  ${field_name}
     log to console  Поле не отображается на странице
+    debug
 	[Return]  ${field_value}
 
 
 план_сторінка_детальної_інформації отримати budget.project.id
     [Arguments]  ${field_name}
     log to console  Поле не отображается на странице
+    debug
 	[Return]  ${field_value}
 
 
 план_сторінка_детальної_інформації отримати budget.project.name
     [Arguments]  ${field_name}
     log to console  Поле не отображается на странице
+    debug
 	[Return]  ${field_value}
 
 
 план_сторінка_детальної_інформації отримати procuringEntity.name
     [Arguments]  ${field_name}
-    log to console  Поле не отображается на странице
+    ${selector}  set variable  xpath=(//*[@data-qa="plan-organizer"]|//*[@data-qa="plan-purchaser"])[last()]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
 	[Return]  ${field_value}
 
 
 план_сторінка_детальної_інформації отримати procuringEntity.identifier.scheme
     [Arguments]  ${field_name}
-    log to console  Поле не отображается на странице
+    ${selector}  set variable  xpath=(//*[@data-qa="plan-usreou"]|//*[@data-qa="plan-purchaser-usreou"])[last()]//*[@data-qa="key"]
+	${field_value_in_smart_format}  get text  ${selector}
+	${field_value}  set variable if  "${field_value_in_smart_format}" == "Код ЄДРПОУ"  UA-EDR  ERROR!
 	[Return]  ${field_value}
 
 
 план_сторінка_детальної_інформації отримати procuringEntity.identifier.id
     [Arguments]  ${field_name}
-    ${selector}  set variable  //*[@data-qa="plan-usreou"]//*[@data-qa="value"]
+    ${selector}  set variable  xpath=(//*[@data-qa="plan-usreou"]|//*[@data-qa="plan-purchaser-usreou"])[last()]//*[@data-qa="value"]
 	${field_value}  get text  ${selector}
 	[Return]  ${field_value}
 
@@ -2848,7 +2854,9 @@ get_item_deliveryAddress_value
 
 план_сторінка_детальної_інформації отримати tender.tenderPeriod.startDate
     [Arguments]  ${field_name}
-    log to console  Поле не отображается на странице
+	${selector}  set variable  //*[@data-qa="plan-date-publish"]
+	${field_value_in_smart_format}  get text  ${selector}
+	${field_value}  convert date  ${field_value_in_smart_format}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT00:00:00${time_zone}
 	[Return]  ${field_value}
 
 
@@ -2869,9 +2877,6 @@ get_item_deliveryAddress_value
     ...  '${field}' == 'classification.id'              //*[@data-qa="nomenclature-main-classification-code"]
     ${field_value}  get text  ${item_selector}${field_selector}
     ${converted_field_value}  convert_plan_page_values  ${field}  ${field_value}
-    ${converted_field_value}  run keyword if  '${field}' == 'deliveryDate.endDate'
-    ...  date convertation  ${converted_field_value}
-    ...  ELSE  return from keyword  ${converted_field_value}
     [Return]  ${converted_field_value}
 
 
@@ -3218,23 +3223,29 @@ loading дочекатись закінчення загрузки сторін�
 
 loading дочекатися відображення елемента на сторінці
 	[Arguments]  ${locator}  ${timeout}=10s
+	Set Selenium Implicit Wait  .1
 	Log  Element Should Be Visible "${locator}" after ${timeout}
 	Register Keyword To Run On Failure  No Operation
 	Run Keyword And Continue On Failure  Wait Until Keyword Succeeds  ${timeout}  .5  Element Should Be Visible  ${locator}
 	Register Keyword To Run On Failure  Capture Page Screenshot
 	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"
-	...  Element Should Be Visible  ${locator}  Oops!${\n}Element "${locator}" is not visible after ${timeout} (s/m).
+			...  run keywords
+				...  Element Should Be Visible  ${locator}  Oops!${\n}Element "${locator}" is not visible after ${timeout} (s/m).  AND
+				...  Set Selenium Implicit Wait  5
 
 
 loading дочекатися зникнення елемента зі сторінки
 	[Documentation]  timeout=...s/...m
 	[Arguments]  ${locator}  ${timeout}=10s
+	Set Selenium Implicit Wait  .1
 	Log  Element Should Not Be Visible "${locator}" after ${timeout}
 	Register Keyword To Run On Failure  No Operation
 	Run Keyword And Continue On Failure  Wait Until Keyword Succeeds  ${timeout}  .5  Element Should Not Be Visible  xpath=${locator}
 	Register Keyword To Run On Failure  Capture Page Screenshot
 	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"
-	...  Element Should Not Be Visible  ${locator}  Oops!${\n}Element "${locator}" is visible after ${timeout} (s/m).
+			...  run keywords
+				...  Element Should Not Be Visible  ${locator}  Oops!${\n}Element "${locator}" is visible after ${timeout} (s/m).  AND
+				...  Set Selenium Implicit Wait  5
 
 
 Синхронізувати тендер
