@@ -376,7 +376,7 @@ def replace_procuringEntity(tender_data):
         },
         "identifier": {
             "scheme": "UA-EDR",
-            "id": "111111111111111",
+            "id": "111111111111112",
             "legalName": u"Демо организатор (государственные торги)"
         },
         "name": u"Демо организатор (государственные торги)",
@@ -438,3 +438,11 @@ def sync_tender_by_cdb_id(cdb_id):
     response = requests.request("POST", url, data=payload, headers=headers)
 
     return response.status_code
+
+
+def clear_additional_classifications(tender_data):
+    del tender_data['data']['additionalClassifications']
+    for item in tender_data['data']['items']:
+        del item['additionalClassifications']
+
+    return tender_data
