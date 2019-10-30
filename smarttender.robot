@@ -2561,9 +2561,7 @@ get_item_deliveryAddress_value
 Створити план
     [Arguments]  ${username}  ${tender_data}
     [Documentation]  Створити план з початковими даними tender_data. Повернути uaid створеного плану.
-	log to console  Створити план
 	${tender_data}  get from dictionary  ${tender_data}  data
-
     smart go to  https://test.smarttender.biz/plan/add/test/
 
 	${procurementMethodType_en}  			set variable  					${tender_data['tender']['procurementMethodType']}
@@ -2676,8 +2674,8 @@ get_item_deliveryAddress_value
 
 перейти до сторінки планів
 	[Arguments]  ${username}
-	${mi}  set variable if  'tender_owner' in '${username.lower()}'  2  1
-    go to  https://test.smarttender.biz/plans/?q&mi=${mi}&p=1&af&at
+	${tm}  set variable if  'tender_owner' in '${username.lower()}'  2  1
+    go to  https://test.smarttender.biz/plans/?q&tm=${tm}&p=1&af&at
     loading дочекатись закінчення загрузки сторінки
 
 
@@ -2719,8 +2717,11 @@ get_item_deliveryAddress_value
 
 
 сторінка_планів виконати пошук
+    debug
     click element  //*[@id="btnFind"]
     loading дочекатись закінчення загрузки сторінки
+    ${location}  get location
+    log  ${location}
 
 
 сторінка_планів перейти за першим результатом пошуку
@@ -3668,18 +3669,22 @@ plan edit натиснути Скасувати
 
 plan edit Опублікувати план
     button type=button click by text  Опублікувати план
-
-    comment  Завантажити ключ ЕЦП
-    choose file  xpath=(//*[@data-qa="modal-eds"]//input[@type='file'])[1]  ${EXECDIR}${/}src${/}robot_tests.broker.smarttender${/}test.dat
-
-    comment  пароль для ключа
-	Input Password  xpath=(//*[@data-qa="modal-eds"]//*[@data-qa="eds-password"]//input)[1]  29121963
-
-    click element  xpath=(//*[@data-qa="eds-submit-sign"])[1]
-    loading дочекатися зникнення елемента зі сторінки  (//*[@data-qa="eds-submit-sign"])[1]  200
-
+    eds накласти ецп  pressEDSbtn=${False}  index=1
     ${plan_status}  план_сторінка_детальної_інформації отримати status
     should be equal as strings  ${plan_status}  Запланований
+
+
+eds накласти ецп
+    [Arguments]  ${pressEDSbtn}=${True}  ${index}=1
+    run keyword if  ${pressEDSbtn}  no operation
+    comment  Завантажити ключ ЕЦП
+    choose file  xpath=(//*[@data-qa="modal-eds"]//input[@type='file'])[${index}]  ${EXECDIR}${/}src${/}robot_tests.broker.smarttender${/}test.dat
+
+    comment  пароль для ключа
+	Input Password  xpath=(//*[@data-qa="modal-eds"]//*[@data-qa="eds-password"]//input)[${index}]  29121963
+
+    click element  xpath=(//*[@data-qa="eds-submit-sign"])[1]
+    loading дочекатися зникнення елемента зі сторінки  (//*[@data-qa="eds-submit-sign"])[${index}]  200
 ############################################################
 ############################################################
 
