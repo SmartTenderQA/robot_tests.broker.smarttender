@@ -3356,15 +3356,16 @@ _Дочекатись синхронізації
 пропозиція_подати пропозицію
     ${send offer button}   set variable  css=button#submitBidPlease
     Click Element  ${send offer button}
+    sleep  2
+    loading дочекатись закінчення загрузки сторінки
 	smarttender.закрити валідаційне вікно (Так/Ні)  Рекомендуємо Вам для файлів з ціновою пропозицією обрати тип  Ні
-	loading дочекатись закінчення загрузки сторінки
 
 
 закрити валідаційне вікно (Так/Ні)
 	[Arguments]  ${title}  ${action}
 	${button}  Set Variable  //div[contains(text(),'${title}')]/ancestor::div[@class="ivu-modal-confirm"]//button/span[text()="${action}"]
 	${status}  Run Keyword And Return Status  Wait Until Page Contains Element  ${button}  3
-	Run Keyword If  '${status}' == 'True'  Click Element  ${button}
+	Run Keyword If  '${status}' == 'True'  Run Keywords  Click Element  ${button}  AND  loading дочекатись закінчення загрузки сторінки
 
 
 пропозиція_закрити вікно з ЕЦП
