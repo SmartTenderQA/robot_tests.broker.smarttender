@@ -415,10 +415,12 @@ def replace_delivery_address(tender_data):
     list_of_keys = list(delivery_address_replace.keys())
 
     for item in tender_data['data'].get('items'):
-        cdb_locality = item.get('deliveryAddress').get('locality')
-        if cdb_locality in list_of_keys:
-            item['deliveryAddress']['region'] = delivery_address_replace[cdb_locality]['region']
-            item['deliveryAddress']['locality'] = delivery_address_replace[cdb_locality]['locality']
+        cdb_deliveryAddress = item.get('deliveryAddress')
+        if cdb_deliveryAddress:
+            cdb_locality = cdb_deliveryAddress.get('locality')
+            if cdb_locality in list_of_keys:
+                item['deliveryAddress']['region'] = delivery_address_replace[cdb_locality]['region']
+                item['deliveryAddress']['locality'] = delivery_address_replace[cdb_locality]['locality']
 
     return tender_data
 
