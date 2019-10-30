@@ -3169,7 +3169,7 @@ cтатус тендера повинен бути
 сторінка_торгів ввести текст в поле пошуку
 	[Arguments]  ${text}  ${mode}
 	${selector}  run keyword if  '${mode}' == 'reporting'
-	...  set variable  //div[@data-qa="search-block-input"]//input
+	...  set variable  //*[@data-qa="search-block-input"]
     ...  ELSE  set variable  //input[@name="filter"]
     input text  ${selector}  ${text}
 
@@ -3185,9 +3185,9 @@ cтатус тендера повинен бути
 
 сторінка_торгів перейти за першим результатом пошуку
     [Arguments]  ${mode}
-	${tender_number}  set variable  1
+	${tender_number}  set variable  ${1}
 	${selector}  run keyword if  '${mode}' == 'reporting'
-	...  set variable  xpath=(//div[@class="panel-body"])[${tender_number}]//a@href
+	...  set variable  xpath=//*[@data-qa="tender-${tender_number-1}"]//a@href
     ...  ELSE  set variable  //*[@id="tenders"]//*[@class="head"][${tender_number}]//*[@href]@href
 
 	#  Зберігаємо лінк на сторінку детальної тендеру
