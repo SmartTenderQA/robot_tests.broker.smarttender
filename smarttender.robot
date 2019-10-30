@@ -2211,8 +2211,9 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${bid}  ${lots_ids}=${None}  ${features_ids}=${None}
     [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_ids (якщо features_ids != None).
     ${lot_number}  set variable if  "${lots_ids}" == "${None}"  1  ${lots_ids}
+    ${amount}  evaluate  str(${bid['data']['value']['amount']})
     smarttender.пропозиція_перевірити кнопку подачі пропозиції
-    smarttender.пропозиція_заповнити поле з ціною  ${lot_number}  ${bid['data']['value']['amount']}
+    smarttender.пропозиція_заповнити поле з ціною  ${lot_number}  ${amount}
     smarttender.пропозиція_відмітити чекбокси при наявності
     smarttender.пропозиція_подати пропозицію
 
