@@ -68,14 +68,45 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
+${hub}
+${hub_url}                              http://192.168.4.113:4444/wd/hub
+
 
 *** Keywords ***
 Підготувати клієнт для користувача
 	[Arguments]   ${username}
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
-	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
+	# todo не забыть убрать
+	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
+	log to console  ${hub}
+	Run Keyword If  ${hub.__len__()} != 0
+			...  Create Webdriver  Chrome  alias=${username}
+	...  ELSE
+			...  run keywords
+                    ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
+                    ...  Отримати та залогувати data_session
+    smart go to  ${USERS.users['${username}'].homepage}
+    # /todo не забыть убрать
+#	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
 	maximize browser window
 	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
+
+Отримати та залогувати data_session
+	${s2b}  get_library_instance  Selenium2Library
+	${webdriver}  Call Method  ${s2b}  _current_browser
+	${data}  evaluate  requests.get("${hub_url.replace('/wd/hub', '')}/grid/api/testsession?session=${webdriver.__dict__['capabilities']['webdriver.remote.sessionid']}")  requests
+	${data}  Set Variable  ${data.json()}
+	log many  ${data}  ${webdriver}  ${webdriver.__dict__}  ${webdriver.__dict__['capabilities']}
+
+	${keys}  Get Dictionary Keys  ${webdriver.__dict__['capabilities']}
+	${to console}  create list  platform  browserName  version
+	Log  тест запущен на ноде: ${data['proxyId']}  WARN
+	log to console  ------------------------------------------------------------------------------
+	:FOR  ${key}  IN  @{keys}
+	\  run keyword if  '${key}' in @{to console}  run keywords
+	\  ...  log  ${key} = ${webdriver.__dict__['capabilities']['${key}']}  WARN    AND
+	\  ...  log to console  ------------------------------------------------------------------------------
+	Set Global Variable  ${webdriver}
 
 
 Підготувати дані для оголошення тендера
@@ -1057,8 +1088,6 @@ ${tender_cdb_id}                    ${None}
 	...  ELSE  run keywords
 	...  reload page        AND
 	...  loading дочекатись закінчення загрузки сторінки
-	log to console      ${\n}
-    log to console      WAKE UP!!!
 
 
 ###############################################
@@ -2213,10 +2242,12 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${bid}  ${lots_ids}=${None}  ${features_ids}=${None}
     [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_ids (якщо features_ids != None).
     ${lot_number}  set variable if  "${lots_ids}" == "${None}"  1  ${lots_ids}
+    ${amount}  evaluate  str(${bid['data']['value']['amount']})
     smarttender.пропозиція_перевірити кнопку подачі пропозиції
-    smarttender.пропозиція_заповнити поле з ціною  ${lot_number}  ${bid}
+    smarttender.пропозиція_заповнити поле з ціною  ${lot_number}  ${amount}
     smarttender.пропозиція_відмітити чекбокси при наявності
     smarttender.пропозиція_подати пропозицію
+	smarttender.пропозиція_закрити вікно з ЕЦП
 
 
 Отримати інформацію із пропозиції
@@ -2240,6 +2271,7 @@ get_item_deliveryAddress_value
 	...  "${fieldname}" == "value.amount"    //*[@id="lotAmount0"]//input
 	input text  ${selector}  "${fieldvalue}"
 	smarttender.пропозиція_подати пропозицію
+	smarttender.пропозиція_закрити вікно з ЕЦП
 
 
 Завантажити документ в ставку
@@ -2247,6 +2279,7 @@ get_item_deliveryAddress_value
     [Documentation]  Завантажити документ типу doc_type, який знаходиться за шляхом path, до цінової пропозиції користувача username для тендера tender_uaid.
 	Choose File  xpath=(//input[@type="file"][1])[1]  ${path}
 	smarttender.пропозиція_подати пропозицію
+	smarttender.пропозиція_закрити вікно з ЕЦП
 
 
 Змінити документ в ставці
@@ -2255,6 +2288,7 @@ get_item_deliveryAddress_value
 	smarttender.пропозиція_видалити файл  ${docid}
 	Choose File  xpath=(//input[@type="file"][1])[1]  ${path}
 	smarttender.пропозиція_подати пропозицію
+	smarttender.пропозиція_закрити вікно з ЕЦП
     go back
     loading дочекатись закінчення загрузки сторінки
 
@@ -3347,50 +3381,24 @@ _Дочекатись синхронізації
 
 
 пропозиція_подати пропозицію
-	${message}  smarttender.натиснути надіслати пропозицію та вичитати відповідь
-	smarttender.виконати дії відповідно повідомленню  ${message}
-
-
-натиснути надіслати пропозицію та вичитати відповідь
     ${send offer button}   set variable  css=button#submitBidPlease
-    ${validation message}  set variable  //*[@class="ivu-modal-content"]//*[@class="ivu-modal-confirm-body"]//div[text()]
     Click Element  ${send offer button}
 	smarttender.закрити валідаційне вікно (Так/Ні)  Рекомендуємо Вам для файлів з ціновою пропозицією обрати тип  Ні
 	loading дочекатись закінчення загрузки сторінки
-	${status}  ${message}  Run Keyword And Ignore Error  Get Text  ${validation message}
-	capture page screenshot  ${OUTPUTDIR}/my_screen{index}.png
-	[Return]  ${message}
-
-
-виконати дії відповідно повідомленню
-    [Arguments]  ${message}
-    ${succeed}       set variable                   Пропозицію прийнято
-    ${succeed2}      set variable                   Не вдалося зчитати пропозицію з ЦБД!
-    ${empty error}   set variable                   ValueError: Element locator
-    ${error1}        set variable                   Не вдалося подати пропозицію
-    ${error2}        set variable                   Виникла помилка при збереженні пропозиції.
-    ${error3}        set variable                   Непередбачувана ситуація
-    ${error4}        set variable                   В даний момент вже йде подача/зміна пропозиції по тендеру від Вашої організації!
-    ${ok button}     set variable                   //div[@class="ivu-modal-body"]/div[@class="ivu-modal-confirm"]//button
-
-	Run Keyword If  "${empty error}" in """${message}"""  smarttender.пропозиція_подати пропозицію
-	...  ELSE IF  "${error1}" in """${message}"""  Ignore error
-	...  ELSE IF  "${error2}" in """${message}"""  Ignore error
-	...  ELSE IF  "${error3}" in """${message}"""  Ignore error
-	...  ELSE IF  "${error4}" in """${message}"""  Ignore error
-	...  ELSE IF  "${succeed}" in """${message}"""  Click Element  ${ok button}
-	...  ELSE IF  "${succeed2}" in """${message}"""  Click Element  ${ok button}
-	...  ELSE  Fail  Look to message above
-	loading дочекатися зникнення елемента зі сторінки  ${ok button}
 
 
 закрити валідаційне вікно (Так/Ні)
 	[Arguments]  ${title}  ${action}
-	${button1}  Set Variable  xpath=//div[contains(text(),'${title}')]/ancestor::div[@class="ivu-modal-confirm"]//button/span[text()="${action}"]
-	${button2}  Set Variable  xpath=//div[contains(text(),'${title}')]/ancestor::div[@class="ivu-poptip-inner"]//button/span[text()="${action}"]
-	${button}   Set Variable  ${button1}|${button2}
+	${button}  Set Variable  //div[contains(text(),'${title}')]/ancestor::div[@class="ivu-modal-confirm"]//button/span[text()="${action}"]
 	${status}  Run Keyword And Return Status  Wait Until Page Contains Element  ${button}  3
 	Run Keyword If  '${status}' == 'True'  Click Element  ${button}
+
+
+пропозиція_закрити вікно з ЕЦП
+    ${selector}  set variable  //*[@data-qa="modal-eds"]//*[@class="ivu-modal-close"]
+    loading дочекатися відображення елемента на сторінці  ${selector}
+    click element  ${selector}
+    loading дочекатися зникнення елемента зі сторінки  ${selector}
 
 
 пропозиція_видалити файл
