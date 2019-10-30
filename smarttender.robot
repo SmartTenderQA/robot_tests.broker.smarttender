@@ -27,7 +27,8 @@ ${docs spin}                        //div[contains(@style, "loading")]
 ${loading bar}                      //div[@class="ivu-loading-bar"]   # полоса вверху страницы http://joxi.ru/Dr8xjNeT47v7Dr
 ${sale web loading}                 //*[contains(@class,'disabled-block')]
 ${povidomlennya loading}            //*[@class="loading-bar"]
-${SMART}                            ${loading}|${circle loading}|${skeleton loading}|${sales spin}|${docs spin}|${loading bar}|${sale web loading}|${povidomlennya loading}
+${cpv}                              //*[@id="j2_loading"]
+${SMART}                            ${loading}|${circle loading}|${skeleton loading}|${sales spin}|${docs spin}|${loading bar}|${sale web loading}|${povidomlennya loading}|${cpv}
 
 ${loadings}                         ${SMART}|${IT}
 ######################################
