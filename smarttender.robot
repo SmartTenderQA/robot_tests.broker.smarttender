@@ -2729,6 +2729,7 @@ get_item_deliveryAddress_value
 
 
 план_сторінка_детальної_інформації отримати status
+    [Arguments]  ${field_name}
     ${selector}  set variable  xpath=//*[@data-qa="plan-status"]
 	${field_value}  get text  ${selector}
 	[Return]  ${field_value}
