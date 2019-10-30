@@ -2784,36 +2784,42 @@ get_item_deliveryAddress_value
 план_сторінка_детальної_інформації отримати budget.id
     [Arguments]  ${field_name}
     log to console  Поле не отображается на странице
+    debug
 	[Return]  ${field_value}
 
 
 план_сторінка_детальної_інформації отримати budget.project.id
     [Arguments]  ${field_name}
     log to console  Поле не отображается на странице
+    debug
 	[Return]  ${field_value}
 
 
 план_сторінка_детальної_інформації отримати budget.project.name
     [Arguments]  ${field_name}
     log to console  Поле не отображается на странице
+    debug
 	[Return]  ${field_value}
 
 
 план_сторінка_детальної_інформації отримати procuringEntity.name
     [Arguments]  ${field_name}
-    log to console  Поле не отображается на странице
+    ${selector}  set variable  xpath=(//*[@data-qa="plan-organizer"]|//*[@data-qa="plan-purchaser"])[last()]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
 	[Return]  ${field_value}
 
 
 план_сторінка_детальної_інформації отримати procuringEntity.identifier.scheme
     [Arguments]  ${field_name}
-    log to console  Поле не отображается на странице
+    ${selector}  set variable  xpath=(//*[@data-qa="plan-usreou"]|//*[@data-qa="plan-purchaser-usreou"])[last()]//*[@data-qa="key"]
+	${field_value_in_smart_format}  get text  ${selector}
+	${field_value}  set variable if  "${field_value_in_smart_format}" == "Код ЄДРПОУ"  UA-EDR  ERROR!
 	[Return]  ${field_value}
 
 
 план_сторінка_детальної_інформації отримати procuringEntity.identifier.id
     [Arguments]  ${field_name}
-    ${selector}  set variable  //*[@data-qa="plan-usreou"]//*[@data-qa="value"]
+    ${selector}  set variable  xpath=(//*[@data-qa="plan-usreou"]|//*[@data-qa="plan-purchaser-usreou"])[last()]//*[@data-qa="value"]
 	${field_value}  get text  ${selector}
 	[Return]  ${field_value}
 
@@ -2849,7 +2855,9 @@ get_item_deliveryAddress_value
 
 план_сторінка_детальної_інформації отримати tender.tenderPeriod.startDate
     [Arguments]  ${field_name}
-    log to console  Поле не отображается на странице
+	${selector}  set variable  //*[@data-qa="plan-date-publish"]
+	${field_value_in_smart_format}  get text  ${selector}
+	${field_value}  convert date  ${field_value_in_smart_format}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT00:00:00${time_zone}
 	[Return]  ${field_value}
 
 
@@ -2870,9 +2878,6 @@ get_item_deliveryAddress_value
     ...  '${field}' == 'classification.id'              //*[@data-qa="nomenclature-main-classification-code"]
     ${field_value}  get text  ${item_selector}${field_selector}
     ${converted_field_value}  convert_plan_page_values  ${field}  ${field_value}
-    ${converted_field_value}  run keyword if  '${field}' == 'deliveryDate.endDate'
-    ...  date convertation  ${converted_field_value}
-    ...  ELSE  return from keyword  ${converted_field_value}
     [Return]  ${converted_field_value}
 
 
