@@ -438,3 +438,11 @@ def sync_tender_by_cdb_id(cdb_id):
     response = requests.request("POST", url, data=payload, headers=headers)
 
     return response.status_code
+
+
+def clear_additional_classifications(tender_data):
+    del tender_data['data']['additionalClassifications']
+    for item in tender_data['data']['items']:
+        del item['additionalClassifications']
+
+    return tender_data

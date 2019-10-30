@@ -122,7 +122,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${tender_data}  replace_unit_name  ${tender_data}
 	${tender_data}  replace_delivery_address  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
-
+	${tender_data}  clear_additional_classifications  ${tender_data}
 	log  ${tender_data}
 	log to console  ${tender_data}
 	[Return]  ${tender_data}
@@ -2595,15 +2595,7 @@ get_item_deliveryAddress_value
 Створити план
     [Arguments]  ${username}  ${tender_data}
     [Documentation]  Створити план з початковими даними tender_data. Повернути uaid створеного плану.
-	log to console  Створити план
 	${tender_data}  get from dictionary  ${tender_data}  data
-
-	#webclient.робочий стіл натиснути на елемент за назвою  Планы закупок(тестовые)
-	#webclient.header натиснути на елемент за назвою  Очистити
-	#webclient.header натиснути на елемент за назвою  OK
-	#webclient.header натиснути на елемент за назвою  Додати план закупівель
-	#webclient.Перейти за посиланням "Натисніть для переходу"
-
     smart go to  https://test.smarttender.biz/plan/add/test/
 
 	${procurementMethodType_en}  			set variable  					${tender_data['tender']['procurementMethodType']}
@@ -2637,29 +2629,22 @@ get_item_deliveryAddress_value
     comment  додати номенклатуру
     ${i}  set variable  0
     :FOR  ${item}  IN  @{tender_data['items']}
+    \  ${i}  evaluate  ${i} + 1
     \  plan edit натиснути Додати в блоці Номенклатури
     \  plan edit додати номенклатуру  ${item}  ${i}
 
     plan edit натиснути Зберегти
-
-
-	${planID}  webclient.отримати номер тендера
+    plan edit Опублікувати план
+    ${planID}  smarttender.план_сторінка_детальної_інформації отримати planID  planID
     [Return]  ${planID}
-
-
-Заповнити additionalClassifications для плану
-	[Arguments]  ${additionalClassifications}  ${row}=1
-	:FOR  ${additionalClassification}  IN  @{additionalClassifications}
-	\  ${additionalClassification_scheme}  	set variable  ${additionalClassification['scheme']}
-	\  ${additionalClassification_id}		set variable  ${additionalClassification['id']}
-	\  create_plan заповнити "Дод.класифікація-Тип"  ${additionalClassification_scheme}  	row=${row}
-	\  create_plan заповнити "Дод.класифікація-Код"  ${additionalClassification_id}  		row=${row}
 
 
 Внести зміни в план
 	[Arguments]  ${username}  ${tender_uaid}  ${field_name}  ${value}
 	log to console  Внести зміни в план
-
+	debug
+    Пошук плану по ідентифікатору  ${username}  ${tender_uaid}
+    
 	знайти план у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Коригувати план закупівель
 	header натиснути на елемент за назвою  Коригувати
@@ -2680,6 +2665,8 @@ get_item_deliveryAddress_value
 
 Додати предмет закупівлі в план
  	[Arguments]  ${username}  ${tender_uaid}  ${item}
+ 	log to console  Додати предмет закупівлі в план
+ 	debug
 	header натиснути на елемент за назвою  Коригувати план закупівель
 	header натиснути на елемент за назвою  Коригувати
 
@@ -2721,8 +2708,8 @@ get_item_deliveryAddress_value
 
 перейти до сторінки планів
 	[Arguments]  ${username}
-	${mi}  set variable if  'tender_owner' in '${username.lower()}'  2  1
-    go to  https://test.smarttender.biz/plans/?q&mi=${mi}&p=1&af&at
+	${tm}  set variable if  'tender_owner' in '${username.lower()}'  2  1
+    go to  https://test.smarttender.biz/plans/?q&tm=${tm}&p=1&af&at
     loading дочекатись закінчення загрузки сторінки
 
 
@@ -2764,8 +2751,11 @@ get_item_deliveryAddress_value
 
 
 сторінка_планів виконати пошук
+    debug
     click element  //*[@id="btnFind"]
     loading дочекатись закінчення загрузки сторінки
+    ${location}  get location
+    log  ${location}
 
 
 сторінка_планів перейти за першим результатом пошуку
@@ -2773,6 +2763,12 @@ get_item_deliveryAddress_value
 	${link}  get element attribute  xpath=(//*[@id="plan"])[${plan_number}]//*[@data-qa="plan-title"]@href
 	log  plan_link: ${link}  WARN
 	go to  ${link}
+
+
+план_сторінка_детальної_інформації отримати status
+    ${selector}  set variable  xpath=//*[@data-qa="plan-status"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
 
 
 план_сторінка_детальної_інформації отримати planID
@@ -3570,7 +3566,7 @@ plan edit обрати "Замовник"
 
 
 plan edit обрати "Код ДК021"
-    [Arguments]  ${code}  ${field_number}=1
+    [Arguments]  ${code}
     button class=button click by text  ДК021
     loading дочекатися відображення елемента на сторінці  ${cpv_input}
     input text  ${cpv_input}  ${code}
@@ -3636,14 +3632,10 @@ plan edit додати номенклатуру
 	${quantity}  			set variable  ${item['quantity']}
 	${deliveryDate}  		set variable  ${item['deliveryDate']['endDate']}
 
-    log to console  plan edit додати номенклатуру
-    debug
-
     plan edit вказати "Назва номенклатури"  ${description}  index=${field_number}
     plan edit заповнити "Од. вим."          ${unit_name}    index=${field_number}
     plan edit заповнити "Кількість"         ${quantity}     index=${field_number}
-    plan edit обрати "Код ДК021"            ${classification_id}  field_number=${field_number}+1
-
+    plan edit обрати "Код ДК021"            ${classification_id}
 
     ${additionalClassifications_status}  ${additionalClassifications}  run keyword and ignore error  set variable  ${item['additionalClassifications']}
 	run keyword if  '${additionalClassifications_status}' == 'PASS'
@@ -3672,15 +3664,35 @@ plan edit заповнити "Кількість"
 
 
 plan edit натиснути Зберегти
-    ${btn}  set variable  (//*[@class="action-buttons"]//*[@class="button"][contains(text(),"Зберегти")])[1]
+    ${btn}  set variable  xpath=(//*[@class="action-buttons"]//*[@class="button"][contains(text(),"Зберегти")])[1]
     click element  ${btn}
     loading дочекатись закінчення загрузки сторінки
 
 
 plan edit натиснути Скасувати
-    ${btn}  set variable  (//*[@class="action-buttons"]//*[@class="button"][contains(text(),"Скасувати")])[1]
+    ${btn}  set variable  xpath=(//*[@class="action-buttons"]//*[@class="button"][contains(text(),"Скасувати")])[1]
     click element  ${btn}
     loading дочекатись закінчення загрузки сторінки
+
+
+plan edit Опублікувати план
+    button type=button click by text  Опублікувати план
+    eds накласти ецп  pressEDSbtn=${False}  index=1
+    ${plan_status}  план_сторінка_детальної_інформації отримати status
+    should be equal as strings  ${plan_status}  Запланований
+
+
+eds накласти ецп
+    [Arguments]  ${pressEDSbtn}=${True}  ${index}=1
+    run keyword if  ${pressEDSbtn}  no operation
+    comment  Завантажити ключ ЕЦП
+    choose file  xpath=(//*[@data-qa="modal-eds"]//input[@type='file'])[${index}]  ${EXECDIR}${/}src${/}robot_tests.broker.smarttender${/}test.dat
+
+    comment  пароль для ключа
+	Input Password  xpath=(//*[@data-qa="modal-eds"]//*[@data-qa="eds-password"]//input)[${index}]  29121963
+
+    click element  xpath=(//*[@data-qa="eds-submit-sign"])[1]
+    loading дочекатися зникнення елемента зі сторінки  (//*[@data-qa="eds-submit-sign"])[${index}]  200
 ############################################################
 ############################################################
 
