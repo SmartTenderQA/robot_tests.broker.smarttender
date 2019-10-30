@@ -1057,8 +1057,6 @@ ${tender_cdb_id}                    ${None}
 	...  ELSE  run keywords
 	...  reload page        AND
 	...  loading дочекатись закінчення загрузки сторінки
-	log to console      ${\n}
-    log to console      WAKE UP!!!
 
 
 ###############################################
@@ -2214,7 +2212,7 @@ get_item_deliveryAddress_value
     [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_ids (якщо features_ids != None).
     ${lot_number}  set variable if  "${lots_ids}" == "${None}"  1  ${lots_ids}
     smarttender.пропозиція_перевірити кнопку подачі пропозиції
-    smarttender.пропозиція_заповнити поле з ціною  ${lot_number}  ${bid}
+    smarttender.пропозиція_заповнити поле з ціною  ${lot_number}  ${bid['data']['value']['amount']}
     smarttender.пропозиція_відмітити чекбокси при наявності
     smarttender.пропозиція_подати пропозицію
 
