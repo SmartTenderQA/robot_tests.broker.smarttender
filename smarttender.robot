@@ -1476,7 +1476,6 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${field}  	evaluate  '${reg.group('field')}'
     перейти до сторінки детальної інформаціїї
     log to console  отримати items
-    debug
     ${relatedItem}  set variable  ${tender_data['items'][${number}]['relatedLot']}
     ${lot_title}  отримати найменування предка для lot  ${relatedItem}
     перейти до лоту за необхідністю  lot_id=${lot_title}
@@ -2697,7 +2696,7 @@ get_item_deliveryAddress_value
 Пошук плану по ідентифікатору
     [Arguments]  ${username}  ${planID}
     [Documentation]  Знайти план з uaid рівним tender_uaid.
-	smarttender.перейти до сторінки планів  ${username}
+	smarttender.перейти до сторінки планів  ${username}  ${planID}
 	smarttender.сторінка_планів ввести текст в поле пошуку  ${planID}
     smarttender.сторінка_планів виконати пошук
 	smarttender.сторінка_планів перейти за першим результатом пошуку
@@ -2706,10 +2705,18 @@ get_item_deliveryAddress_value
 
 
 перейти до сторінки планів
-	[Arguments]  ${username}
+	[Arguments]  ${username}  ${planID}
 	${tm}  set variable if  'tender_owner' in '${username.lower()}'  2  1
     go to  https://test.smarttender.biz/plans/?q&tm=${tm}&p=1&af&at
     loading дочекатись закінчення загрузки сторінки
+    # ждем пока план отобразиться у нас на площадке
+	wait until keyword succeeds  5m  5s  smarttender._дочекатися синхронізації плану  ${planID}
+
+
+_дочекатися синхронізації плану
+	[Arguments]   ${planID}
+	${planID_status}  evaluate  requests.get("https://test.smarttender.biz/plans/details/${planID}/").status_code   requests
+	should be equal as integers  ${planID_status}  200
 
 
 Отримати інформацію із плану
@@ -3579,7 +3586,7 @@ plan edit заповнити "Рік з"
 
 plan edit заповнити "Очікувана вартість закупівлі"
     [Arguments]  ${amount}
-    wait until keyword succeeds  3x  1  number-input input text  "${amount}"  root=${amount_root}
+    wait until keyword succeeds  3x  1  number-input input text  ${amount}  root=${amount_root}
 
 
 plan edit обрати "Валюта"
@@ -3652,7 +3659,7 @@ plan edit breakdown додати "Джерело фінансування"
     ${title}         set variable    ${breakdown['title']}
     ${title}         set variable    ${convert_dict['${title}']}
     ${description}   set variable    ${breakdown['description']}
-    ${amount}        set variable    ${breakdown['value']['amount']}
+    ${amount}        evaluate  "%.2f" % (${breakdown['value']['amount']})
 
     comment  обрати джерело
     scroll page to element xpath  xpath=(${breakdown_root})[${field_number}]
@@ -3660,7 +3667,7 @@ plan edit breakdown додати "Джерело фінансування"
     selectInputNew select item by name  ${title}   root=(${breakdown_root})[${field_number}]
 
     comment  вказати Сумму
-    wait until keyword succeeds  3x  1  number-input input text  "${amount}"  root=(${breakdownAmount_root})[${field_number}]
+    wait until keyword succeeds  3x  1  number-input input text  ${amount}  root=(${breakdownAmount_root})[${field_number}]
 
     comment  вказати Опис
     input text  xpath=(${breakdownDecription_input})[${field_number}]  ${description}
@@ -3702,7 +3709,7 @@ plan edit заповнити "Од. вим."
 
 plan edit заповнити "Кількість"
     [Arguments]  ${value}  ${index}=1
-    wait until keyword succeeds  3x  1  number-input input text  "${value}"  root=(${plan_item_quantity_root})[${index}]
+    wait until keyword succeeds  3x  1  number-input input text  ${value}  root=(${plan_item_quantity_root})[${index}]
 
 
 plan edit натиснути Зберегти
@@ -3797,9 +3804,10 @@ number-input input text
     ${len}  get length  "${value}"
     :FOR  ${i}  IN RANGE  ${len}
     \  press key  xpath=${root}${number_input}  \\08
-	input text  xpath=${root}${number_input}  ${text}
+	input text  xpath=${root}${number_input}  ${text.__str__()}
 	${value}  number-input get value  ${root}
-	run keyword if  ${check}  should be equal as strings  "${value}"  ${text}
+	run keyword if  ${check}  should be equal as strings  ${value}  ${text}
+
 
 
 number-input get value
