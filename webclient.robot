@@ -55,7 +55,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле value.valueAddedTaxIncluded
 	[Arguments]  ${bool}
 	${locator}  set variable  //*[@data-name="WITHVAT"]//input
-	операція над чекбоксом  ${bool}  ${locator}
+	wait until keyword succeeds  5x  1  операція над чекбоксом  ${bool}  ${locator}
 
 
 

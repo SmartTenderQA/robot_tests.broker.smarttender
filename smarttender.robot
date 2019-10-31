@@ -2631,7 +2631,7 @@ get_item_deliveryAddress_value
 	${tender_start}          convert date  	${tenderPeriod_startDate_not_formated}  result_format=%Y  date_format=%Y-%m-%dT%H:%M:%S+02:00
 	${plan_strat}            convert date  	${tenderPeriod_startDate_not_formated}  result_format=%Y-%m  date_format=%Y-%m-%dT%H:%M:%S+02:00
 	${budget_description}  					set variable  					${tender_data['budget']['description']}
-	${budget_amount}  						set variable  					${tender_data['budget']['amount']}
+	${budget_amount}  						evaluate                        str("${tender_data['budget']['amount']}")
 	${budget_id}  							set variable  					${tender_data['classification']['id']}  	####  ?????
 	${additionalClassifications_status}  	${additionalClassifications}  	run keyword and ignore error  set variable  ${tender_data['additionalClassifications']}
 
@@ -3644,7 +3644,7 @@ plan edit breakdown додати "Джерело фінансування"
     ${title}         set variable    ${breakdown['title']}
     ${title}         set variable    ${convert_dict['${title}']}
     ${description}   set variable    ${breakdown['description']}
-    ${amount}        evaluate  "%.2f" % (${breakdown['value']['amount']})
+    ${amount}        evaluate        str("${breakdown['value']['amount']}")
 
     comment  обрати джерело
     scroll page to element xpath  xpath=(${breakdown_root})[${field_number}]
