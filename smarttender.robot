@@ -3764,7 +3764,7 @@ number-input input text
     \  press key  xpath=${root}${number_input}  \\08
 	input text  xpath=${root}${number_input}  ${text}
 	${value}  number-input get value  ${root}
-	run keyword if  ${check}  should be equal as strings  "${value}"  "${text}"
+	run keyword if  ${check}  should be equal as strings  "${value}"  ${text}
 
 
 number-input get value
