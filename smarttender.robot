@@ -118,10 +118,10 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	...  Це ключове слово викликається в циклі для кожної ролі, яка бере участь в поточному сценарії.
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
-
 	${tender_data}  replace_unit_name  ${tender_data}
 	${tender_data}  replace_delivery_address  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
+    ${tender_data}  run keyword if  "${role_name}" == "viewer"  replacee_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
 	${tender_data}  clear_additional_classifications  ${tender_data}
 	log  ${tender_data}
 	log to console  ${tender_data}
@@ -2891,9 +2891,9 @@ _дочекатися синхронізації плану
 план_сторінка_детальної_інформації отримати items
 	[Arguments]  ${field_name}
 	${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
-	${number}  	evaluate  '${reg.group('number')}'
+	${item_number_in_cdb}  	evaluate  '${reg.group('number')}'
 	${field}  	evaluate  '${reg.group('field')}'
-	${item_selector}  set variable  xpath=(//*[@data-qa="value-list"])[${number}+1]
+	${item_selector}  smarttender._план_сторінка_детальної_інформації отримати selector для items  ${item_number_in_cdb}
     ${field_selector}      set variable if
     ...  '${field}' == 'description'                    //*[@data-qa="nomenclature-title"]
     ...  '${field}' == 'quantity'                       //*[@data-qa="nomenclature-count"]
@@ -2906,6 +2906,15 @@ _дочекатися синхронізації плану
     ${field_value}  get text  ${item_selector}${field_selector}
     ${converted_field_value}  convert_plan_page_values  ${field}  ${field_value}
     [Return]  ${converted_field_value}
+
+
+_план_сторінка_детальної_інформації отримати selector для items
+	[Arguments]  ${item_number_in_cdb}
+	${plan_cdb_id}  get text  //*[@data-qa="plan-id-cdb"]
+	${cdb_data}  evaluate  requests.get("https://lb-api-sandbox.prozorro.gov.ua/api/2.5/plans/${plan_cdb_id}").json()  requests
+	${cdb_item_description}  set variable  ${cdb_data['data']['items'][${item_number_in_cdb}]['description']}
+	${item_selector}  set variable  xpath=//*[@data-qa="value-list"][contains(., "${cdb_item_description}")]
+	[Return]  ${item_selector}
 
 
 сторінка_детальної_інформації отримати awards
