@@ -1403,15 +1403,22 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${number}  	evaluate  int(${reg.group('number')}) + 1
 	${field}  	evaluate  '${reg.group('field')}'
 	${funder_selector}  set variable  xpath=(//*[@data-qa="donor"])[${number}]
+
+    comment  Отримати хвіст локатора по імені
     ${field_selector}      set variable if
+    ...  '${field}' == 'name'                                //*[contains(@class, "ivu-poptip-rel")]
+    ...  '${field}' == 'address.countryName'                 //*[contains(@class, "ivu-poptip-rel")]
     ...  '${field}' == 'contactPoint.url'                    //*[@class="ivu-poptip-body-content"]//a
     ...  '${field}' == 'identifier.id'                       //*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]/following-sibling::*
     ...  '${field}' == 'identifier.legalName'                //div[@class="ivu-poptip-rel"]
+    comment  Якщо єлемента не видно, відкриваємо popup
     ${field_is_visible}  run keyword and return status  element should be visible  ${funder_selector}${field_selector}
     run keyword if  ${field_is_visible} == ${False}  run keywords
     ...  click element  ${funder_selector}//div[@class="ivu-poptip-rel"]
     ...  AND  wait until element is visible  ${funder_selector}${field_selector}
+
     ${field_value}  get text  ${funder_selector}${field_selector}
+
     ${converted_field_value}  convert_page_values  ${field}  ${field_value}
     ${converted_field_value}  run keyword if  '${field}' == 'deliveryDate.endDate'
     ...  convert date  ${field_value}  date_format=%d.%m.%Y result_format=%Y-%m-%dT%H:%M:%S${time_zone}
