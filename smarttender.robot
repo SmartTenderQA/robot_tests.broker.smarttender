@@ -1476,7 +1476,6 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${field}  	evaluate  '${reg.group('field')}'
     перейти до сторінки детальної інформаціїї
     log to console  отримати items
-    debug
     ${relatedItem}  set variable  ${tender_data['items'][${number}]['relatedLot']}
     ${lot_title}  отримати найменування предка для lot  ${relatedItem}
     перейти до лоту за необхідністю  lot_id=${lot_title}
@@ -2018,16 +2017,24 @@ get_item_deliveryAddress_value
 	
 Задати запитання на предмет
     [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${question}
-    [Documentation]  Створити запитання з даними question до предмету з item_id в описі для тендера tender_uaid.   
-	log to console  Задати запитання на предмет
-	debug
+    [Documentation]  Створити запитання з даними question до предмету з item_id в описі для тендера tender_uaid.
+    smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
+	запитання_вибрати тип запитання  ${item_id}
+	smarttender.запитання_натиснути кнопку "Поставити запитання"
+	smarttender.запитання_заповнити тему             ${question['data']['title']}
+	smarttender.запитання_заповнити текст запитання  ${question['data']['description']}
+	smarttender.запитання_натиснути кнопку "Подати"
 	
 	
 Задати запитання на лот
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${question}
-    [Documentation]  Створити запитання з даними question до лоту з lot_id в описі для тендера tender_uaid.   
-	log to console  Задати запитання на лот
-	debug
+    [Documentation]  Створити запитання з даними question до лоту з lot_id в описі для тендера tender_uaid.
+	smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
+	запитання_вибрати тип запитання  ${lot_id}
+	smarttender.запитання_натиснути кнопку "Поставити запитання"
+	smarttender.запитання_заповнити тему             ${question['data']['title']}
+	smarttender.запитання_заповнити текст запитання  ${question['data']['description']}
+	smarttender.запитання_натиснути кнопку "Подати"
 	
 	
 Задати запитання на тендер
@@ -2270,7 +2277,7 @@ get_item_deliveryAddress_value
     :FOR  ${lot}  IN  @{lots_ids}
     # ${count_lot} костиль для отриманяя правильного ['value']['amount'] для потрібного лоту
     # буде працювати тільки якщо relatedLot в lotValues буду співпадати з послідовністю в ${lots_ids}
-    \  ${count_lot}  set test variable  0
+    \  set test variable  ${count_lot}  0
     \  smarttender.пропозиція_заповнити поле з ціною  ${lots_ids}  ${bid}
     smarttender.пропозиція_відмітити чекбокси при наявності
     smarttender.пропозиція_подати пропозицію
@@ -2689,7 +2696,7 @@ get_item_deliveryAddress_value
 Пошук плану по ідентифікатору
     [Arguments]  ${username}  ${planID}
     [Documentation]  Знайти план з uaid рівним tender_uaid.
-	smarttender.перейти до сторінки планів  ${username}
+	smarttender.перейти до сторінки планів  ${username}  ${planID}
 	smarttender.сторінка_планів ввести текст в поле пошуку  ${planID}
     smarttender.сторінка_планів виконати пошук
 	smarttender.сторінка_планів перейти за першим результатом пошуку
@@ -2698,10 +2705,18 @@ get_item_deliveryAddress_value
 
 
 перейти до сторінки планів
-	[Arguments]  ${username}
+	[Arguments]  ${username}  ${planID}
 	${tm}  set variable if  'tender_owner' in '${username.lower()}'  2  1
     go to  https://test.smarttender.biz/plans/?q&tm=${tm}&p=1&af&at
     loading дочекатись закінчення загрузки сторінки
+    # ждем пока план отобразиться у нас на площадке
+	wait until keyword succeeds  5m  5s  smarttender._дочекатися синхронізації плану  ${planID}
+
+
+_дочекатися синхронізації плану
+	[Arguments]   ${planID}
+	${planID_status}  evaluate  requests.get("https://test.smarttender.biz/plans/details/${planID}/").status_code   requests
+	should be equal as integers  ${planID_status}  200
 
 
 Отримати інформацію із плану
