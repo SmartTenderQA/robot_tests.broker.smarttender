@@ -3544,7 +3544,7 @@ plan edit заповнити "Рік з"
 
 plan edit заповнити "Очікувана вартість закупівлі"
     [Arguments]  ${amount}
-    wait until keyword succeeds  3x  1  number-input input text  "${amount}"  root=${amount_root}
+    wait until keyword succeeds  3x  1  number-input input text  ${amount}  root=${amount_root}
 
 
 plan edit обрати "Валюта"
@@ -3625,7 +3625,7 @@ plan edit breakdown додати "Джерело фінансування"
     selectInputNew select item by name  ${title}   root=(${breakdown_root})[${field_number}]
 
     comment  вказати Сумму
-    wait until keyword succeeds  3x  1  number-input input text  "${amount}"  root=(${breakdownAmount_root})[${field_number}]
+    wait until keyword succeeds  3x  1  number-input input text  ${amount}  root=(${breakdownAmount_root})[${field_number}]
 
     comment  вказати Опис
     input text  xpath=(${breakdownDecription_input})[${field_number}]  ${description}
@@ -3667,7 +3667,7 @@ plan edit заповнити "Од. вим."
 
 plan edit заповнити "Кількість"
     [Arguments]  ${value}  ${index}=1
-    wait until keyword succeeds  3x  1  number-input input text  "${value}"  root=(${plan_item_quantity_root})[${index}]
+    wait until keyword succeeds  3x  1  number-input input text  ${value}  root=(${plan_item_quantity_root})[${index}]
 
 
 plan edit натиснути Зберегти
@@ -3762,9 +3762,10 @@ number-input input text
     ${len}  get length  "${value}"
     :FOR  ${i}  IN RANGE  ${len}
     \  press key  xpath=${root}${number_input}  \\08
-	input text  xpath=${root}${number_input}  ${text}
+	input text  xpath=${root}${number_input}  ${text.__str__()}
 	${value}  number-input get value  ${root}
-	run keyword if  ${check}  should be equal as strings  "${value}"  ${text}
+	run keyword if  ${check}  should be equal as strings  ${value}  ${text}
+
 
 
 number-input get value
