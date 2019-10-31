@@ -86,6 +86,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
                     ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
                     ...  Отримати та залогувати data_session
     smart go to  ${USERS.users['${username}'].homepage}
+    debug
     # /todo не забыть убрать
 #	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
 	maximize browser window
@@ -1286,33 +1287,29 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати procuringEntity.address.locality
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати назву населеного пункту замовника звіту про укладений договір
-    debug
-    log to console  Поля немає на сторінці
-	[Return]  ${field_value}
+    log to console  Поля немає на сторінці (non-critical)
+	[Return]  ${empty}
 
 
 сторінка_детальної_інформації отримати procuringEntity.address.postalCode
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати поштовий код замовника звіту про укладений договір
-    debug
-    log to console  Поля немає на сторінці
-	[Return]  ${field_value}
+    log to console  Поля немає на сторінці (non-critical)
+	[Return]  ${empty}
 
 
 сторінка_детальної_інформації отримати procuringEntity.address.region
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати область замовника звіту про укладений договір
-    debug
-    log to console  Поля немає на сторінці
-	[Return]  ${field_value}
+    log to console  Поля немає на сторінці (non-critical)
+	[Return]  ${empty}
 
 
 сторінка_детальної_інформації отримати procuringEntity.address.streetAddress
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати назву вулиці замовника звіту про укладений договір
-    debug
-    log to console  Поля немає на сторінці
-	[Return]  ${field_value}
+    log to console  Поля немає на сторінці (non-critical)
+	[Return]  ${empty}
 
 
 сторінка_детальної_інформації отримати procuringEntity.contactPoint.name
@@ -1346,8 +1343,9 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати procuringEntity.identifier.scheme
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати схему ідентифікації замовника звіту про укладений договір
-    debug
-    log to console  Поля немає на сторінці
+    ${selector}  set variable  xpath=//*[@data-qa="usreou"]//*[@data-qa="key"]
+	${field_value_in_smart_format}  get text  ${selector}
+	${field_value}  set variable if  "${field_value_in_smart_format}" == "Код ЄДРПОУ"  UA-EDR  ERROR!
 	[Return]  ${field_value}
 
 
@@ -1610,12 +1608,18 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 предмети_сторінка_детальної_інформації отримати deliveryAddress.region
     [Arguments]  ${item_block}
 	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  region
+	${item_field_value}  set variable if
+		...  "обл." in "${item_field_value}"  ${item_field_value.replace("обл.", "область")}
+		...  ${item_field_value}
 	[Return]  ${item_field_value}
 
 
 предмети_сторінка_детальної_інформації отримати deliveryAddress.locality
     [Arguments]  ${item_block}
 	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  locality
+	${item_field_value}  set variable if
+		...  "Днепро" == "${item_field_value}"  Дніпро
+		...  ${item_field_value}
 	[Return]  ${item_field_value}
 
 
@@ -2952,16 +2956,31 @@ get_item_deliveryAddress_value
 
 сторінка_детальної_інформації_awards value
     [Arguments]  ${field_name}  ${award_index}
+    ${field_value}  run keyword if  "currency" in "${field_name}"
+            ...  smarttender._сторінка_детальної_інформації_awards value.currency  ${field_name}  ${award_index}
+    ...  ELSE
+            ...  smarttender._сторінка_детальної_інформації_awards value.amount or value.valueAddedTaxIncluded  ${field_name}  ${award_index}
+    [Return]  ${field_value}
+
+
+_сторінка_детальної_інформації_awards value.amount or value.valueAddedTaxIncluded
+    [Arguments]  ${field_name}  ${award_index}
     ${field}  fetch from right  ${field_name}  .
     ${award_selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]
     ${field_selector}  set variable if
     ...  '${field}' == 'valueAddedTaxIncluded'                 //div[contains(text(),'Сума пропозиції')]/following-sibling::*
     ...  '${field}' == 'amount'                                //div[contains(text(),'Сума пропозиції')]/following-sibling::*
-    ...  '${field}' == 'currency'                              //div[contains(text(),'Сума пропозиції')]
     ${field_value}  get text  xpath=${award_selector}${field_selector}
-    ${field_value}  run keyword if  '${field}' == 'currency'  fetch from right  ${field_value}  ${space}
-    ...  ELSE  set variable  ${field_value}
     ${field_value}  convert_page_values  ${field}  ${field_value}
+    [Return]  ${field_value}
+
+
+_сторінка_детальної_інформації_awards value.currency
+    [Arguments]  ${field_name}  ${award_index}
+    ${selector}  set variable  //*[@id="auction_results"]//*[@data-qa="captions"]//*[@class="ivu-col ivu-col-span-sm-4"]
+    ${value}  get text  ${selector}
+	${field_value_in_smart_format}  fetch from right  ${value}  ${space}
+	${field_value}  set variable if  "${field_value_in_smart_format}" == "грн."  UAH  ERROR!
     [Return]  ${field_value}
 
 
@@ -2997,11 +3016,13 @@ get_item_deliveryAddress_value
     ...  '${field}' == 'telephone'                  no such field on page
     ...  '${field}' == 'legalName'                  //*[@class="expander-title"]
     ...  '${field}' == 'id'                         //*[text()="Код ЄДРПОУ"]/parent::*/following-sibling::*
+    ...  '${field}' == 'scheme'                     //*[text()="Код ЄДРПОУ"]/parent::*
     ${field_value}  get text  xpath=${award_selector}${field_selector}
+    return from keyword if  '${field}' == 'scheme' and "${field_value}" == "Код ЄДРПОУ"  UA-EDR
     [Return]  ${field_value}
 
 
-сторінка_детальної_інформації_awards_suppliers adress
+сторінка_детальної_інформації_awards_suppliers address
     [Arguments]  ${field_name}  ${award_index}  ${supplier_index}
     log to console  Поле не отображается на странице
     ${field_value}  set variable  Поле не отображается на странице
@@ -3023,8 +3044,9 @@ get_item_deliveryAddress_value
     ###########################################
 	#   перейти на сторінку контракта
 	${contract_btn}  set variable  //*[@data-qa="contract"]/a
-	Reload Page
-	loading дочекатись закінчення загрузки сторінки
+	${contract_btn_is_visible}  run keyword and return status  element should be visible  ${contract_btn}
+	run keyword if  ${contract_btn_is_visible} == ${False}
+				...  Синхронізувати тендер
 	open button  ${contract_btn}
 	###########################################
 	${field_value}  run keyword  smarttender.контракт_сторінка_детальної_інформації отримати ${field}
@@ -3194,6 +3216,7 @@ cтатус тендера повинен бути
 	${selector}  run keyword if  '${mode}' == 'reporting'
 	...  set variable  //*[@data-qa="search-block-button"]
     ...  ELSE  set variable  //div[text()='Пошук']/..
+    loading дочекатись закінчення загрузки сторінки
 	click element  ${selector}
 	loading дочекатись закінчення загрузки сторінки
 
