@@ -2375,7 +2375,7 @@ get_item_deliveryAddress_value
 	знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
-	header натиснути на елемент за назвою  Перечитати
+	header натиснути на елемент за назвою  Оновити
 	вибрати переможця за номером  ${award_num}+1
 	header натиснути на елемент за назвою  Кваліфікація
 	click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]
@@ -2393,7 +2393,7 @@ get_item_deliveryAddress_value
 	знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
-	header натиснути на елемент за назвою  Перечитати
+	header натиснути на елемент за назвою  Оновити
 	log to console  Підтвердити постачальника
 	вибрати переможця за номером  ${award_num}+1
 	header натиснути на елемент за назвою  Кваліфікація
