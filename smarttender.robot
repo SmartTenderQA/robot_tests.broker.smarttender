@@ -2259,10 +2259,16 @@ get_item_deliveryAddress_value
 Подати цінову пропозицію
     [Arguments]  ${username}  ${tender_uaid}  ${bid}  ${lots_ids}=${None}  ${features_ids}=${None}
     [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_ids (якщо features_ids != None).
-    ${lot_number}  set variable if  "${lots_ids}" == "${None}"  1  ${lots_ids}
-    ${amount}  evaluate  str(${bid['data']['value']['amount']})
+    comment  Якщо id лоту відсутнє створюєму список з пустим значенням
+    ${list_with_empty_value}  create list  ${Empty}
+    ${lots_ids}  Set Variable If  "${lots_ids}" is "${None}"  ${list_with_empty_value}  ${lots_ids}
+
     smarttender.пропозиція_перевірити кнопку подачі пропозиції
-    smarttender.пропозиція_заповнити поле з ціною  ${lot_number}  ${amount}
+    :FOR  ${lot}  IN  @{lots_ids}
+    # ${count_lot} костиль для отриманяя правильного ['value']['amount'] для потрібного лоту
+    # буде працювати тільки якщо relatedLot в lotValues буду співпадати з послідовністю в ${lots_ids}
+    \  ${count_lot}  set test variable  0
+    \  smarttender.пропозиція_заповнити поле з ціною  ${lots_ids}  ${bid}
     smarttender.пропозиція_відмітити чекбокси при наявності
     smarttender.пропозиція_подати пропозицію
 	smarttender.пропозиція_закрити вікно з ЕЦП
@@ -3342,6 +3348,7 @@ _Дочекатись синхронізації
     loading дочекатися відображення елемента на сторінці  ${button}
     smarttender.Open button  ${button}
     Location Should Contain  /edit/
+    comment  Захист від "швидкої" подачи пропозиції
     Wait Until Keyword Succeeds  5m  3  Run Keywords
     ...  Reload Page  AND
     ...  Element Should Not Be Visible  //*[@class='modal-dialog ']//h4
@@ -3350,9 +3357,29 @@ _Дочекатись синхронізації
 пропозиція_заповнити поле з ціною
     [Documentation]  takes lot number and coefficient
     ...  fill bid field with max available price
-    [Arguments]  ${lot number}  ${amount}
-    ${field number}=  Evaluate  ${lot number}-1
-    input text  xpath=//*[@id="lotAmount${field number}"]//input[1]  ${amount}
+    [Arguments]  ${lot_id}  ${bid}
+
+    comment  Отримуємо значення ціни пропозиції
+    ${is_multiple}  set variable  ${bid['data'].get('lotValues')}
+    ${amount}  run keyword if  "${is_multiple}" == "${None}"
+    ...  evaluate  str(${bid['data']['value']['amount']})
+    ...  evaluate  str(${bid['data']['lotValues'][${count_lot}]['value']['amount']})
+    ${count_lot}  evaluate  ${count_lot} + 1
+
+    comment  Розгорнути лот якщо id існує
+    run keyword if  "${lot_id}" != "${Empty}"  _розгорнути лот по id  ${lot_id}
+
+    comment  Ввести ціну пропозиції
+    ${input}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
+    input text  ${input}  ${amount}
+
+
+_розгорнути лот по id
+    [Arguments]  ${lot_id}
+    ${button}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]//*[@type="button" and contains(., "Прийняти участь")][not(disabled="disabled")]
+    wait until keyword succeeds  20  1  run keywords
+    ...  click element  ${button}  AND
+    ...  loading дочекатися зникнення елемента зі сторінки  ${button}
 
 
 пропозиція_відмітити чекбокси при наявності
