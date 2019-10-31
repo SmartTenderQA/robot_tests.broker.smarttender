@@ -1120,6 +1120,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати title_en
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати заголовок звіту про укладений договір англійською мовою
+    debug
     log to console  Поля немає на сторінці
     [Return]  ${field_value}
 
@@ -1128,6 +1129,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати заголовок звіту про укладений договір російською мовою
     log to console  Поля немає на сторінці
+    debug
     [Return]  ${field_value}
 
 
@@ -1141,6 +1143,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати description_en
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати опису звіту про укладений договір англійською мовою
+    debug
     log to console  Поля немає на сторінці
     [Return]  ${field_value}
 
@@ -1148,6 +1151,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати description_ru
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати опису звіту про укладений договір російською мовою
+    debug
     log to console  Поля немає на сторінці
     [Return]  ${field_value}
 
@@ -1282,6 +1286,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати procuringEntity.address.locality
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати назву населеного пункту замовника звіту про укладений договір
+    debug
     log to console  Поля немає на сторінці
 	[Return]  ${field_value}
 
@@ -1289,6 +1294,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати procuringEntity.address.postalCode
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати поштовий код замовника звіту про укладений договір
+    debug
     log to console  Поля немає на сторінці
 	[Return]  ${field_value}
 
@@ -1296,6 +1302,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати procuringEntity.address.region
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати область замовника звіту про укладений договір
+    debug
     log to console  Поля немає на сторінці
 	[Return]  ${field_value}
 
@@ -1303,6 +1310,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати procuringEntity.address.streetAddress
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати назву вулиці замовника звіту про укладений договір
+    debug
     log to console  Поля немає на сторінці
 	[Return]  ${field_value}
 
@@ -1338,6 +1346,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати procuringEntity.identifier.scheme
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати схему ідентифікації замовника звіту про укладений договір
+    debug
     log to console  Поля немає на сторінці
 	[Return]  ${field_value}
 
@@ -1578,6 +1587,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 предмети_сторінка_детальної_інформації отримати deliveryAddress.countryName_ru
     [Arguments]  ${item_block}
+    debug
     log to console  Поля немає на сторінці
     ${item_field_value}  set variable  empty
     [Return]  ${item_field_value}
@@ -1585,6 +1595,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 предмети_сторінка_детальної_інформації отримати deliveryAddress.countryName_en
     [Arguments]  ${item_block}
+    debug
     log to console  Поля немає на сторінці
     ${item_field_value}  set variable  empty
     [Return]  ${item_field_value}
@@ -3012,6 +3023,8 @@ get_item_deliveryAddress_value
     ###########################################
 	#   перейти на сторінку контракта
 	${contract_btn}  set variable  //*[@data-qa="contract"]/a
+	Reload Page
+	loading дочекатись закінчення загрузки сторінки
 	open button  ${contract_btn}
 	###########################################
 	${field_value}  run keyword  smarttender.контракт_сторінка_детальної_інформації отримати ${field}
@@ -3347,15 +3360,16 @@ _Дочекатись синхронізації
 пропозиція_подати пропозицію
     ${send offer button}   set variable  css=button#submitBidPlease
     Click Element  ${send offer button}
+    sleep  2
+    loading дочекатись закінчення загрузки сторінки
 	smarttender.закрити валідаційне вікно (Так/Ні)  Рекомендуємо Вам для файлів з ціновою пропозицією обрати тип  Ні
-	loading дочекатись закінчення загрузки сторінки
 
 
 закрити валідаційне вікно (Так/Ні)
 	[Arguments]  ${title}  ${action}
 	${button}  Set Variable  //div[contains(text(),'${title}')]/ancestor::div[@class="ivu-modal-confirm"]//button/span[text()="${action}"]
 	${status}  Run Keyword And Return Status  Wait Until Page Contains Element  ${button}  3
-	Run Keyword If  '${status}' == 'True'  Click Element  ${button}
+	Run Keyword If  '${status}' == 'True'  Run Keywords  Click Element  ${button}  AND  loading дочекатись закінчення загрузки сторінки
 
 
 пропозиція_закрити вікно з ЕЦП
@@ -3642,7 +3656,7 @@ plan edit натиснути Скасувати
 plan edit Опублікувати план
     button type=button click by text  Опублікувати план
     eds накласти ецп  pressEDSbtn=${False}  index=1
-    ${plan_status}  план_сторінка_детальної_інформації отримати status
+    ${plan_status}  план_сторінка_детальної_інформації отримати status  status
     should be equal as strings  ${plan_status}  Запланований
 
 
