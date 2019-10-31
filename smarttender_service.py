@@ -251,8 +251,7 @@ def convert_unit_code(value):
 def convert_unit_name(value):
     units_map = {
         u'Штука': u'штуки',
-        u'Упаковка': u'упаковка',
-        u'упаков': u'упаковка',
+        u'Упаковка': u'упаков',
         u'Флакон': u'Флакон',
         u'Набір(товару)': u'набір',
         u'кг': u'кілограми'
@@ -391,6 +390,11 @@ def replace_procuringEntity(tender_data):
         }
     }
 
+    return tender_data
+
+
+def replacee_procuringEntity(tender_data):
+    tender_data.data.procuringEntity = tender_data.data.buyers[0]
     return tender_data
 
 
