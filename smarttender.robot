@@ -91,6 +91,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	maximize browser window
 	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
 
+
 Отримати та залогувати data_session
 	${s2b}  get_library_instance  Selenium2Library
 	${webdriver}  Call Method  ${s2b}  _current_browser
@@ -1158,6 +1159,11 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 сторінка_детальної_інформації отримати status
     [Arguments]  ${field_name}=None
+    comment  Повертаємося на сторінку детальної інформації по тендеру якщо ми не на ній
+    ${current_location}  get location
+    run keyword if  "${tender_link}" != "${current_location}"  run keywords
+    ...  go to  ${tender_link}  AND  loading дочекатись закінчення загрузки сторінки
+    ##################################################
     comment  Цей кейворд використовується квінтою при очікуванні статусу тендера. Потрібна перезагрузка сторінки для оновлення інформації.
     reload page
 	loading дочекатись закінчення загрузки сторінки
@@ -1166,6 +1172,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${field_value}  get text  ${selector}
 	${field_value}  convert_status  ${field_value}
 	[Return]  ${field_value}
+
 
 сторінка_детальної_інформації отримати documents
     [Arguments]  ${field_name}
