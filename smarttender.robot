@@ -1120,6 +1120,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати title_en
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати заголовок звіту про укладений договір англійською мовою
+    debug
     log to console  Поля немає на сторінці
     [Return]  ${field_value}
 
@@ -1128,6 +1129,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати заголовок звіту про укладений договір російською мовою
     log to console  Поля немає на сторінці
+    debug
     [Return]  ${field_value}
 
 
@@ -1141,6 +1143,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати description_en
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати опису звіту про укладений договір англійською мовою
+    debug
     log to console  Поля немає на сторінці
     [Return]  ${field_value}
 
@@ -1148,6 +1151,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати description_ru
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати опису звіту про укладений договір російською мовою
+    debug
     log to console  Поля немає на сторінці
     [Return]  ${field_value}
 
@@ -1282,6 +1286,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати procuringEntity.address.locality
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати назву населеного пункту замовника звіту про укладений договір
+    debug
     log to console  Поля немає на сторінці
 	[Return]  ${field_value}
 
@@ -1289,6 +1294,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати procuringEntity.address.postalCode
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати поштовий код замовника звіту про укладений договір
+    debug
     log to console  Поля немає на сторінці
 	[Return]  ${field_value}
 
@@ -1296,6 +1302,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати procuringEntity.address.region
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати область замовника звіту про укладений договір
+    debug
     log to console  Поля немає на сторінці
 	[Return]  ${field_value}
 
@@ -1303,6 +1310,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати procuringEntity.address.streetAddress
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати назву вулиці замовника звіту про укладений договір
+    debug
     log to console  Поля немає на сторінці
 	[Return]  ${field_value}
 
@@ -1338,6 +1346,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 сторінка_детальної_інформації отримати procuringEntity.identifier.scheme
     [Arguments]  ${field_name}=None
     [Documentation]  Отримати схему ідентифікації замовника звіту про укладений договір
+    debug
     log to console  Поля немає на сторінці
 	[Return]  ${field_value}
 
@@ -1585,6 +1594,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 предмети_сторінка_детальної_інформації отримати deliveryAddress.countryName_ru
     [Arguments]  ${item_block}
+    debug
     log to console  Поля немає на сторінці
     ${item_field_value}  set variable  empty
     [Return]  ${item_field_value}
@@ -1592,6 +1602,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 предмети_сторінка_детальної_інформації отримати deliveryAddress.countryName_en
     [Arguments]  ${item_block}
+    debug
     log to console  Поля немає на сторінці
     ${item_field_value}  set variable  empty
     [Return]  ${item_field_value}
@@ -2137,7 +2148,7 @@ get_item_deliveryAddress_value
 	#  знаходимо потрібну вимогу
 	${tab_status}  run keyword and return status  webclient.активувати вкладку  Звернення за умовами тендеру
 	run keyword if  "${tab_status}" == "False"    webclient.активувати вкладку  Оскарження умов тендеру
-	webclient.header натиснути на елемент за назвою  Перечитати
+	webclient.header натиснути на елемент за назвою  Оновити
 	${complaintID_search_field}  set variable  xpath=((//*[@data-type="GridView"])[2]//td//input)[1]
     clear input by JS  ${complaintID_search_field}
     Input Type Flex  ${complaintID_search_field}  ${complaintID}
@@ -2178,7 +2189,7 @@ get_item_deliveryAddress_value
     #  знаходимо потрібну вимогу
     ${tab_status}  run keyword and return status  webclient.активувати вкладку  Звернення за умовами тендеру
 	run keyword if  "${tab_status}" == "False"    webclient.активувати вкладку  Оскарження умов тендеру
-    webclient.header натиснути на елемент за назвою  Перечитати
+    webclient.header натиснути на елемент за назвою  Оновити
 	${complaintID_search_field}  set variable  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[2]//td//input)[1]
     loading дочекатися відображення елемента на сторінці  ${complaintID_search_field}
     clear input by JS  ${complaintID_search_field}
@@ -2321,7 +2332,7 @@ get_item_deliveryAddress_value
 	debug
 	знайти тендер у webclient  ${tender_uaid}
     активувати вкладку  Прекваліфікація
-	header натиснути на елемент за назвою  Перечитати
+	header натиснути на елемент за назвою  Оновити
 	вибрати учасника за номером  ${qualification_num}+1
 
     header натиснути на елемент за назвою  Прийняти рішення прекваліфікації
@@ -2382,7 +2393,7 @@ get_item_deliveryAddress_value
 	знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
-	header натиснути на елемент за назвою  Перечитати
+	header натиснути на елемент за назвою  Оновити
 	вибрати переможця за номером  ${award_num}+1
 	header натиснути на елемент за назвою  Кваліфікація
 	click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]
@@ -2400,7 +2411,7 @@ get_item_deliveryAddress_value
 	знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
-	header натиснути на елемент за назвою  Перечитати
+	header натиснути на елемент за назвою  Оновити
 	log to console  Підтвердити постачальника
 	вибрати переможця за номером  ${award_num}+1
 	header натиснути на елемент за назвою  Кваліфікація
@@ -2468,7 +2479,7 @@ get_item_deliveryAddress_value
     знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
-	header натиснути на елемент за назвою  Перечитати
+	header натиснути на елемент за назвою  Оновити
 	вибрати переможця за номером  ${contract_num}+1
     header натиснути на елемент за назвою  Прикріпити договір
     #  Заповнюємо поля договору
@@ -3019,6 +3030,8 @@ get_item_deliveryAddress_value
     ###########################################
 	#   перейти на сторінку контракта
 	${contract_btn}  set variable  //*[@data-qa="contract"]/a
+	Reload Page
+	loading дочекатись закінчення загрузки сторінки
 	open button  ${contract_btn}
 	###########################################
 	${field_value}  run keyword  smarttender.контракт_сторінка_детальної_інформації отримати ${field}
@@ -3509,7 +3522,7 @@ plan edit заповнити "Рік з"
 
 plan edit заповнити "Очікувана вартість закупівлі"
     [Arguments]  ${amount}
-    number-input input text  "${amount}"  root=${amount_root}  check=${False}
+    wait until keyword succeeds  3x  1  number-input input text  "${amount}"  root=${amount_root}
 
 
 plan edit обрати "Валюта"
@@ -3590,7 +3603,7 @@ plan edit breakdown додати "Джерело фінансування"
     selectInputNew select item by name  ${title}   root=(${breakdown_root})[${field_number}]
 
     comment  вказати Сумму
-    number-input input text  "${amount}"  root=(${breakdownAmount_root})[${field_number}]  check=${False}
+    wait until keyword succeeds  3x  1  number-input input text  "${amount}"  root=(${breakdownAmount_root})[${field_number}]
 
     comment  вказати Опис
     input text  xpath=(${breakdownDecription_input})[${field_number}]  ${description}
@@ -3632,7 +3645,7 @@ plan edit заповнити "Од. вим."
 
 plan edit заповнити "Кількість"
     [Arguments]  ${value}  ${index}=1
-    number-input input text  "${value}"  root=(${plan_item_quantity_root})[${index}]  check=${False}
+    wait until keyword succeeds  3x  1  number-input input text  "${value}"  root=(${plan_item_quantity_root})[${index}]
 
 
 plan edit натиснути Зберегти
@@ -3650,7 +3663,7 @@ plan edit натиснути Скасувати
 plan edit Опублікувати план
     button type=button click by text  Опублікувати план
     eds накласти ецп  pressEDSbtn=${False}  index=1
-    ${plan_status}  план_сторінка_детальної_інформації отримати status
+    ${plan_status}  план_сторінка_детальної_інформації отримати status  status
     should be equal as strings  ${plan_status}  Запланований
 
 
