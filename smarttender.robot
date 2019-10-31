@@ -1410,15 +1410,22 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${number}  	evaluate  int(${reg.group('number')}) + 1
 	${field}  	evaluate  '${reg.group('field')}'
 	${funder_selector}  set variable  xpath=(//*[@data-qa="donor"])[${number}]
+
+    comment  Отримати хвіст локатора по імені
     ${field_selector}      set variable if
+    ...  '${field}' == 'name'                                //*[contains(@class, "ivu-poptip-rel")]
+    ...  '${field}' == 'address.countryName'                 //*[contains(@class, "ivu-poptip-rel")]
     ...  '${field}' == 'contactPoint.url'                    //*[@class="ivu-poptip-body-content"]//a
     ...  '${field}' == 'identifier.id'                       //*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]/following-sibling::*
     ...  '${field}' == 'identifier.legalName'                //div[@class="ivu-poptip-rel"]
+    comment  Якщо єлемента не видно, відкриваємо popup
     ${field_is_visible}  run keyword and return status  element should be visible  ${funder_selector}${field_selector}
     run keyword if  ${field_is_visible} == ${False}  run keywords
     ...  click element  ${funder_selector}//div[@class="ivu-poptip-rel"]
     ...  AND  wait until element is visible  ${funder_selector}${field_selector}
+
     ${field_value}  get text  ${funder_selector}${field_selector}
+
     ${converted_field_value}  convert_page_values  ${field}  ${field_value}
     ${converted_field_value}  run keyword if  '${field}' == 'deliveryDate.endDate'
     ...  convert date  ${field_value}  date_format=%d.%m.%Y result_format=%Y-%m-%dT%H:%M:%S${time_zone}
@@ -2145,7 +2152,7 @@ get_item_deliveryAddress_value
 	#  знаходимо потрібну вимогу
 	${tab_status}  run keyword and return status  webclient.активувати вкладку  Звернення за умовами тендеру
 	run keyword if  "${tab_status}" == "False"    webclient.активувати вкладку  Оскарження умов тендеру
-	webclient.header натиснути на елемент за назвою  Перечитати
+	webclient.header натиснути на елемент за назвою  Оновити
 	${complaintID_search_field}  set variable  xpath=((//*[@data-type="GridView"])[2]//td//input)[1]
     clear input by JS  ${complaintID_search_field}
     Input Type Flex  ${complaintID_search_field}  ${complaintID}
@@ -2186,7 +2193,7 @@ get_item_deliveryAddress_value
     #  знаходимо потрібну вимогу
     ${tab_status}  run keyword and return status  webclient.активувати вкладку  Звернення за умовами тендеру
 	run keyword if  "${tab_status}" == "False"    webclient.активувати вкладку  Оскарження умов тендеру
-    webclient.header натиснути на елемент за назвою  Перечитати
+    webclient.header натиснути на елемент за назвою  Оновити
 	${complaintID_search_field}  set variable  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[2]//td//input)[1]
     loading дочекатися відображення елемента на сторінці  ${complaintID_search_field}
     clear input by JS  ${complaintID_search_field}
@@ -2329,7 +2336,7 @@ get_item_deliveryAddress_value
 	debug
 	знайти тендер у webclient  ${tender_uaid}
     активувати вкладку  Прекваліфікація
-	header натиснути на елемент за назвою  Перечитати
+	header натиснути на елемент за назвою  Оновити
 	вибрати учасника за номером  ${qualification_num}+1
 
     header натиснути на елемент за назвою  Прийняти рішення прекваліфікації
@@ -2390,7 +2397,7 @@ get_item_deliveryAddress_value
 	знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
-	header натиснути на елемент за назвою  Перечитати
+	header натиснути на елемент за назвою  Оновити
 	вибрати переможця за номером  ${award_num}+1
 	header натиснути на елемент за назвою  Кваліфікація
 	click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]
@@ -2408,7 +2415,7 @@ get_item_deliveryAddress_value
 	знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
-	header натиснути на елемент за назвою  Перечитати
+	header натиснути на елемент за назвою  Оновити
 	log to console  Підтвердити постачальника
 	вибрати переможця за номером  ${award_num}+1
 	header натиснути на елемент за назвою  Кваліфікація
@@ -2476,7 +2483,7 @@ get_item_deliveryAddress_value
     знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
-	header натиснути на елемент за назвою  Перечитати
+	header натиснути на елемент за назвою  Оновити
 	вибрати переможця за номером  ${contract_num}+1
     header натиснути на елемент за назвою  Прикріпити договір
     #  Заповнюємо поля договору
@@ -3538,7 +3545,7 @@ plan edit заповнити "Рік з"
 
 plan edit заповнити "Очікувана вартість закупівлі"
     [Arguments]  ${amount}
-    number-input input text  "${amount}"  root=${amount_root}  check=${False}
+    wait until keyword succeeds  3x  1  number-input input text  "${amount}"  root=${amount_root}
 
 
 plan edit обрати "Валюта"
@@ -3619,7 +3626,7 @@ plan edit breakdown додати "Джерело фінансування"
     selectInputNew select item by name  ${title}   root=(${breakdown_root})[${field_number}]
 
     comment  вказати Сумму
-    number-input input text  "${amount}"  root=(${breakdownAmount_root})[${field_number}]  check=${False}
+    wait until keyword succeeds  3x  1  number-input input text  "${amount}"  root=(${breakdownAmount_root})[${field_number}]
 
     comment  вказати Опис
     input text  xpath=(${breakdownDecription_input})[${field_number}]  ${description}
@@ -3661,7 +3668,7 @@ plan edit заповнити "Од. вим."
 
 plan edit заповнити "Кількість"
     [Arguments]  ${value}  ${index}=1
-    number-input input text  "${value}"  root=(${plan_item_quantity_root})[${index}]  check=${False}
+    wait until keyword succeeds  3x  1  number-input input text  "${value}"  root=(${plan_item_quantity_root})[${index}]
 
 
 plan edit натиснути Зберегти
@@ -3758,7 +3765,7 @@ number-input input text
     \  press key  xpath=${root}${number_input}  \\08
 	input text  xpath=${root}${number_input}  ${text}
 	${value}  number-input get value  ${root}
-	run keyword if  ${check}  should be equal as strings  ${value}  ${text}
+	run keyword if  ${check}  should be equal as strings  "${value}"  "${text}"
 
 
 number-input get value
