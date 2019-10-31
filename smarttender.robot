@@ -2018,16 +2018,24 @@ get_item_deliveryAddress_value
 	
 Задати запитання на предмет
     [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${question}
-    [Documentation]  Створити запитання з даними question до предмету з item_id в описі для тендера tender_uaid.   
-	log to console  Задати запитання на предмет
-	debug
+    [Documentation]  Створити запитання з даними question до предмету з item_id в описі для тендера tender_uaid.
+    smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
+	запитання_вибрати тип запитання  ${item_id}
+	smarttender.запитання_натиснути кнопку "Поставити запитання"
+	smarttender.запитання_заповнити тему             ${question['data']['title']}
+	smarttender.запитання_заповнити текст запитання  ${question['data']['description']}
+	smarttender.запитання_натиснути кнопку "Подати"
 	
 	
 Задати запитання на лот
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${question}
-    [Documentation]  Створити запитання з даними question до лоту з lot_id в описі для тендера tender_uaid.   
-	log to console  Задати запитання на лот
-	debug
+    [Documentation]  Створити запитання з даними question до лоту з lot_id в описі для тендера tender_uaid.
+	smarttender.сторінка_детальної_інформації активувати вкладку  Запитання
+	запитання_вибрати тип запитання  ${lot_id}
+	smarttender.запитання_натиснути кнопку "Поставити запитання"
+	smarttender.запитання_заповнити тему             ${question['data']['title']}
+	smarttender.запитання_заповнити текст запитання  ${question['data']['description']}
+	smarttender.запитання_натиснути кнопку "Подати"
 	
 	
 Задати запитання на тендер
@@ -2270,7 +2278,7 @@ get_item_deliveryAddress_value
     :FOR  ${lot}  IN  @{lots_ids}
     # ${count_lot} костиль для отриманяя правильного ['value']['amount'] для потрібного лоту
     # буде працювати тільки якщо relatedLot в lotValues буду співпадати з послідовністю в ${lots_ids}
-    \  ${count_lot}  set test variable  0
+    \  set test variable  ${count_lot}  0
     \  smarttender.пропозиція_заповнити поле з ціною  ${lots_ids}  ${bid}
     smarttender.пропозиція_відмітити чекбокси при наявності
     smarttender.пропозиція_подати пропозицію
