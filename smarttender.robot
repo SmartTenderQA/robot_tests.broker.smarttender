@@ -1476,7 +1476,6 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${field}  	evaluate  '${reg.group('field')}'
     перейти до сторінки детальної інформаціїї
     log to console  отримати items
-    debug
     ${relatedItem}  set variable  ${tender_data['items'][${number}]['relatedLot']}
     ${lot_title}  отримати найменування предка для lot  ${relatedItem}
     перейти до лоту за необхідністю  lot_id=${lot_title}
@@ -2689,7 +2688,7 @@ get_item_deliveryAddress_value
 Пошук плану по ідентифікатору
     [Arguments]  ${username}  ${planID}
     [Documentation]  Знайти план з uaid рівним tender_uaid.
-	smarttender.перейти до сторінки планів  ${username}
+	smarttender.перейти до сторінки планів  ${username}  ${planID}
 	smarttender.сторінка_планів ввести текст в поле пошуку  ${planID}
     smarttender.сторінка_планів виконати пошук
 	smarttender.сторінка_планів перейти за першим результатом пошуку
@@ -2698,10 +2697,18 @@ get_item_deliveryAddress_value
 
 
 перейти до сторінки планів
-	[Arguments]  ${username}
+	[Arguments]  ${username}  ${planID}
 	${tm}  set variable if  'tender_owner' in '${username.lower()}'  2  1
     go to  https://test.smarttender.biz/plans/?q&tm=${tm}&p=1&af&at
     loading дочекатись закінчення загрузки сторінки
+    # ждем пока план отобразиться у нас на площадке
+	wait until keyword succeeds  5m  5s  smarttender._дочекатися синхронізації плану  ${planID}
+
+
+_дочекатися синхронізації плану
+	[Arguments]   ${planID}
+	${planID_status}  evaluate  requests.get("https://test.smarttender.biz/plans/details/${planID}/").status_code   requests
+	should be equal as integers  ${planID_status}  200
 
 
 Отримати інформацію із плану
