@@ -376,7 +376,7 @@ def replace_procuringEntity(tender_data):
         },
         "identifier": {
             "scheme": "UA-EDR",
-            "id": "111111111111111",
+            "id": "111111111111112",
             "legalName": u"Демо организатор (государственные торги)"
         },
         "name": u"Демо организатор (государственные торги)",
