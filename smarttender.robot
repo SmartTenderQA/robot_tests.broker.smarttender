@@ -868,8 +868,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 	append to list  ${field_list}
 	...  description
-
-	run keyword if  ('${description_en_status}' == 'PASS') and ('below' not in '${mode}')
+	run keyword if  ('${description_en_status}' == 'PASS') and ('below' not in '${mode}') or ('${description_en_status}' == 'PASS') and ('reporting' not in '${mode}')
 	...  append to list  ${field_list}  description_en
 	run keyword if  '${mode}' != 'open_esco'
 	...  append to list  ${field_list}  quantity
