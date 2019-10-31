@@ -2141,7 +2141,7 @@ get_item_deliveryAddress_value
 	#  знаходимо потрібну вимогу
 	${tab_status}  run keyword and return status  webclient.активувати вкладку  Звернення за умовами тендеру
 	run keyword if  "${tab_status}" == "False"    webclient.активувати вкладку  Оскарження умов тендеру
-	webclient.header натиснути на елемент за назвою  Перечитати
+	webclient.header натиснути на елемент за назвою  Оновити
 	${complaintID_search_field}  set variable  xpath=((//*[@data-type="GridView"])[2]//td//input)[1]
     clear input by JS  ${complaintID_search_field}
     Input Type Flex  ${complaintID_search_field}  ${complaintID}
@@ -2182,7 +2182,7 @@ get_item_deliveryAddress_value
     #  знаходимо потрібну вимогу
     ${tab_status}  run keyword and return status  webclient.активувати вкладку  Звернення за умовами тендеру
 	run keyword if  "${tab_status}" == "False"    webclient.активувати вкладку  Оскарження умов тендеру
-    webclient.header натиснути на елемент за назвою  Перечитати
+    webclient.header натиснути на елемент за назвою  Оновити
 	${complaintID_search_field}  set variable  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[2]//td//input)[1]
     loading дочекатися відображення елемента на сторінці  ${complaintID_search_field}
     clear input by JS  ${complaintID_search_field}
@@ -2325,7 +2325,7 @@ get_item_deliveryAddress_value
 	debug
 	знайти тендер у webclient  ${tender_uaid}
     активувати вкладку  Прекваліфікація
-	header натиснути на елемент за назвою  Перечитати
+	header натиснути на елемент за назвою  Оновити
 	вибрати учасника за номером  ${qualification_num}+1
 
     header натиснути на елемент за назвою  Прийняти рішення прекваліфікації
@@ -2472,7 +2472,7 @@ get_item_deliveryAddress_value
     знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
-	header натиснути на елемент за назвою  Перечитати
+	header натиснути на елемент за назвою  Оновити
 	вибрати переможця за номером  ${contract_num}+1
     header натиснути на елемент за назвою  Прикріпити договір
     #  Заповнюємо поля договору
