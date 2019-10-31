@@ -3644,7 +3644,7 @@ plan edit breakdown додати "Джерело фінансування"
     ${title}         set variable    ${breakdown['title']}
     ${title}         set variable    ${convert_dict['${title}']}
     ${description}   set variable    ${breakdown['description']}
-    ${amount}        set variable    ${breakdown['value']['amount']}
+    ${amount}        evaluate  "%.2f" % (${breakdown['value']['amount']})
 
     comment  обрати джерело
     scroll page to element xpath  xpath=(${breakdown_root})[${field_number}]
