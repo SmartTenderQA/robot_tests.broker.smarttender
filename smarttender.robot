@@ -3515,7 +3515,7 @@ plan edit заповнити "Рік з"
 
 plan edit заповнити "Очікувана вартість закупівлі"
     [Arguments]  ${amount}
-    number-input input text  "${amount}"  root=${amount_root}  check=${False}
+    wait until keyword succeeds  3x  1  number-input input text  "${amount}"  root=${amount_root}
 
 
 plan edit обрати "Валюта"
@@ -3596,7 +3596,7 @@ plan edit breakdown додати "Джерело фінансування"
     selectInputNew select item by name  ${title}   root=(${breakdown_root})[${field_number}]
 
     comment  вказати Сумму
-    number-input input text  "${amount}"  root=(${breakdownAmount_root})[${field_number}]  check=${False}
+    wait until keyword succeeds  3x  1  number-input input text  "${amount}"  root=(${breakdownAmount_root})[${field_number}]
 
     comment  вказати Опис
     input text  xpath=(${breakdownDecription_input})[${field_number}]  ${description}
@@ -3638,7 +3638,7 @@ plan edit заповнити "Од. вим."
 
 plan edit заповнити "Кількість"
     [Arguments]  ${value}  ${index}=1
-    number-input input text  "${value}"  root=(${plan_item_quantity_root})[${index}]  check=${False}
+    wait until keyword succeeds  3x  1  number-input input text  "${value}"  root=(${plan_item_quantity_root})[${index}]
 
 
 plan edit натиснути Зберегти
