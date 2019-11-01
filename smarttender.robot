@@ -78,16 +78,16 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	[Arguments]   ${username}
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
 	# todo не забыть убрать
-	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
-	Run Keyword If  ${hub.__len__()} != 0
-			...  Create Webdriver  Chrome  alias=${username}
-	...  ELSE
-			...  run keywords
-                    ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
-                    ...  Отримати та залогувати data_session
-    smart go to  ${USERS.users['${username}'].homepage}
+#	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
+#	Run Keyword If  ${hub.__len__()} != 0
+#			...  Create Webdriver  Chrome  alias=${username}
+#	...  ELSE
+#			...  run keywords
+#                    ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
+#                    ...  Отримати та залогувати data_session
+#    smart go to  ${USERS.users['${username}'].homepage}
     # /todo не забыть убрать
-#	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
+	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
 	maximize browser window
 	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
 
@@ -2273,8 +2273,9 @@ get_item_deliveryAddress_value
 
 
 Подати цінову пропозицію
-    [Arguments]  ${username}  ${tender_uaid}  ${bid}  ${lots_ids}=${None}  ${features_ids}=${None}
-    [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_ids (якщо features_ids != None).
+    [Arguments]  ${username}  ${tender_uaid}  ${bid}  ${lots_ids}=${None}  ${features_names}=${None}
+    [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_names (якщо features_names != None).
+
     comment  Якщо id лоту відсутнє створюєму список з пустим значенням
     ${list_with_empty_value}  create list  ${Empty}
     ${lots_ids}  Set Variable If  "${lots_ids}" is "${None}"  ${list_with_empty_value}  ${lots_ids}
@@ -2283,8 +2284,11 @@ get_item_deliveryAddress_value
     :FOR  ${lot}  IN  @{lots_ids}
     # ${count_lot} костиль для отриманяя правильного ['value']['amount'] для потрібного лоту
     # буде працювати тільки якщо relatedLot в lotValues буду співпадати з послідовністю в ${lots_ids}
-    \  set test variable  ${count_lot}  0
-    \  smarttender.пропозиція_заповнити поле з ціною  ${lots_ids}  ${bid}
+    \  smarttender.пропозиція_заповнити поле з ціною  ${lot}  ${bid}
+
+    run keyword if  "${features_names}" != "${None}"
+    ...  _вибрати нецінові показники на сторінці детальної інформації тендера  ${bid}  ${features_names}
+
     smarttender.пропозиція_відмітити чекбокси при наявності
     smarttender.пропозиція_подати пропозицію
 	smarttender.пропозиція_закрити вікно з ЕЦП
@@ -3216,7 +3220,7 @@ Input Type Flex
 оновити дані тендера з ЦБД
     ${cdb_status}  ${cdb}  run keyword and ignore error  отримати дані тендеру з cdb по id  ${tender_cdb_id}
     run keyword if  '${cdb_status}' == 'PASS'  run keywords
-    ...  Set Global Variable  ${tender_data}  ${cdb}
+    ...  Set Global Variable  ${tender_data}  ${cdb}  AND
     ...  log  ${tender_data}
 
 
@@ -3413,22 +3417,47 @@ _Дочекатись синхронізації
 
     comment  Отримуємо значення ціни пропозиції
     ${is_multiple}  set variable  ${bid['data'].get('lotValues')}
-    ${amount}  run keyword if  "${is_multiple}" == "${None}"
-    ...  evaluate  str(${bid['data']['value']['amount']})
-    ...  evaluate  str(${bid['data']['lotValues'][${count_lot}]['value']['amount']})
+    ${amount}  set variable if  """${is_multiple}""" == "${None}"
+    ...  ${bid['data']['value']['amount']}
+    ...  ${bid['data']['lotValues'][${count_lot}]['value']['amount']}
     ${count_lot}  evaluate  ${count_lot} + 1
 
     comment  Розгорнути лот якщо id існує
     run keyword if  "${lot_id}" != "${Empty}"  _розгорнути лот по id  ${lot_id}
-
+    log to console  Ввести ціну пропозиції
+    debug
     comment  Ввести ціну пропозиції
     ${input}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
     input text  ${input}  ${amount}
 
 
+_вибрати нецінові показники на сторінці детальної інформації тендера
+    [Arguments]  ${bid}  ${features_names}
+    [Documentation]  надеемся что последовательность в ${bid['data']['parameters']} и ${features_names} совпадают,
+    ...  иначе нужно стучаться в цбд для связки кода и наименования ${feature}
+    ${feature_index}  set variable  0
+    :FOR  ${feature}  IN  @{bid['data']['parameters']}
+    \  ${value}  set variable  ${feature['value']}
+    \  ${name}  set variable  ${features_names[${feature_index}]}
+    \  _вибрати неціновий показник на сторінці детальної інформації тендера  ${name}  ${value}
+    \  ${feature_index}  evaluate  ${feature_index} + 1
+
+
+_вибрати неціновий показник на сторінці детальної інформації тендера
+    [Arguments]  ${name}  ${value}
+    ${drop_down}  set variable  //*[@class="ivu-select-dropdown"]/..
+    ${feature_locator}  set variable  //*[@class="features"]/div[contains(., "${name}")]
+    click element  ${feature_locator}${drop_down}
+    ${feature_value}  evaluate  str(${value}*100).replace('.', ',')
+    ${li_element}  set variable  ${feature_locator}${drop_down}//li[contains(., '(${feature_value}')]
+    loading дочекатися відображення елемента на сторінці  ${li_element}
+    click element  ${li_element}
+    loading дочекатися зникнення елемента зі сторінки  ${li_element}
+
+
 _розгорнути лот по id
     [Arguments]  ${lot_id}
-    ${button}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]//*[@type="button" and contains(., "Прийняти участь")][not(disabled="disabled")]
+    ${button}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]//*[@type="button" and contains(., "Прийняти участь")][not(@disabled="disabled")]
     wait until keyword succeeds  20  1  run keywords
     ...  click element  ${button}  AND
     ...  loading дочекатися зникнення елемента зі сторінки  ${button}
