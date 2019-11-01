@@ -3144,7 +3144,7 @@ _дочекатися відображення посилання на дого�
 	знайти тендер у webclient  ${tender_uaid}
 	header натиснути на елемент за назвою  Змінити
 	операція над чекбоксом  ${True}  //*[@data-name="FUNDERS_CB"]//input
-	заповнити flex autocomplete field  //*[@data-name="FUNDERID"]//input  ${json['identifier']['legalName']}  check=${False}
+	webclient.Заповнити Autocomplete Field  //*[@data-name="FUNDERID"]//input  ${json['identifier']['legalName']}  check=${False}
 	header натиснути на елемент за назвою  Зберегти
 	${status}  ${ret}  run keyword and ignore error
 	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
