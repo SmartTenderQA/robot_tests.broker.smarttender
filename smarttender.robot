@@ -1417,6 +1417,13 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	[Return]  ${field_value}
 
 
+сторінка_детальної_інформації отримати qualificationPeriod.endDate
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="prequalification"]//*[@data-qa="date-end"]
+	${field_value}  get text  ${selector}
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
+	[Return]  ${field_value}
+
 
 сторінка_детальної_інформації отримати funders
     [Arguments]  ${field_name}
@@ -1518,7 +1525,7 @@ _перейти до лоту якщо це потрібно
 	${number}  	evaluate  '${reg.group('number')}'
 	${field}  	evaluate  '${reg.group('field')}'
 	перейти до сторінки детальної інформаціїї
-    ${feature_block}  set variable  (//*[contains(@data-qa,"feature-list")])[${number}+1]
+    ${feature_block}  set variable  (//*[contains(@data-qa,"tender-features")])[${number}+1]
 	smarttender.розгорнути всі експандери
     ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field}  ${feature_block}
     [Return]  ${feature_field_name}
@@ -1718,6 +1725,17 @@ get_item_deliveryAddress_value
     [Arguments]  ${feature_block}
 	${selector}  set variable  xpath=${feature_block}//*[@class="feature-description"]
 	${feature_field_value}  get text  ${selector}
+	[Return]  ${feature_field_value}
+
+
+нецінові_сторінка_детальної отримати featureOf
+    [Arguments]  ${feature_block}
+	${selector}  set variable  xpath=${feature_block}//*[contains(@class, "feature-of")]
+	${feature_field_value_in_smart_format}  get text  ${selector}
+	${feature_field_value_in_smart_format}  set variable if
+		...  "${feature_field_value_in_smart_format}" == "Критерії до закупівлі"  tenderer
+		...  "${feature_field_value_in_smart_format}" == "Критерії до лоту"  lot
+		...  "${feature_field_value_in_smart_format}" == "Критерії до номенклатури"  item
 	[Return]  ${feature_field_value}
 
 
@@ -1946,8 +1964,7 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${doc_id}
     [Documentation]  Завантажити файл doc_id до лоту з lot_id в описі для тендера tender_uaid в директорію ${OUTPUT_DIR} для перевірки вмісту цього файлу.   
 	log to console  Отримати документ до лоту
-	debug
-    [Return]  ${filename}
+	smarttender.Отримати документ  ${username}  ${tender_uaid}  ${doc_id}
     
     
 Додати не ціновий показник на тендер
@@ -3352,6 +3369,7 @@ loading дочекатися зникнення елемента зі сторі
     Wait Until Keyword Succeeds  10m  5s  run keyword if  "${tender_cdb_id}" == "${None}"
     ...  _Дочекатись синхронізації  ELSE
     ...  _синхронізувати тендер за номером в ЦБД
+    Switch Browser  1
     reload page
 	loading дочекатись закінчення загрузки сторінки
 
