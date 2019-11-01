@@ -451,3 +451,13 @@ def clear_additional_classifications(tender_data):
         del item['additionalClassifications']
 
     return tender_data
+
+
+def convert_float_to_string(number, s=2):
+   result = number
+   if (type(number) is float) and s == 2:
+       return format(number, '.2f')
+   elif (type(number) is float) and s == 3:
+       return format(number, '.3f')
+   else:
+       return result
