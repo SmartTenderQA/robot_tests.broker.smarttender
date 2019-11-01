@@ -78,16 +78,16 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	[Arguments]   ${username}
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
 	# todo не забыть убрать
-#	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
-#	Run Keyword If  ${hub.__len__()} != 0
-#			...  Create Webdriver  Chrome  alias=${username}
-#	...  ELSE
-#			...  run keywords
-#                    ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
-#                    ...  Отримати та залогувати data_session
-#    smart go to  ${USERS.users['${username}'].homepage}
+	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
+	Run Keyword If  ${hub.__len__()} != 0
+			...  Create Webdriver  Chrome  alias=${username}
+	...  ELSE
+			...  run keywords
+                    ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
+                    ...  Отримати та залогувати data_session
+    smart go to  ${USERS.users['${username}'].homepage}
     # /todo не забыть убрать
-	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
+#	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
 	maximize browser window
 	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
 
