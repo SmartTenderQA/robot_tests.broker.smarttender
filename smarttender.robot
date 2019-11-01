@@ -69,25 +69,25 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
-${hub}
-${hub_url}                              http://192.168.4.113:4444/wd/hub
+#${hub}  fadsafasdf
+#${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 
 *** Keywords ***
 Підготувати клієнт для користувача
 	[Arguments]   ${username}
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
-	# todo не забыть убрать
-	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
-	Run Keyword If  ${hub.__len__()} != 0
-			...  Create Webdriver  Chrome  alias=${username}
-	...  ELSE
-			...  run keywords
-                    ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
-                    ...  Отримати та залогувати data_session
-    smart go to  ${USERS.users['${username}'].homepage}
-    # /todo не забыть убрать
-#	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
+#	# todo не забыть убрать
+#	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
+#	Run Keyword If  ${hub.__len__()} != 0
+#			...  Create Webdriver  Chrome  alias=${username}
+#	...  ELSE
+#			...  run keywords
+#                    ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
+#                    ...  Отримати та залогувати data_session
+#    smart go to  ${USERS.users['${username}'].homepage}
+#    # /todo не забыть убрать
+	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
 	maximize browser window
 	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
 
@@ -1196,7 +1196,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 	${milestones_all_values}  get text  ${item_selector}
 	${text}  set variable  ${milestones_all_values.replace('\n', '|')}
-	${reg}  evaluate  re.search(ur'(?P<title>.*)\\|(?P<duration_days>\\d*) (?P<duration_type>.*)\\|(?P<code>.*)\\: (?P<percentage>[\\d\\.\\,]*)', u'${text}')  re
+	${reg}  evaluate  re.search(ur'(?P<title>.*)\\|(?P<duration_days>\\d*) (?P<duration_type>.*)\\|(?P<code>.*)\\: (?P<percentage>[\\d\\.\\,]*)', u"""${text}""")  re
 
 	${title}  			evaluate  u'${reg.group('title')}'
 	${days}  			evaluate  int(u'${reg.group('duration_days')}')
@@ -1427,6 +1427,14 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	[Return]  ${field_value}
 
 
+сторінка_детальної_інформації отримати auctionPeriod.endDate
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="auction-period"]//*[@data-qa="date-end"]
+	${field_value}  get text  ${selector}
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
+	[Return]  ${field_value}
+
+
 сторінка_детальної_інформації отримати funders
     [Arguments]  ${field_name}
     ${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
@@ -1527,7 +1535,7 @@ _перейти до лоту якщо це потрібно
 	${number}  	evaluate  '${reg.group('number')}'
 	${field}  	evaluate  '${reg.group('field')}'
 	перейти до сторінки детальної інформаціїї
-    ${feature_block}  set variable  (//*[contains(@data-qa,"tender-features")])[${number}+1]
+    ${feature_block}  set variable  (//*[@data-qa="features-block"]//*[@class="delimeter ivu-row"])[${number}+1]
 	smarttender.розгорнути всі експандери
     ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field}  ${feature_block}
     [Return]  ${feature_field_name}
@@ -1664,8 +1672,10 @@ get_item_deliveryAddress_value
     [Arguments]  ${item_block}  ${group}
     ${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-delivery-address"]
 	${item_field_value}  get text by JS  ${selector}
-    ${reg}  evaluate  re.search(u'(?P<postalCode>\\d+),.{2}(?P<countryName>\\D+),.{2}(?P<region>\\D+.\\D+.),.{2}(?P<locality>\\D+),.{2}(?P<streetAddress>\\D+.+)', u"""${item_field_value}""")  re
-	${group_value}	evaluate  u'${reg.group('${group}')}'
+    ${reg}  evaluate  re.search(u'(?P<postalCode>.+),${space*2}(?P<countryName>.+),${space*2}(?P<region>.+),${space*2}(?P<locality>.+),${space*2}(?P<streetAddress>.+)', u"""${item_field_value}""")  re
+	${group_value}  set variable  ${reg.group('${group}')}
+	# Якщо locality=="Київ", то в цбд region=="місто Київ", а ми відображаємо "Київська обл."
+	return from keyword if  "region" == "${group}" and "${reg.group('locality')}" == "Київ"  місто Київ
 	[Return]  ${group_value}
 ###########################################################################
 
@@ -1951,7 +1961,7 @@ get_item_deliveryAddress_value
 документи отримати посилання на перегляд файлу
     [Arguments]  ${file_name}
     ${selector}  Set Variable  xpath=//*[@data-qa="file-name"][text()="${file_name}"]
-    ${link}  Get Element Attribute  ${selector}/ancestor::div[@class="ivu-row"]//a[@data-qa="file-preview"]@href
+    ${link}  Get Element Attribute  ${selector}/ancestor::div[@class="document-poptip ivu-poptip"]//a[@data-qa="file-preview"]@href
     [Return]  ${link}
 
 
@@ -2026,7 +2036,8 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${feature_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name з нецінового показника з feature_id в описі для тендера tender_uaid.
 	перейти до сторінки детальної інформаціїї
-	${feature_block}  set variable  //*[@data-qa="feature-header"]//*[contains(text(),"${feature_id}")]/ancestor::*[contains(@data-qa,"feature-list")]
+	log to console  Отримати інформацію із нецінового показника
+	${feature_block}  set variable  (//*[@data-qa="features-block"]//*[@class="delimeter ivu-row"][contains(., "${feature_id}")])
 	smarttender.розгорнути всі експандери
     ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field_name}  ${feature_block}
     [Return]  ${feature_field_name}
