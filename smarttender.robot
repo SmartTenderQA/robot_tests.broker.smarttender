@@ -3116,6 +3116,8 @@ _дочекатися відображення посилання на дого�
 	Reload Page
 	loading дочекатись закінчення загрузки сторінки
 	element should be visible  ${contract_btn}
+	${contract_btn_href}  Get Element Attribute  ${contract_btn}@href
+	should not be equal as strings  ${contract_btn_href}  https://test.smarttender.biz/publichni-zakupivli-prozorro-dogovory/
 
 
 контракт_сторінка_детальної_інформації отримати status

@@ -251,10 +251,11 @@ def convert_unit_code(value):
 def convert_unit_name(value):
     units_map = {
         u'Штука': u'штуки',
-        u'Упаковка': u'упаков',
+        u'Упаковка': u'упаковка',
         u'Флакон': u'Флакон',
         u'Набір(товару)': u'набір',
-        u'кг': u'кілограми'
+        u'кг': u'кілограми',
+        u'Лот': u'лот'
     }
     if value in units_map:
         result = units_map[value]
@@ -446,9 +447,11 @@ def sync_tender_by_cdb_id(cdb_id):
 
 
 def clear_additional_classifications(tender_data):
-    del tender_data['data']['additionalClassifications']
+    if 'additionalClassifications' in tender_data['data'].keys():
+        del tender_data['data']['additionalClassifications']
     for item in tender_data['data']['items']:
-        del item['additionalClassifications']
+        if 'additionalClassifications' in item.keys():
+            del item['additionalClassifications']
 
     return tender_data
 
