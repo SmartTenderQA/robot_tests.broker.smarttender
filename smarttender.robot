@@ -1409,6 +1409,15 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	[Return]  ${field_value}
 
 
+сторінка_детальної_інформації отримати minimalStep.currency
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="budget-min-step"]//span[5]
+	${field_value}  get text  ${selector}
+	${field_value}  convert_page_values  ${field_name}  ${field_value}
+	[Return]  ${field_value}
+
+
+
 сторінка_детальної_інформації отримати funders
     [Arguments]  ${field_name}
     ${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
@@ -1422,14 +1431,11 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
     ...  '${field}' == 'address.countryName'                 //*[contains(@class, "ivu-poptip-rel")]
     ...  '${field}' == 'contactPoint.url'                    //*[@class="ivu-poptip-body-content"]//a
     ...  '${field}' == 'identifier.id'                       //*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]/following-sibling::*
+    ...  '${field}' == 'identifier.scheme'                   //*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]
     ...  '${field}' == 'identifier.legalName'                //div[@class="ivu-poptip-rel"]
-    comment  Якщо єлемента не видно, відкриваємо popup
-    ${field_is_visible}  run keyword and return status  element should be visible  ${funder_selector}${field_selector}
-    run keyword if  ${field_is_visible} == ${False}  run keywords
-    ...  click element  ${funder_selector}//div[@class="ivu-poptip-rel"]
-    ...  AND  wait until element is visible  ${funder_selector}${field_selector}
+    ...  ${empty}
 
-    ${field_value}  get text  ${funder_selector}${field_selector}
+    ${field_value}  get element attribute  ${funder_selector}${field_selector}@innerText
 
     ${converted_field_value}  convert_page_values  ${field}  ${field_value}
     ${converted_field_value}  run keyword if  '${field}' == 'deliveryDate.endDate'
@@ -1482,12 +1488,16 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${field}  	evaluate  '${reg.group('field')}'
     перейти до сторінки детальної інформаціїї
     log to console  отримати items
-    ${relatedItem}  set variable  ${tender_data['items'][${number}]['relatedLot']}
-    ${lot_title}  отримати найменування предка для lot  ${relatedItem}
-    перейти до лоту за необхідністю  lot_id=${lot_title}
+	run keyword and ignore error  smarttender._перейти до лоту якщо це потрібно
     ${item_block}   set variable  (//*[@data-qa="nomenclature-title"]/ancestor::div[@class="ivu-row"][1])[${number}+1]
 	${field_value}  run keyword  smarttender.предмети_сторінка_детальної_інформації отримати ${field}  ${item_block}
     [Return]  ${field_value}
+
+
+_перейти до лоту якщо це потрібно
+    ${relatedItem}  set variable  ${tender_data['items'][${number}]['relatedLot']}
+    ${lot_title}  smarttender.отримати найменування предка для lot  ${relatedItem}
+    smarttender.перейти до лоту за необхідністю  lot_id=${lot_title}
 
 
 сторінка_детальної_інформації отримати lots
@@ -1620,7 +1630,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
     [Arguments]  ${item_block}
 	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  region
 	${item_field_value}  set variable if
-		...  "обл." in "${item_field_value}"  ${item_field_value.replace("обл.", "область")}
+		...  "обл." in "${item_field_value}"  ${item_field_value.replace(u"обл.", u"область")}
 		...  ${item_field_value}
 	[Return]  ${item_field_value}
 
@@ -3085,16 +3095,21 @@ _сторінка_детальної_інформації_awards value.currency
 	${field}  	evaluate  '${reg.group('field')}'
     ###########################################
 	#   перейти на сторінку контракта
-	${contract_btn}  set variable  //*[@data-qa="contract"]/a
-	${contract_btn_is_visible}  run keyword and return status  element should be visible  ${contract_btn}
-	run keyword if  ${contract_btn_is_visible} == ${False}
-				...  Синхронізувати тендер
-	open button  ${contract_btn}
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
 	###########################################
 	${field_value}  run keyword  smarttender.контракт_сторінка_детальної_інформації отримати ${field}
 	go back
 	loading дочекатись закінчення загрузки сторінки
 	[Return]  ${field_value}
+
+
+_дочекатися відображення посилання на договір
+	${contract_btn}  set variable  //*[@data-qa="contract"]/a
+	sleep  5s
+	Reload Page
+	loading дочекатись закінчення загрузки сторінки
+	element should be visible  ${contract_btn}
 
 
 контракт_сторінка_детальної_інформації отримати status
