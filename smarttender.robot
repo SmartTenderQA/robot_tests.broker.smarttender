@@ -69,7 +69,7 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
-${hub}
+${hub}  asaa
 ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 
@@ -854,7 +854,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
   	[Arguments]  ${item}
 	${description}  set variable  ${item['description']}
 	${description_en_status}  ${description_en}  run keyword and ignore error  set variable  ${item['description_en']}
-	${quantity}  set variable  ${item['quantity']}
+	${quantity}  convert_float_to_string  ${item['quantity']}  3
 	${unit.name_status}  ${unit.name}  run keyword and ignore error  replace_unit_name_dict  ${item['unit']['name']}
 	${classification.id}  set variable  ${item['classification']['id']}
 	${additionalClassifications_status}  ${additionalClassifications.scheme}  run keyword and ignore error  set variable  ${item['additionalClassifications'][0]['scheme']}
