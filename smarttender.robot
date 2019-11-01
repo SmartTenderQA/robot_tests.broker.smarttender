@@ -807,7 +807,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
     [Arguments]  ${funders}
     :FOR  ${funder}  IN  @{funders}
 	\  операція над чекбоксом  ${True}  //*[@data-name="FUNDERS_CB"]//input
-	\  заповнити flex autocomplete field  //*[@data-name="FUNDERID"]//input  ${funders['identifier']['legalName']}  check=${False}
+	\  webclient.заповнити autocomplete field  //*[@data-name="FUNDERID"]//input  ${funder['identifier']['legalName']}  check=${False}
 
 
 Заповнити поля для items по lot_id
@@ -869,8 +869,15 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 	append to list  ${field_list}
 	...  description
-	run keyword if  ('${description_en_status}' == 'PASS') and ('below' not in '${mode}') or ('${description_en_status}' == 'PASS') and ('reporting' not in '${mode}')
+
+	${description_en_status}  set variable if
+	...  'below' in '${mode}'               ${False}
+	...  'reporting' in '${mode}'           ${False}
+	...  ELSE                               ${True}
+
+	run keyword if  ('${description_en_status}' == 'PASS') and (${description_en_status} == ${True})
 	...  append to list  ${field_list}  description_en
+
 	run keyword if  '${mode}' != 'open_esco'
 	...  append to list  ${field_list}  quantity
 	run keyword if  '${unit.name_status}' == 'PASS'
@@ -889,13 +896,8 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	...  deliveryAddress.streetAddress
 	...  deliveryAddress.locality
 
-#	Зачем завязка на конкретній тип торгов. С єтим очень тяжело работать?
-#	run keyword if  '${description_en_status}' == 'PASS' and '${mode}' == 'openeu' or '${description_en_status}' == 'PASS' and '${mode}' == 'open_competitive_dialogue'
-
 	:FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}
-#	\  log to console  ${field}
-#	\  debug
 
 
 додати якісні показники
