@@ -251,10 +251,11 @@ def convert_unit_code(value):
 def convert_unit_name(value):
     units_map = {
         u'Штука': u'штуки',
-        u'Упаковка': u'упаков',
+        u'Упаковка': u'упаковка',
         u'Флакон': u'Флакон',
         u'Набір(товару)': u'набір',
-        u'кг': u'кілограми'
+        u'кг': u'кілограми',
+        u'Лот': u'лот'
     }
     if value in units_map:
         result = units_map[value]
