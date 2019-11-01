@@ -568,32 +568,28 @@ check for open screen
 	${grid_search_field}  set variable  xpath=((//*[@data-type="GridView"])[1]//td//input)[4]
 	run keyword if  '/webclient/' not in '${location}'  run keywords
 	...  go to  http://test.smarttender.biz/webclient/?testmode=1&proj=it_uk&tz=3  AND
-	...  loading дочекатись закінчення загрузки сторінки  AND
+	...  loading дочекатись закінчення загрузки сторінки        AND
 	...  webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)  AND
-	...  webclient.header натиснути на елемент за назвою  Очистити  AND
-	...  webclient.header натиснути на елемент за назвою  OK  AND
-	...  loading дочекатися відображення елемента на сторінці  ${grid_search_field}  AND
+	...  webclient.header натиснути на елемент за назвою  Очистити    AND
+	...  webclient.header натиснути на елемент за назвою  OK          AND
+	...  loading дочекатися відображення елемента на сторінці  ${grid_search_field}   AND
 	...  заповнити simple input  ${grid_search_field}  ${tender_uaid}   AND
-	#...  input text  ${grid_search_field}  ${tender_uaid}  AND
-	#...  press key  ${grid_search_field}  \\13  AND
 	...  loading дочекатись закінчення загрузки сторінки
 
 
 знайти план у webclient
 	[Arguments]  ${tender_uaid}
 	${location}  get location
-	${grid_search_field}  set variable  xpath=((//*[@data-type="GridView"])[1]//td//input)[2]
+	${grid_search_field}  set variable  xpath=((//*[@data-type="GridView"])[1]//td//input)[1]
 	run keyword if  '/webclient/' not in '${location}'  run keywords
 	...  go to  http://test.smarttender.biz/webclient/?testmode=1&proj=it_uk&tz=3  AND
-	...  loading дочекатись закінчення загрузки сторінки  AND
-	...  webclient.робочий стіл натиснути на елемент за назвою  Планы закупок(тестовые)  AND
-	...  webclient.header натиснути на елемент за назвою  Очистити  AND
-	...  webclient.header натиснути на елемент за назвою  OK  AND
-	...  loading дочекатися відображення елемента на сторінці  ${grid_search_field}  AND
-	...  заповнити simple input  ${grid_search_field}  ${tender_uaid}   AND
-	#...  input text  ${grid_search_field}  ${tender_uaid}  AND
-	#...  press key  ${grid_search_field}  \\13  AND
 	...  loading дочекатись закінчення загрузки сторінки
+	webclient.робочий стіл натиснути на елемент за назвою  Планы закупок(тестовые)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+	loading дочекатися відображення елемента на сторінці  ${grid_search_field}
+	заповнити simple input  ${grid_search_field}  ${tender_uaid}
+    loading дочекатись закінчення загрузки сторінки
 
 
 Заповнити текст рішення квалиіфікації
@@ -667,12 +663,26 @@ screen заголовок повинен містити
 	${title}  get text  ${selector}
 	should contain  ${title}  ${text}
 
+screen натиснути кнопку
+    [Arguments]  ${name}
+    click element  //*[contains(@class,"Button")]//span[.="${name}"]
+	loading дочекатись закінчення загрузки сторінки
+
 
 dialog box натиснути кнопку
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@class='message-box']//*[text()="${text}"]
 	loading дочекатися відображення елемента на сторінці  ${locator}
 	click element  ${locator}
+	loading дочекатись закінчення загрузки сторінки
+
+
+dialog box вибрати строку зі списка
+	[Arguments]  ${text}  ${delta}=1
+	[Documentation]  TODO требует пересмотра
+	${selector}  set variable  //*[@id="contextMenu"]//*[contains(@class, "dxm-item") and contains(., "${text}")]
+	loading дочекатися відображення елемента на сторінці  xpath=${selector}
+	click element  xpath=(${selector})[${delta}]
 	loading дочекатись закінчення загрузки сторінки
 
 
@@ -810,9 +820,23 @@ click screen header
 додати бланк
 	[Arguments]  ${grid_name}
 	${locator}  set variable  xpath=//*[@data-name="${grid_name}"]//*[@title="Додати"]
+	${count}  Get Matching Xpath Count  //*[@data-name="${grid_name}"]//tr[contains(@class,"Row")]
 	loading дочекатися відображення елемента на сторінці  ${locator}  2
     click element  ${locator}
 	loading дочекатись закінчення загрузки сторінки
+	${count_after}  Get Matching Xpath Count  //*[@data-name="${grid_name}"]//tr[contains(@class,"Row")]
+	return from keyword if  ${count_after} == ${count}+1
+    додати бланк  ${grid_name}
+
+
+видалити всі лоти та предмети
+    [Arguments]  ${index}=1
+    ${count}  Get Matching Xpath Count  //*[@data-name="GRID_ITEMS_HIERARCHY"]//tr[contains(@class,"Row")]
+    ${del_btn}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//*[@title="Видалити"][${index}]
+	return from keyword if  ${count} == 0
+	run keyword and ignore error  click element  ${del_btn}
+	loading дочекатись закінчення загрузки сторінки
+	webclient.видалити всі лоти та предмети
 
 
 видалити item по id

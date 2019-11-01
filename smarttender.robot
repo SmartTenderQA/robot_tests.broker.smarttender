@@ -131,6 +131,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 Підготувати дані для оголошення не плану
 	[Arguments]  ${tender_data}
+	log to console  Підготувати дані для оголошення не плану
 	${tender_data}  replace_delivery_address  ${tender_data}
 	${tender_data}  run keyword if
 	...  'tender_owner' in '${username.lower()}'  adapt_data  ${tender_data}
@@ -140,6 +141,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 Підготувати дані для оголошення плану
   	[Arguments]  ${tender_data}
+  	log to console  Підготувати дані для оголошення плану
 	${tedner_data}  adapt_data  ${tender_data}
   	[Return]  ${tender_data}
 
@@ -156,6 +158,13 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"  run keywords
 	...  capture page screenshot        AND
 	...  fatal error  Тендер на створено!!!
+
+
+Отримати номер плану з артифакту
+	${file_path}  Get Variable Value  ${ARTIFACT_FILE}  artifact_plan.yaml
+	${ARTIFACT}  Load Data From  ${file_path}
+	${plan_uaid}  set variable  ${ARTIFACT['tender_uaid']}
+	[Return]  ${plan_uaid}
 
 
 Оголосити закупівлю belowThreshold		#Допорог
@@ -284,11 +293,16 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 Оголосити закупівлю openeu		#Відкриті торги з публікацією англійською мовою
 	[Arguments]  ${tender_data}
-	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
-	webclient.header натиснути на елемент за назвою  Очистити
-	webclient.header натиснути на елемент за назвою  OK
-	webclient.header натиснути на елемент за назвою  Додати
-    webclient.вибрати тип процедури  Відкриті торги з публікацією англійською мовою
+	log to console  Оголосити закупівлю openeu
+	${plan_uaid}  Отримати номер плану з артифакту
+    знайти план у webclient  ${plan_uaid}
+   	webclient.header натиснути на елемент за назвою             Розрахунок
+    dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
+	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
+	screen натиснути кнопку  мультилотову
+	screen заголовок повинен містити     Додавання. Тендери
+    webclient.видалити всі лоти та предмети
+    webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	# ОСНОВНІ ПОЛЯ
 	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
 	${value.amount}  set variable  ${tender_data['value']['amount']}
@@ -349,12 +363,17 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 Оголосити закупівлю openeu multilot
 	[Arguments]  ${tender_data}
-	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
-	webclient.header натиснути на елемент за назвою  Очистити
-	webclient.header натиснути на елемент за назвою  OK
-	webclient.header натиснути на елемент за назвою  Додати
-    webclient.вибрати тип процедури  Відкриті торги з публікацією англійською мовою
-    webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+	log to console  Оголосити закупівлю openeu multilot
+	${plan_uaid}  Отримати номер плану з артифакту
+    знайти план у webclient  ${plan_uaid}
+   	webclient.header натиснути на елемент за назвою             Розрахунок
+    dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
+	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
+	screen натиснути кнопку  мультилотову
+	screen заголовок повинен містити     Додавання. Тендери
+    webclient.видалити всі лоти та предмети
+    webclient.додати бланк  GRID_ITEMS_HIERARCHY
+
     # ОСНОВНІ ПОЛЯ
 	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
 	${title}  set variable  ${tender_data['title']}
@@ -870,12 +889,12 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	append to list  ${field_list}
 	...  description
 
-	${description_en_status}  set variable if
+	${description_en_add}  set variable if
 	...  'below' in '${mode}'               ${False}
 	...  'reporting' in '${mode}'           ${False}
-	...  ELSE                               ${True}
+	...                                     ${True}
 
-	run keyword if  ('${description_en_status}' == 'PASS') and (${description_en_status} == ${True})
+	run keyword if  '${description_en_status}' == 'PASS' and  ${description_en_add} == ${True}
 	...  append to list  ${field_list}  description_en
 
 	run keyword if  '${mode}' != 'open_esco'
@@ -971,8 +990,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 отримати дані тендеру з cdb по id
     [Arguments]  ${id}
-    Create Session  api  https://lb-api-sandbox.prozorro.gov.ua/api/2.4/tenders/${id}
-	${data}  Get Request  api  \
+	${data}  evaluate  requests.get("https://lb-api-sandbox.prozorro.gov.ua/api/2.4/tenders/${id}")   requests
 	${data}  Set Variable  ${data.json()}
 	${cdb_data}  Set Variable  ${data['data']}
 	[Return]  ${cdb_data}
