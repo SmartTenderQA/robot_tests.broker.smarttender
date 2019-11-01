@@ -447,9 +447,11 @@ def sync_tender_by_cdb_id(cdb_id):
 
 
 def clear_additional_classifications(tender_data):
-    del tender_data['data']['additionalClassifications']
+    if 'additionalClassifications' in tender_data['data'].keys():
+        del tender_data['data']['additionalClassifications']
     for item in tender_data['data']['items']:
-        del item['additionalClassifications']
+        if 'additionalClassifications' in item.keys():
+            del item['additionalClassifications']
 
     return tender_data
 
