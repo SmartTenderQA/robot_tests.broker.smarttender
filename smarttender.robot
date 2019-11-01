@@ -1966,7 +1966,8 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${doc_id}
     [Documentation]  Завантажити файл doc_id до лоту з lot_id в описі для тендера tender_uaid в директорію ${OUTPUT_DIR} для перевірки вмісту цього файлу.   
 	log to console  Отримати документ до лоту
-	smarttender.Отримати документ  ${username}  ${tender_uaid}  ${doc_id}
+	${file_name}  smarttender.Отримати документ  ${username}  ${tender_uaid}  ${doc_id}
+	[Return]  ${file_name}
     
     
 Додати не ціновий показник на тендер
