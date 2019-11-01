@@ -91,6 +91,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	maximize browser window
 	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
 
+
 Отримати та залогувати data_session
 	${s2b}  get_library_instance  Selenium2Library
 	${webdriver}  Call Method  ${s2b}  _current_browser
@@ -1157,6 +1158,11 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 сторінка_детальної_інформації отримати status
     [Arguments]  ${field_name}=None
+    comment  Повертаємося на сторінку детальної інформації по тендеру якщо ми не на ній
+    ${current_location}  get location
+    run keyword if  "${tender_detail_page}" != "${current_location}"  run keywords
+    ...  go to  ${tender_detail_page}  AND  loading дочекатись закінчення загрузки сторінки
+    ##################################################
     comment  Цей кейворд використовується квінтою при очікуванні статусу тендера. Потрібна перезагрузка сторінки для оновлення інформації.
     reload page
 	loading дочекатись закінчення загрузки сторінки
@@ -1165,6 +1171,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${field_value}  get text  ${selector}
 	${field_value}  convert_status  ${field_value}
 	[Return]  ${field_value}
+
 
 сторінка_детальної_інформації отримати documents
     [Arguments]  ${field_name}
@@ -1402,6 +1409,15 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	[Return]  ${field_value}
 
 
+сторінка_детальної_інформації отримати minimalStep.currency
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="budget-min-step"]//span[5]
+	${field_value}  get text  ${selector}
+	${field_value}  convert_page_values  ${field_name}  ${field_value}
+	[Return]  ${field_value}
+
+
+
 сторінка_детальної_інформації отримати funders
     [Arguments]  ${field_name}
     ${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
@@ -1415,14 +1431,11 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
     ...  '${field}' == 'address.countryName'                 //*[contains(@class, "ivu-poptip-rel")]
     ...  '${field}' == 'contactPoint.url'                    //*[@class="ivu-poptip-body-content"]//a
     ...  '${field}' == 'identifier.id'                       //*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]/following-sibling::*
+    ...  '${field}' == 'identifier.scheme'                   //*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]
     ...  '${field}' == 'identifier.legalName'                //div[@class="ivu-poptip-rel"]
-    comment  Якщо єлемента не видно, відкриваємо popup
-    ${field_is_visible}  run keyword and return status  element should be visible  ${funder_selector}${field_selector}
-    run keyword if  ${field_is_visible} == ${False}  run keywords
-    ...  click element  ${funder_selector}//div[@class="ivu-poptip-rel"]
-    ...  AND  wait until element is visible  ${funder_selector}${field_selector}
+    ...  ${empty}
 
-    ${field_value}  get text  ${funder_selector}${field_selector}
+    ${field_value}  get element attribute  ${funder_selector}${field_selector}@innerText
 
     ${converted_field_value}  convert_page_values  ${field}  ${field_value}
     ${converted_field_value}  run keyword if  '${field}' == 'deliveryDate.endDate'
@@ -1475,12 +1488,16 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${field}  	evaluate  '${reg.group('field')}'
     перейти до сторінки детальної інформаціїї
     log to console  отримати items
-    ${relatedItem}  set variable  ${tender_data['items'][${number}]['relatedLot']}
-    ${lot_title}  отримати найменування предка для lot  ${relatedItem}
-    перейти до лоту за необхідністю  lot_id=${lot_title}
+	run keyword and ignore error  smarttender._перейти до лоту якщо це потрібно
     ${item_block}   set variable  (//*[@data-qa="nomenclature-title"]/ancestor::div[@class="ivu-row"][1])[${number}+1]
 	${field_value}  run keyword  smarttender.предмети_сторінка_детальної_інформації отримати ${field}  ${item_block}
     [Return]  ${field_value}
+
+
+_перейти до лоту якщо це потрібно
+    ${relatedItem}  set variable  ${tender_data['items'][${number}]['relatedLot']}
+    ${lot_title}  smarttender.отримати найменування предка для lot  ${relatedItem}
+    smarttender.перейти до лоту за необхідністю  lot_id=${lot_title}
 
 
 сторінка_детальної_інформації отримати lots
@@ -1613,7 +1630,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
     [Arguments]  ${item_block}
 	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  region
 	${item_field_value}  set variable if
-		...  "обл." in "${item_field_value}"  ${item_field_value.replace("обл.", "область")}
+		...  "обл." in "${item_field_value}"  ${item_field_value.replace(u"обл.", u"область")}
 		...  ${item_field_value}
 	[Return]  ${item_field_value}
 
@@ -2266,8 +2283,9 @@ get_item_deliveryAddress_value
 
 
 Подати цінову пропозицію
-    [Arguments]  ${username}  ${tender_uaid}  ${bid}  ${lots_ids}=${None}  ${features_ids}=${None}
-    [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_ids (якщо features_ids != None).
+    [Arguments]  ${username}  ${tender_uaid}  ${bid}  ${lots_ids}=${None}  ${features_names}=${None}
+    [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_names (якщо features_names != None).
+
     comment  Якщо id лоту відсутнє створюєму список з пустим значенням
     ${list_with_empty_value}  create list  ${Empty}
     ${lots_ids}  Set Variable If  "${lots_ids}" is "${None}"  ${list_with_empty_value}  ${lots_ids}
@@ -2276,8 +2294,11 @@ get_item_deliveryAddress_value
     :FOR  ${lot}  IN  @{lots_ids}
     # ${count_lot} костиль для отриманяя правильного ['value']['amount'] для потрібного лоту
     # буде працювати тільки якщо relatedLot в lotValues буду співпадати з послідовністю в ${lots_ids}
-    \  set test variable  ${count_lot}  0
-    \  smarttender.пропозиція_заповнити поле з ціною  ${lots_ids}  ${bid}
+    \  smarttender.пропозиція_заповнити поле з ціною  ${lot}  ${bid}
+
+    run keyword if  "${features_names}" != "${None}"
+    ...  _вибрати нецінові показники на сторінці детальної інформації тендера  ${bid}  ${features_names}
+
     smarttender.пропозиція_відмітити чекбокси при наявності
     smarttender.пропозиція_подати пропозицію
 	smarttender.пропозиція_закрити вікно з ЕЦП
@@ -3078,16 +3099,21 @@ _сторінка_детальної_інформації_awards value.currency
 	${field}  	evaluate  '${reg.group('field')}'
     ###########################################
 	#   перейти на сторінку контракта
-	${contract_btn}  set variable  //*[@data-qa="contract"]/a
-	${contract_btn_is_visible}  run keyword and return status  element should be visible  ${contract_btn}
-	run keyword if  ${contract_btn_is_visible} == ${False}
-				...  Синхронізувати тендер
-	open button  ${contract_btn}
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
 	###########################################
 	${field_value}  run keyword  smarttender.контракт_сторінка_детальної_інформації отримати ${field}
 	go back
 	loading дочекатись закінчення загрузки сторінки
 	[Return]  ${field_value}
+
+
+_дочекатися відображення посилання на договір
+	${contract_btn}  set variable  //*[@data-qa="contract"]/a
+	sleep  5s
+	Reload Page
+	loading дочекатись закінчення загрузки сторінки
+	element should be visible  ${contract_btn}
 
 
 контракт_сторінка_детальної_інформації отримати status
@@ -3209,7 +3235,7 @@ Input Type Flex
 оновити дані тендера з ЦБД
     ${cdb_status}  ${cdb}  run keyword and ignore error  отримати дані тендеру з cdb по id  ${tender_cdb_id}
     run keyword if  '${cdb_status}' == 'PASS'  run keywords
-    ...  Set Global Variable  ${tender_data}  ${cdb}
+    ...  Set Global Variable  ${tender_data}  ${cdb}  AND
     ...  log  ${tender_data}
 
 
@@ -3232,15 +3258,16 @@ cтатус тендера повинен бути
 
 перейти до тестових торгів
     [Arguments]  ${mode}
-    ${url}  run keyword if  '${mode}' == 'reporting'
-    ...  set variable  https://test.smarttender.biz/participation/tenders/?trs=3&tm=2&p=1&ps=1&s=2&bt=6&cg
-    ...  ELSE  set variable  https://test.smarttender.biz/test-tenders/
-    go to  ${url}
+    ${url}  run keyword if
+        ...  '${mode}' == 'reporting'  set variable  https://test.smarttender.biz/participation/tenders/?trs=3&tm=2&p=1&ps=1&s=2&bt=6&cg
+        ...  ELSE IF  '${mode}' == 'negotiation'  set variable  https://test.smarttender.biz/participation/tenders/?trs=3&tm=1&p=1&ps=1&s=2&ast=1
+        ...  ELSE  set variable  https://test.smarttender.biz/test-tenders/
+    smart go to  ${url}
 
 
 сторінка_торгів ввести текст в поле пошуку
 	[Arguments]  ${text}  ${mode}
-	${selector}  run keyword if  '${mode}' == 'reporting'
+	${selector}  run keyword if  '${mode}' == 'reporting' or '${mode}' == 'negotiation'
 	...  set variable  //*[@data-qa="search-block-input"]
     ...  ELSE  set variable  //input[@name="filter"]
     input text  ${selector}  ${text}
@@ -3248,7 +3275,7 @@ cтатус тендера повинен бути
 
 сторінка_торгів виконати пошук
     [Arguments]  ${mode}
-	${selector}  run keyword if  '${mode}' == 'reporting'
+	${selector}  run keyword if  '${mode}' == 'reporting' or '${mode}' == 'negotiation'
 	...  set variable  //*[@data-qa="search-block-button"]
     ...  ELSE  set variable  //div[text()='Пошук']/..
     loading дочекатись закінчення загрузки сторінки
@@ -3259,7 +3286,7 @@ cтатус тендера повинен бути
 сторінка_торгів перейти за першим результатом пошуку
     [Arguments]  ${mode}
 	${tender_number}  set variable  ${1}
-	${selector}  run keyword if  '${mode}' == 'reporting'
+	${selector}  run keyword if  '${mode}' == 'reporting' or '${mode}' == 'negotiation'
 	...  set variable  xpath=//*[@data-qa="tender-${tender_number-1}"]//a@href
     ...  ELSE  set variable  //*[@id="tenders"]//*[@class="head"][${tender_number}]//*[@href]@href
 
@@ -3406,22 +3433,47 @@ _Дочекатись синхронізації
 
     comment  Отримуємо значення ціни пропозиції
     ${is_multiple}  set variable  ${bid['data'].get('lotValues')}
-    ${amount}  run keyword if  "${is_multiple}" == "${None}"
-    ...  evaluate  str(${bid['data']['value']['amount']})
-    ...  evaluate  str(${bid['data']['lotValues'][${count_lot}]['value']['amount']})
+    ${amount}  set variable if  """${is_multiple}""" == "${None}"
+    ...  ${bid['data']['value']['amount']}
+    ...  ${bid['data']['lotValues'][${count_lot}]['value']['amount']}
     ${count_lot}  evaluate  ${count_lot} + 1
 
     comment  Розгорнути лот якщо id існує
     run keyword if  "${lot_id}" != "${Empty}"  _розгорнути лот по id  ${lot_id}
-
+    log to console  Ввести ціну пропозиції
+    debug
     comment  Ввести ціну пропозиції
     ${input}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
     input text  ${input}  ${amount}
 
 
+_вибрати нецінові показники на сторінці детальної інформації тендера
+    [Arguments]  ${bid}  ${features_names}
+    [Documentation]  надеемся что последовательность в ${bid['data']['parameters']} и ${features_names} совпадают,
+    ...  иначе нужно стучаться в цбд для связки кода и наименования ${feature}
+    ${feature_index}  set variable  0
+    :FOR  ${feature}  IN  @{bid['data']['parameters']}
+    \  ${value}  set variable  ${feature['value']}
+    \  ${name}  set variable  ${features_names[${feature_index}]}
+    \  _вибрати неціновий показник на сторінці детальної інформації тендера  ${name}  ${value}
+    \  ${feature_index}  evaluate  ${feature_index} + 1
+
+
+_вибрати неціновий показник на сторінці детальної інформації тендера
+    [Arguments]  ${name}  ${value}
+    ${drop_down}  set variable  //*[@class="ivu-select-dropdown"]/..
+    ${feature_locator}  set variable  //*[@class="features"]/div[contains(., "${name}")]
+    click element  ${feature_locator}${drop_down}
+    ${feature_value}  evaluate  str(${value}*100).replace('.', ',')
+    ${li_element}  set variable  ${feature_locator}${drop_down}//li[contains(., '(${feature_value}')]
+    loading дочекатися відображення елемента на сторінці  ${li_element}
+    click element  ${li_element}
+    loading дочекатися зникнення елемента зі сторінки  ${li_element}
+
+
 _розгорнути лот по id
     [Arguments]  ${lot_id}
-    ${button}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]//*[@type="button" and contains(., "Прийняти участь")][not(disabled="disabled")]
+    ${button}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]//*[@type="button" and contains(., "Прийняти участь")][not(@disabled="disabled")]
     wait until keyword succeeds  20  1  run keywords
     ...  click element  ${button}  AND
     ...  loading дочекатися зникнення елемента зі сторінки  ${button}
