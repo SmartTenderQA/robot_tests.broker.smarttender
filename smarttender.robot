@@ -1734,7 +1734,7 @@ get_item_deliveryAddress_value
     [Arguments]  ${feature_block}
 	${selector}  set variable  xpath=${feature_block}//*[contains(@class, "feature-of")]
 	${feature_field_value_in_smart_format}  get text  ${selector}
-	${feature_field_value_in_smart_format}  set variable if
+	${feature_field_value}  set variable if
 		...  "${feature_field_value_in_smart_format}" == "Критерії до закупівлі"  tenderer
 		...  "${feature_field_value_in_smart_format}" == "Критерії до лоту"  lot
 		...  "${feature_field_value_in_smart_format}" == "Критерії до номенклатури"  item
