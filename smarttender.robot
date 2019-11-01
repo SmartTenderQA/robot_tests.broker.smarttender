@@ -69,25 +69,25 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
-${hub}
-${hub_url}                              http://192.168.4.113:4444/wd/hub
+#${hub}  fadsafasdf
+#${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 
 *** Keywords ***
 Підготувати клієнт для користувача
 	[Arguments]   ${username}
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
-	# todo не забыть убрать
-	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
-	Run Keyword If  ${hub.__len__()} != 0
-			...  Create Webdriver  Chrome  alias=${username}
-	...  ELSE
-			...  run keywords
-                    ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
-                    ...  Отримати та залогувати data_session
-    smart go to  ${USERS.users['${username}'].homepage}
-    # /todo не забыть убрать
-#	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
+#	# todo не забыть убрать
+#	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
+#	Run Keyword If  ${hub.__len__()} != 0
+#			...  Create Webdriver  Chrome  alias=${username}
+#	...  ELSE
+#			...  run keywords
+#                    ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
+#                    ...  Отримати та залогувати data_session
+#    smart go to  ${USERS.users['${username}'].homepage}
+#    # /todo не забыть убрать
+	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
 	maximize browser window
 	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
 
@@ -1085,6 +1085,8 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 Пошук тендера по ідентифікатору
 	[Arguments]   ${username}  ${tender_uaid}
 	[Documentation]   Знайти тендер з uaid рівним tender_uaid.
+	${tender_detail_page_exist}  run keyword and return status  variable should exist  ${tender_detail_page}
+	return from keyword if  ${tender_detail_page_exist}
 	smarttender.перейти до тестових торгів  ${mode}
 	smarttender.сторінка_торгів ввести текст в поле пошуку  ${tender_uaid}  ${mode}
 	smarttender.сторінка_торгів виконати пошук  ${mode}
@@ -1214,7 +1216,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 	${milestones_all_values}  get text  ${item_selector}
 	${text}  set variable  ${milestones_all_values.replace('\n', '|')}
-	${reg}  evaluate  re.search(ur'(?P<title>.*)\\|(?P<duration_days>\\d*) (?P<duration_type>.*)\\|(?P<code>.*)\\: (?P<percentage>[\\d\\.\\,]*)', u'${text}')  re
+	${reg}  evaluate  re.search(ur'(?P<title>.*)\\|(?P<duration_days>\\d*) (?P<duration_type>.*)\\|(?P<code>.*)\\: (?P<percentage>[\\d\\.\\,]*)', u"""${text}""")  re
 
 	${title}  			evaluate  u'${reg.group('title')}'
 	${days}  			evaluate  int(u'${reg.group('duration_days')}')
@@ -1437,6 +1439,21 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	[Return]  ${field_value}
 
 
+сторінка_детальної_інформації отримати qualificationPeriod.endDate
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="prequalification"]//*[@data-qa="date-end"]
+	${field_value}  get text  ${selector}
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати auctionPeriod.endDate
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="auction-period"]//*[@data-qa="date-end"]
+	${field_value}  get text  ${selector}
+	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
+	[Return]  ${field_value}
+
 
 сторінка_детальної_інформації отримати funders
     [Arguments]  ${field_name}
@@ -1538,7 +1555,7 @@ _перейти до лоту якщо це потрібно
 	${number}  	evaluate  '${reg.group('number')}'
 	${field}  	evaluate  '${reg.group('field')}'
 	перейти до сторінки детальної інформаціїї
-    ${feature_block}  set variable  (//*[contains(@data-qa,"feature-list")])[${number}+1]
+    ${feature_block}  set variable  (//*[@data-qa="features-block"]//*[@class="delimeter ivu-row"])[${number}+1]
 	smarttender.розгорнути всі експандери
     ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field}  ${feature_block}
     [Return]  ${feature_field_name}
@@ -1675,8 +1692,10 @@ get_item_deliveryAddress_value
     [Arguments]  ${item_block}  ${group}
     ${selector}  set variable  xpath=${item_block}//*[@data-qa="nomenclature-delivery-address"]
 	${item_field_value}  get text by JS  ${selector}
-    ${reg}  evaluate  re.search(u'(?P<postalCode>\\d+),.{2}(?P<countryName>\\D+),.{2}(?P<region>\\D+.\\D+.),.{2}(?P<locality>\\D+),.{2}(?P<streetAddress>\\D+.+)', u"""${item_field_value}""")  re
-	${group_value}	evaluate  u'${reg.group('${group}')}'
+    ${reg}  evaluate  re.search(u'(?P<postalCode>.+),${space*2}(?P<countryName>.+),${space*2}(?P<region>.+),${space*2}(?P<locality>.+),${space*2}(?P<streetAddress>.+)', u"""${item_field_value}""")  re
+	${group_value}  set variable  ${reg.group('${group}')}
+	# Якщо locality=="Київ", то в цбд region=="місто Київ", а ми відображаємо "Київська обл."
+	return from keyword if  "region" == "${group}" and "${reg.group('locality')}" == "Київ"  місто Київ
 	[Return]  ${group_value}
 ###########################################################################
 
@@ -1738,6 +1757,17 @@ get_item_deliveryAddress_value
     [Arguments]  ${feature_block}
 	${selector}  set variable  xpath=${feature_block}//*[@class="feature-description"]
 	${feature_field_value}  get text  ${selector}
+	[Return]  ${feature_field_value}
+
+
+нецінові_сторінка_детальної отримати featureOf
+    [Arguments]  ${feature_block}
+	${selector}  set variable  xpath=${feature_block}//*[contains(@class, "feature-of")]
+	${feature_field_value_in_smart_format}  get text  ${selector}
+	${feature_field_value}  set variable if
+		...  "${feature_field_value_in_smart_format}" == "Критерії до закупівлі"  tenderer
+		...  "${feature_field_value_in_smart_format}" == "Критерії до лоту"  lot
+		...  "${feature_field_value_in_smart_format}" == "Критерії до номенклатури"  item
 	[Return]  ${feature_field_value}
 
 
@@ -1951,7 +1981,7 @@ get_item_deliveryAddress_value
 документи отримати посилання на перегляд файлу
     [Arguments]  ${file_name}
     ${selector}  Set Variable  xpath=//*[@data-qa="file-name"][text()="${file_name}"]
-    ${link}  Get Element Attribute  ${selector}/ancestor::div[@class="ivu-row"]//a[@data-qa="file-preview"]@href
+    ${link}  Get Element Attribute  ${selector}/ancestor::div[@class="document-poptip ivu-poptip"]//a[@data-qa="file-preview"]@href
     [Return]  ${link}
 
 
@@ -1966,8 +1996,8 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${doc_id}
     [Documentation]  Завантажити файл doc_id до лоту з lot_id в описі для тендера tender_uaid в директорію ${OUTPUT_DIR} для перевірки вмісту цього файлу.   
 	log to console  Отримати документ до лоту
-	debug
-    [Return]  ${filename}
+	${file_name}  smarttender.Отримати документ  ${username}  ${tender_uaid}  ${doc_id}
+	[Return]  ${file_name}
     
     
 Додати не ціновий показник на тендер
@@ -2026,7 +2056,8 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${feature_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name з нецінового показника з feature_id в описі для тендера tender_uaid.
 	перейти до сторінки детальної інформаціїї
-	${feature_block}  set variable  //*[@data-qa="feature-header"]//*[contains(text(),"${feature_id}")]/ancestor::*[contains(@data-qa,"feature-list")]
+	log to console  Отримати інформацію із нецінового показника
+	${feature_block}  set variable  (//*[@data-qa="features-block"]//*[@class="delimeter ivu-row"][contains(., "${feature_id}")])
 	smarttender.розгорнути всі експандери
     ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field_name}  ${feature_block}
     [Return]  ${feature_field_name}
@@ -2314,10 +2345,13 @@ get_item_deliveryAddress_value
     :FOR  ${lot}  IN  @{lots_ids}
     # ${count_lot} костиль для отриманяя правильного ['value']['amount'] для потрібного лоту
     # буде працювати тільки якщо relatedLot в lotValues буду співпадати з послідовністю в ${lots_ids}
+    \  set test variable  ${count_lot}  0
     \  smarttender.пропозиція_заповнити поле з ціною  ${lot}  ${bid}
 
     run keyword if  "${features_names}" != "${None}"
     ...  _вибрати нецінові показники на сторінці детальної інформації тендера  ${bid}  ${features_names}
+
+    run keyword if  '${mode}' == 'openeu'  створити та загрузити документ для подачі пропозиції
 
     smarttender.пропозиція_відмітити чекбокси при наявності
     smarttender.пропозиція_подати пропозицію
@@ -2331,27 +2365,31 @@ get_item_deliveryAddress_value
     [Return]  ${bid_field}
 
 
-пропозиція_отримати інформацію по полю value.amount
-    ${selector}  set variable  //*[@id="lotAmount0"]//input
-    ${bid_field}  get element attribute  ${selector}@value
-    ${bid_field}  evaluate  float(str('${bid_field}'.replace(" ", "")))
-    [Return]  ${bid_field}
+створити та загрузити документ для подачі пропозиції
+    ${file loading}  set variable  css=div.loader
+    ${list_of_file_args}  create_fake_doc
+	${file_path}  set variable  ${list_of_file_args[0]}
+	Choose File  xpath=(//input[@type="file"][1])[1]  ${file_path}
+	${status}  ${message}  Run Keyword And Ignore Error  Wait Until Page Contains Element  ${file loading}  3
+	Run Keyword If  "${status}" == "PASS"  Run Keyword And Ignore Error  Wait Until Page Does Not Contain Element  ${file loading}
 
 
 Змінити цінову пропозицію
     [Arguments]  ${username}  ${tender_uaid}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінити поле fieldname на fieldvalue цінової пропозиції користувача username для тендера tender_uaid.
-	${selector}  set variable if
-	...  "${fieldname}" == "value.amount"    //*[@id="lotAmount0"]//input
-	input text  ${selector}  "${fieldvalue}"
+	${status}  ${lot_number}  run keyword and ignore error  evaluate  re.search(r'\\d', "${fieldname}").group()  re
+    ${lot_number}  set variable if  "${status}" == "FAIL"  ${Empty}  ${lot_number}
+    ${selector}  set variable  //*[contains(@id, "lotAmount${lot_number}")]//input
+	run keyword if  "${fieldvalue}" != "pending"  ввести ціну пропозиції  ${selector}  ${fieldvalue}
 	smarttender.пропозиція_подати пропозицію
 	smarttender.пропозиція_закрити вікно з ЕЦП
 
 
 Завантажити документ в ставку
-    [Arguments]  ${username}  ${path}  ${tender_uaid}  ${doc_type}=None     #=${documents}
+    [Arguments]  ${username}  ${path}  ${tender_uaid}  ${doc_type}=None  ${doc_name}=None
     [Documentation]  Завантажити документ типу doc_type, який знаходиться за шляхом path, до цінової пропозиції користувача username для тендера tender_uaid.
-	Choose File  xpath=(//input[@type="file"][1])[1]  ${path}
+	choose file  xpath=(//input[@type="file"][1])[1]  ${path}
+	run keyword if  "${doc_type}" != "None"  smarttender.пропозиція_вибрати тип документу  ${doc_type}
 	smarttender.пропозиція_подати пропозицію
 	smarttender.пропозиція_закрити вікно з ЕЦП
 
@@ -2363,15 +2401,16 @@ get_item_deliveryAddress_value
 	Choose File  xpath=(//input[@type="file"][1])[1]  ${path}
 	smarttender.пропозиція_подати пропозицію
 	smarttender.пропозиція_закрити вікно з ЕЦП
-    go back
-    loading дочекатись закінчення загрузки сторінки
+#    go back
+#    loading дочекатись закінчення загрузки сторінки
 
 
 Змінити документацію в ставці
     [Arguments]  ${username}  ${tender_uaid}  ${doc_data}  ${doc_id}
     [Documentation]  Змінити тип документа з doc_id в заголовку в пропозиції користувача username для тендера tender_uaid. Дані про новий тип документа знаходяться в doc_data.  
 	log to console  Змінити документацію в ставці
-	debug
+	smarttender.пропозиція_перевірити кнопку подачі пропозиції
+	# /todo  доработать после исправлений Клюквина
 
 
 Скасувати цінову пропозицію
@@ -3372,6 +3411,7 @@ loading дочекатися зникнення елемента зі сторі
     Wait Until Keyword Succeeds  10m  5s  run keyword if  "${tender_cdb_id}" == "${None}"
     ...  _Дочекатись синхронізації  ELSE
     ...  _синхронізувати тендер за номером в ЦБД
+    Switch Browser  1
     reload page
 	loading дочекатись закінчення загрузки сторінки
 
@@ -3455,15 +3495,15 @@ _Дочекатись синхронізації
 
     comment  Отримуємо значення ціни пропозиції
     ${is_multiple}  set variable  ${bid['data'].get('lotValues')}
-    ${amount}  set variable if  """${is_multiple}""" == "${None}"
+    ${float}  set variable if  """${is_multiple}""" == "${None}"
     ...  ${bid['data']['value']['amount']}
     ...  ${bid['data']['lotValues'][${count_lot}]['value']['amount']}
+    ${amount}  evaluate  str(${float})
     ${count_lot}  evaluate  ${count_lot} + 1
 
     comment  Розгорнути лот якщо id існує
     run keyword if  "${lot_id}" != "${Empty}"  _розгорнути лот по id  ${lot_id}
-    log to console  Ввести ціну пропозиції
-    debug
+
     comment  Ввести ціну пропозиції
     ${input}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
     input text  ${input}  ${amount}
@@ -3501,11 +3541,16 @@ _розгорнути лот по id
     ...  loading дочекатися зникнення елемента зі сторінки  ${button}
 
 
+ввести ціну пропозиції
+    [Arguments]  ${selector}  ${fieldvalue}
+    ${fieldvalue}  evaluate  str(${fieldvalue})
+	input text  ${selector}  ${fieldvalue}
+
+
 пропозиція_відмітити чекбокси при наявності
     ${checkbox1}   set variable         //*[@id="SelfEligible"]//input
     ${checkbox2}   set variable         //*[@id="SelfQualified"]//input
-    ${is visible}  run keyword and return status  element should be visible  ${checkbox1}
-    run keyword if  ${is visible}  run keywords
+    run keyword and ignore error  run keywords
     ...  Click Element  ${checkbox1}            AND
 	...  Click Element  ${checkbox2}
 
@@ -3526,10 +3571,56 @@ _розгорнути лот по id
 
 
 пропозиція_закрити вікно з ЕЦП
+    loading дочекатись закінчення загрузки сторінки
     ${selector}  set variable  //*[@data-qa="modal-eds"]//*[@class="ivu-modal-close"]
     loading дочекатися відображення елемента на сторінці  ${selector}
     click element  ${selector}
     loading дочекатися зникнення елемента зі сторінки  ${selector}
+
+
+пропозиція_отримати інформацію по полю ${field}
+    comment  пейти на сторінку біда за неохідністю
+    ${current_location}  get location
+    ${tender_bid_page}  set variable  ${tender_detail_page.replace("publichni-zakupivli-prozorro", "bid/edit")}
+    run keyword if  "${tender_detail_page}" != "${tender_bid_page}"  run keywords
+    ...  go to  ${tender_bid_page}  AND  loading дочекатись закінчення загрузки сторінки
+    #############################################################################################
+    ${status}  ${lot_number}  run keyword and ignore error  evaluate  re.search(r'\\d', "${field}").group()  re
+    ${lot_number}  set variable if  "${status}" == "FAIL"  ${Empty}  ${lot_number}
+    ${selector}  set variable  //*[contains(@id, "lotAmount${lot_number}")]//input
+    ${bid_field}  get element attribute  ${selector}@value
+    ${bid_field}  evaluate  float(str('${bid_field}'.replace(" ", "")))
+    [Return]  ${bid_field}
+
+
+пропозиція_отримати інформацію по полю status
+    ${status_dict}  create dictionary
+    ...  Пропозиція недійсна=invalid
+    ...  Пропозиція подана=pending
+    ...  Пропозиція не подана=...
+    ${text}  get text  //*[@class="ivu-alert-message"]
+    ${value}  get from dictionary  ${status_dict}  ${text}
+    [Return]  ${value}
+
+
+пропозиція_вибрати тип документу
+    [Arguments]  ${doc_type}
+    log to console  ${\n}пропозиція_вибрати тип документу
+    ${dict_types}  create dictionary
+    ...  eligibility_documents=Документи, що підтверджують відповідність
+#    ...  financial_documents=Документи учасника-переможця
+    ...  financial_documents=Цінова пропозиція
+    ...  qualification_documents=Документи, що підтверджують кваліфікацію
+    ${doc_name}  set variable  ${dict_types['${doc_type}']}
+    ${last_doc_type}  set variable  (//*[@data-qa="document-type-btn"])[last()]
+    ${item_in_list}  set variable  (//*[@id="documentType"][contains(., "${doc_name}")])[last()]
+
+    loading дочекатися відображення елемента на сторінці  xpath=${last_doc_type}
+    click element  xpath=${last_doc_type}
+
+    loading дочекатися відображення елемента на сторінці  xpath=${item_in_list}
+    wait until keyword succeeds  10  1  click element  xpath=${item_in_list}
+    loading дочекатися зникнення елемента зі сторінки  ${item_in_list}
 
 
 пропозиція_видалити файл

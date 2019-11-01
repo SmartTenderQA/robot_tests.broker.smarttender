@@ -174,7 +174,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для lot minimalStep.amount
 	[Arguments]  ${minimalStep}
 	${locator}  set variable  //*[@data-name="LOT_MINSTEP"]//input
-	заповнити simple input  ${locator}  ${minimalStep}  check=${False}
+	заповнити autocomplete field  ${locator}  ${minimalStep}  check=${True}  input_methon=Input Type Flex
 
 
 заповнити поле для lot value.valueAddedTaxIncluded
@@ -214,7 +214,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для item quantity
 	[Arguments]  ${quantity}
 	${locator}  set variable  //*[@data-name="QUANTITY"]//input
-	заповнити simple input  ${locator}  ${quantity}  check=${False}
+	заповнити autocomplete field  ${locator}  ${quantity}  check=${False}  input_methon=Input Type Flex
 
 
 заповнити поле для item unit.name
