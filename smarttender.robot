@@ -3243,15 +3243,16 @@ cтатус тендера повинен бути
 
 перейти до тестових торгів
     [Arguments]  ${mode}
-    ${url}  run keyword if  '${mode}' == 'reporting'
-    ...  set variable  https://test.smarttender.biz/participation/tenders/?trs=3&tm=2&p=1&ps=1&s=2&bt=6&cg
-    ...  ELSE  set variable  https://test.smarttender.biz/test-tenders/
-    go to  ${url}
+    ${url}  run keyword if
+        ...  '${mode}' == 'reporting'  set variable  https://test.smarttender.biz/participation/tenders/?trs=3&tm=2&p=1&ps=1&s=2&bt=6&cg
+        ...  ELSE IF  '${mode}' == 'negotiation'  set variable  https://test.smarttender.biz/participation/tenders/?trs=3&tm=1&p=1&ps=1&s=2&ast=1
+        ...  ELSE  set variable  https://test.smarttender.biz/test-tenders/
+    smart go to  ${url}
 
 
 сторінка_торгів ввести текст в поле пошуку
 	[Arguments]  ${text}  ${mode}
-	${selector}  run keyword if  '${mode}' == 'reporting'
+	${selector}  run keyword if  '${mode}' == 'reporting' or '${mode}' == 'negotiation'
 	...  set variable  //*[@data-qa="search-block-input"]
     ...  ELSE  set variable  //input[@name="filter"]
     input text  ${selector}  ${text}
@@ -3259,7 +3260,7 @@ cтатус тендера повинен бути
 
 сторінка_торгів виконати пошук
     [Arguments]  ${mode}
-	${selector}  run keyword if  '${mode}' == 'reporting'
+	${selector}  run keyword if  '${mode}' == 'reporting' or '${mode}' == 'negotiation'
 	...  set variable  //*[@data-qa="search-block-button"]
     ...  ELSE  set variable  //div[text()='Пошук']/..
     loading дочекатись закінчення загрузки сторінки
@@ -3270,7 +3271,7 @@ cтатус тендера повинен бути
 сторінка_торгів перейти за першим результатом пошуку
     [Arguments]  ${mode}
 	${tender_number}  set variable  ${1}
-	${selector}  run keyword if  '${mode}' == 'reporting'
+	${selector}  run keyword if  '${mode}' == 'reporting' or '${mode}' == 'negotiation'
 	...  set variable  xpath=//*[@data-qa="tender-${tender_number-1}"]//a@href
     ...  ELSE  set variable  //*[@id="tenders"]//*[@class="head"][${tender_number}]//*[@href]@href
 
