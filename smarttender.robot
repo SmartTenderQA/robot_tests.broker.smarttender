@@ -2380,7 +2380,7 @@ get_item_deliveryAddress_value
 	${status}  ${lot_number}  run keyword and ignore error  evaluate  re.search(r'\\d', "${fieldname}").group()  re
     ${lot_number}  set variable if  "${status}" == "FAIL"  ${Empty}  ${lot_number}
     ${selector}  set variable  //*[contains(@id, "lotAmount${lot_number}")]//input
-	run keyword if  "${fieldvalue}" != "pending"  ввести ціну пропозиції  ${selector}  ${fieldvalue}
+	run keyword if  "value" in "${fieldvalue}"  ввести ціну пропозиції  ${selector}  ${fieldvalue}
 	smarttender.пропозиція_подати пропозицію
 	smarttender.пропозиція_закрити вікно з ЕЦП
 
