@@ -3573,7 +3573,7 @@ _розгорнути лот по id
 пропозиція_закрити вікно з ЕЦП
     loading дочекатись закінчення загрузки сторінки
     ${selector}  set variable  //*[@data-qa="modal-eds"]//*[@class="ivu-modal-close"]
-    loading дочекатися відображення елемента на сторінці  ${selector}
+    loading дочекатися відображення елемента на сторінці  ${selector}  60
     click element  ${selector}
     loading дочекатися зникнення елемента зі сторінки  ${selector}
 
