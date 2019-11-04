@@ -2133,7 +2133,6 @@ get_item_deliveryAddress_value
 	smarttender.запитання_натиснути кнопку "Подати"
 
 
-
 Отримати інформацію із запитання
     [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name із запитання з question_id в описі для тендера tender_uaid.
@@ -2195,16 +2194,16 @@ get_item_deliveryAddress_value
     ${title}  set variable  ${claim['data']['title']}
     ${description}  set variable  ${claim['data']['description']}
     ${tender_title}  smarttender.сторінка_детальної_інформації отримати title
+    перейти до сторінки детальної інформаціїї
     smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
 	вимога_вибрати тип запитання  ${tender_title}
 	вимога_натиснути кнопку Подати вимогу "Замовнику"
 	вимога_заповнити тему  ${title}
 	вимога_заповнити текст запитання  ${description}
-
 	run keyword if  "${document}" != "${None}"  вимога_завантажити документ  ${document}
-
 	wait until keyword succeeds  1m  1  вимога_натиснути кнопку "Подати"
-#    [Return]  ${complaintID}
+	${complaintID}  вимога_отримати complaintID по ${title}
+    [Return]  ${complaintID}
     
     
 Створити вимогу про виправлення умов лоту
@@ -2212,16 +2211,16 @@ get_item_deliveryAddress_value
     [Documentation]  Створює вимогу claim про виправлення умов лоту у статусі claim для тендера tender_uaid. Можна створити вимогу як з документом, який знаходиться за шляхом document, так і без нього.
 	${title}  set variable  ${claim['data']['title']}
     ${description}  set variable  ${claim['data']['description']}
+    перейти до сторінки детальної інформаціїї
     smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
 	вимога_вибрати тип запитання  ${lot_id}
 	вимога_натиснути кнопку Подати вимогу "Замовнику"
 	вимога_заповнити тему  ${title}
 	вимога_заповнити текст запитання  ${description}
-
 	run keyword if  "${document}" != "${None}"  вимога_завантажити документ  ${document}
-
 	wait until keyword succeeds  1m  1  вимога_натиснути кнопку "Подати"
-#    [Return]  ${complaintID}
+	${complaintID}  вимога_отримати complaintID по ${title}
+    [Return]  ${complaintID}
     
     
 Створити вимогу про виправлення визначення переможця
@@ -2229,29 +2228,43 @@ get_item_deliveryAddress_value
     [Documentation]  Створює вимогу claim про виправлення визначення переможця під номером award_index в статусі claim для тендера tender_uaid. Можна створити вимогу як з документом, який знаходиться за шляхом document, так і без нього.  
 	log to console  Створити вимогу про виправлення визначення переможця
 	debug
-#    [Return]  ${complaintID}
+	${complaintID}  вимога_отримати complaintID по ${title}
+    [Return]  ${complaintID}
     
     
 Скасувати вимогу про виправлення умов закупівлі
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data}
     [Documentation]  Перевести вимогу complaintID про виправлення умов закупівлі для тендера tender_uaid у статус cancelled, використовуючи при цьому дані cancellation_data.
+    перейти до сторінки детальної інформаціїї
+    smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
     ${cancellationReason}  set variable  ${cancellation_data['data']['cancellationReason']}
 	вимога_натиснути коригувати  ${complaintID}
 	вимога_натиснути Скасувати вимогу  ${cancellationReason}
 
-    
-    
+
 Скасувати вимогу про виправлення умов лоту
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data}
-    [Documentation]  Перевести вимогу complaintID про виправлення умов лоту для тендера tender_uaid у статус cancelled, використовуючи при цьому дані cancellation_data.  
-	log to console  Скасувати вимогу про виправлення умов лоту
-	debug
-	
-    
+    [Documentation]  Перевести вимогу complaintID про виправлення умов лоту для тендера tender_uaid у статус cancelled, використовуючи при цьому дані cancellation_data.
+	перейти до сторінки детальної інформаціїї
+    smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+	${cancellationReason}  set variable  ${cancellation_data['data']['cancellationReason']}
+	вимога_натиснути коригувати  ${complaintID}
+	вимога_натиснути Скасувати вимогу  ${cancellationReason}
+
+
 Отримати інформацію із скарги
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${field_name}  ${award_index}=${None}
-    [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID  
-	log to console  Отримати інформацію із скарги
+    [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID
+    ########## На жалобу отвечает организатор, а синхронизации почему не нету ############
+#    перенес синхронизацияю в получение статуса, слишком много таких кейвордов
+#    ${test_list}  create list
+#    ...  Можливість створити, подати, відповісти і після того скасувати вимогу про виправлення умов закупівлі
+#    ...  Можливість створити, подати, відповісти і після того скасувати вимогу про виправлення умов лоту
+#    run keyword if  u"${TEST_NAME}" in @{test_list}
+#    ...  smarttender.Синхронізувати тендер
+    перейти до сторінки детальної інформаціїї
+    smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+    ######################################################################################
 	${complaint_field_value}  run keyword if  "${field_name}" != "status"  run keywords
 	...  log to console  Отримати інформацію із скарги  AND
 	...  debug
@@ -2290,8 +2303,12 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${confirmation_data}
     [Documentation]  Перевести вимогу complaintID про виправлення умов закупівлі для тендера tender_uaid у статус resolved, використовуючи при цьому дані confirmation_data.  
 	log to console  Підтвердити вирішення вимоги про виправлення умов закупівлі
-	debug
-	
+	${satisfied}  set variable  ${confirmation_data['data']['satisfied']}
+	перейти до сторінки детальної інформаціїї
+    smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+    вимога_натиснути коригувати  ${complaintID}
+    вимогу_натиснути Вимогу задоволено?  ${satisfied}
+
 
 Скасувати вимогу про виправлення визначення переможця
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data}  ${award_index}
@@ -2472,7 +2489,7 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${document}  ${tender_uaid}  ${qualification_num}
     [Documentation]  Завантажити документ, який знаходиться по шляху document, до кваліфікації під номером qualification_num до тендера tender_uaid  
 	log to console  Завантажити документ у кваліфікацію
-	debug
+
 	знайти тендер у webclient  ${tender_uaid}
     активувати вкладку  Прекваліфікація
 	header натиснути на елемент за назвою  Оновити
@@ -3754,7 +3771,8 @@ _розгорнути лот по id
     ${complaint button}    Set Variable  //*[@data-qa="complaints"]//*[@data-qa="submit-claim"]
     ${complaint send btn}  Set Variable  //*[@data-qa="complaints"]//button[contains(@class,"btn-success")]
     loading дочекатися відображення елемента на сторінці  ${complaint button}
-    Click Element                  ${complaint button}
+    Click Element  ${complaint button}
+    Wait Until Element Is Visible  ${complaint send btn}
 
 
 вимога_заповнити тему
@@ -3792,7 +3810,6 @@ _розгорнути лот по id
 
 вимога_натиснути коригувати
     [Arguments]  ${name}
-    ${name}  set variable if  "${name}" == "None"  ${Empty}  ${name}
     ${button}  set variable  //*[@data-qa="complaints" and contains(., "${name}")]//*[@data-qa="start-edit-mode"]
     click element  ${button}
     loading дочекатися зникнення елемента зі сторінки  ${button}
@@ -3809,10 +3826,22 @@ _розгорнути лот по id
     loading дочекатися зникнення елемента зі сторінки  ${cancel_button}
 
 
+вимогу_натиснути Вимогу задоволено?
+    [Arguments]  ${satisfied}
+    ${decision}  set variable if  "${satisfied}" == "${True}"  ${Empty}  un
+    ${decision_button}  set variable  //*[@data-qa="${decision}satisfied-decision"]
+    loading дочекатися відображення елемента на сторінці  ${decision_button}
+	click element  ${decision_button}
+	loading дочекатись закінчення загрузки сторінки
+	loading дочекатися зникнення елемента зі сторінки  ${decision_button}
+
+
 вимога_отримати інформацію по полю status
     [Arguments]  ${complaintID}
-    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
-    ${complaint}  set variable  //*[@data-qa="complaints" and contains(., "${complaintID}")]
+    smarttender.Синхронізувати тендер
+    перейти до сторінки детальної інформаціїї
+    smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+    ${complaint}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
     ${status}  set variable  //*[@data-qa="type-status"]//*[contains(@class, "complaint-status")]
     ${text}  get text  ${complaint}${status}
     ${dict_status}  create dictionary
@@ -3823,15 +3852,24 @@ _розгорнути лот по id
     ...  Недійсна=invalid
     ...  Не задоволена=declined
     ...  Вирішена=resolved
-    ...  Відхилена=canceled
+    ...  Відхилена=cancelled
     ...  Прийнята до розгляду=accepted
     ...  Задоволена=satisfied
     ...  Прийнята до розгляду, скасована заявником=stopping
     ...  Прийнята до розгляду, скасована комісією=stopped
     ...  Помилково надіслана=mistaken
     ...  Залишено без розгляду=ignored
-    ${status}  set variable  ${dict_status['${text}']}
+    ${status}  get from dictionary  ${dict_status}  ${text}
     [Return]  ${status}
+
+
+вимога_отримати complaintID по ${title}
+    Синхронізувати тендер
+    smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+    ${complaint}  set variable  //*[@data-qa="complaint" and contains(., "${title}")]
+    ${status}  set variable  //*[@data-qa="type-status"]//*[contains(text(), "UA-")]
+    ${complaintID}  get text  ${complaint}${status}
+    [Return]  ${complaintID}
 
 
 ################################################################################
