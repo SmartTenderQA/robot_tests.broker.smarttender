@@ -131,6 +131,7 @@ ${tender_cdb_id}                    ${None}
 
 Підготувати дані для оголошення не плану
 	[Arguments]  ${tender_data}
+	log to console  Підготувати дані для оголошення не плану
 	${tender_data}  replace_delivery_address  ${tender_data}
 	${tender_data}  run keyword if
 	...  'tender_owner' in '${username.lower()}'  adapt_data  ${tender_data}
@@ -140,6 +141,7 @@ ${tender_cdb_id}                    ${None}
 
 Підготувати дані для оголошення плану
   	[Arguments]  ${tender_data}
+  	log to console  Підготувати дані для оголошення плану
 	${tedner_data}  adapt_data  ${tender_data}
   	[Return]  ${tender_data}
 
@@ -156,6 +158,13 @@ ${tender_cdb_id}                    ${None}
 	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"  run keywords
 	...  capture page screenshot        AND
 	...  fatal error  Тендер на створено!!!
+
+
+Отримати номер плану з артифакту
+	${file_path}  Get Variable Value  ${ARTIFACT_FILE}  artifact_plan.yaml
+	${ARTIFACT}  Load Data From  ${file_path}
+	${plan_uaid}  set variable  ${ARTIFACT['tender_uaid']}
+	[Return]  ${plan_uaid}
 
 
 Оголосити закупівлю belowThreshold		#Допорог
@@ -284,11 +293,16 @@ ${tender_cdb_id}                    ${None}
 
 Оголосити закупівлю openeu		#Відкриті торги з публікацією англійською мовою
 	[Arguments]  ${tender_data}
-	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
-	webclient.header натиснути на елемент за назвою  Очистити
-	webclient.header натиснути на елемент за назвою  OK
-	webclient.header натиснути на елемент за назвою  Додати
-    webclient.вибрати тип процедури  Відкриті торги з публікацією англійською мовою
+	log to console  Оголосити закупівлю openeu
+	${plan_uaid}  Отримати номер плану з артифакту
+    знайти план у webclient  ${plan_uaid}
+   	webclient.header натиснути на елемент за назвою             Розрахунок
+    dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
+	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
+	screen натиснути кнопку  мультилотову
+	screen заголовок повинен містити     Додавання. Тендери
+    webclient.видалити всі лоти та предмети
+    webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	# ОСНОВНІ ПОЛЯ
 	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
 	${value.amount}  set variable  ${tender_data['value']['amount']}
@@ -349,12 +363,17 @@ ${tender_cdb_id}                    ${None}
 
 Оголосити закупівлю openeu multilot
 	[Arguments]  ${tender_data}
-	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
-	webclient.header натиснути на елемент за назвою  Очистити
-	webclient.header натиснути на елемент за назвою  OK
-	webclient.header натиснути на елемент за назвою  Додати
-    webclient.вибрати тип процедури  Відкриті торги з публікацією англійською мовою
-    webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+	log to console  Оголосити закупівлю openeu multilot
+	${plan_uaid}  Отримати номер плану з артифакту
+    знайти план у webclient  ${plan_uaid}
+   	webclient.header натиснути на елемент за назвою             Розрахунок
+    dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
+	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
+	screen натиснути кнопку  мультилотову
+	screen заголовок повинен містити     Додавання. Тендери
+    webclient.видалити всі лоти та предмети
+    webclient.додати бланк  GRID_ITEMS_HIERARCHY
+
     # ОСНОВНІ ПОЛЯ
 	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
 	${title}  set variable  ${tender_data['title']}
@@ -870,12 +889,12 @@ ${tender_cdb_id}                    ${None}
 	append to list  ${field_list}
 	...  description
 
-	${description_en_status}  set variable if
+	${description_en_add}  set variable if
 	...  'below' in '${mode}'               ${False}
 	...  'reporting' in '${mode}'           ${False}
-	...  ELSE                               ${True}
+	...                                     ${True}
 
-	run keyword if  ('${description_en_status}' == 'PASS') and (${description_en_status} == ${True})
+	run keyword if  "${description_en_status}" == "PASS" and  ${description_en_add} == ${True}
 	...  append to list  ${field_list}  description_en
 
 	run keyword if  '${mode}' != 'open_esco'
@@ -971,8 +990,7 @@ ${tender_cdb_id}                    ${None}
 
 отримати дані тендеру з cdb по id
     [Arguments]  ${id}
-    Create Session  api  https://lb-api-sandbox.prozorro.gov.ua/api/2.4/tenders/${id}
-	${data}  Get Request  api  \
+	${data}  evaluate  requests.get("https://lb-api-sandbox.prozorro.gov.ua/api/2.4/tenders/${id}")   requests
 	${data}  Set Variable  ${data.json()}
 	${cdb_data}  Set Variable  ${data['data']}
 	[Return]  ${cdb_data}
@@ -1423,7 +1441,10 @@ ${tender_cdb_id}                    ${None}
 
 сторінка_детальної_інформації отримати qualificationPeriod.endDate
     [Arguments]  ${field_name}=None
+    reload page
+	loading дочекатись закінчення загрузки сторінки
 	${selector}  set variable  xpath=//*[@data-qa="prequalification"]//*[@data-qa="date-end"]
+	loading дочекатися відображення елемента на сторінці  ${selector}
 	${field_value}  get text  ${selector}
 	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	[Return]  ${field_value}
@@ -1434,6 +1455,21 @@ ${tender_cdb_id}                    ${None}
 	${selector}  set variable  xpath=//*[@data-qa="auction-period"]//*[@data-qa="date-end"]
 	${field_value}  get text  ${selector}
 	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати causeDescription
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="negotiation-cause-description"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати cause
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="negotiation-cause"]//*[@data-qa="value"]
+	${field_value_in_smart_format}  get text  ${selector}
+	${field_value}  convert_negotiation_cause_from_smart_format  ${field_value_in_smart_format}
 	[Return]  ${field_value}
 
 
@@ -1537,7 +1573,7 @@ _перейти до лоту якщо це потрібно
 	${number}  	evaluate  '${reg.group('number')}'
 	${field}  	evaluate  '${reg.group('field')}'
 	перейти до сторінки детальної інформаціїї
-    ${feature_block}  set variable  (//*[@data-qa="features-block"]//*[@class="delimeter ivu-row"])[${number}+1]
+    ${feature_block}  set variable  (//*[contains(@data-qa,"feature-list")])[${number}+1]
 	smarttender.розгорнути всі експандери
     ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field}  ${feature_block}
     [Return]  ${feature_field_name}
@@ -1744,12 +1780,11 @@ get_item_deliveryAddress_value
 
 нецінові_сторінка_детальної отримати featureOf
     [Arguments]  ${feature_block}
-	${selector}  set variable  xpath=${feature_block}//*[contains(@class, "feature-of")]
-	${feature_field_value_in_smart_format}  get text  ${selector}
+    ${feature_field_value_in_smart_format}  get element attribute  ${feature_block}@data-qa
 	${feature_field_value}  set variable if
-		...  "${feature_field_value_in_smart_format}" == "Критерії до закупівлі"  tenderer
-		...  "${feature_field_value_in_smart_format}" == "Критерії до лоту"  lot
-		...  "${feature_field_value_in_smart_format}" == "Критерії до номенклатури"  item
+		...  "${feature_field_value_in_smart_format}" == "tender-feature-list"  tenderer
+		...  "${feature_field_value_in_smart_format}" == "lot-feature-list"  lot
+		...  "${feature_field_value_in_smart_format}" == "nomenclature-feature-list"  item
 	[Return]  ${feature_field_value}
 
 
@@ -2039,7 +2074,7 @@ get_item_deliveryAddress_value
     [Documentation]  Отримати значення поля field_name з нецінового показника з feature_id в описі для тендера tender_uaid.
 	перейти до сторінки детальної інформаціїї
 	log to console  Отримати інформацію із нецінового показника
-	${feature_block}  set variable  (//*[@data-qa="features-block"]//*[@class="delimeter ivu-row"][contains(., "${feature_id}")])
+	${feature_block}  set variable  //*[contains(@data-qa,"feature-list")][contains(., "${feature_id}")]
 	smarttender.розгорнути всі експандери
     ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field_name}  ${feature_block}
     [Return]  ${feature_field_name}
@@ -2362,7 +2397,7 @@ get_item_deliveryAddress_value
 	${status}  ${lot_number}  run keyword and ignore error  evaluate  re.search(r'\\d', "${fieldname}").group()  re
     ${lot_number}  set variable if  "${status}" == "FAIL"  ${Empty}  ${lot_number}
     ${selector}  set variable  //*[contains(@id, "lotAmount${lot_number}")]//input
-	run keyword if  "${fieldvalue}" != "pending"  ввести ціну пропозиції  ${selector}  ${fieldvalue}
+	run keyword if  "value" in "${fieldvalue}"  ввести ціну пропозиції  ${selector}  ${fieldvalue}
 	smarttender.пропозиція_подати пропозицію
 	smarttender.пропозиція_закрити вікно з ЕЦП
 
@@ -3562,7 +3597,7 @@ _розгорнути лот по id
 пропозиція_закрити вікно з ЕЦП
     loading дочекатись закінчення загрузки сторінки
     ${selector}  set variable  //*[@data-qa="modal-eds"]//*[@class="ivu-modal-close"]
-    loading дочекатися відображення елемента на сторінці  ${selector}
+    loading дочекатися відображення елемента на сторінці  ${selector}  60
     click element  ${selector}
     loading дочекатися зникнення елемента зі сторінки  ${selector}
 
