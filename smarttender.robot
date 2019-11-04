@@ -1441,7 +1441,10 @@ ${tender_cdb_id}                    ${None}
 
 сторінка_детальної_інформації отримати qualificationPeriod.endDate
     [Arguments]  ${field_name}=None
+    reload page
+	loading дочекатись закінчення загрузки сторінки
 	${selector}  set variable  xpath=//*[@data-qa="prequalification"]//*[@data-qa="date-end"]
+	loading дочекатися відображення елемента на сторінці  ${selector}
 	${field_value}  get text  ${selector}
 	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	[Return]  ${field_value}
