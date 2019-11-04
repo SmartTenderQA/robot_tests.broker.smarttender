@@ -3030,100 +3030,63 @@ _план_сторінка_детальної_інформації отрима�
 
 сторінка_детальної_інформації отримати awards
 	[Arguments]  ${field_name}
-	log to console  ${mode}
-	${field_value}  run keyword if  '${mode}' != 'reporting'  smarttender.сторінка_детальної_інформації отримати awards (not_reporting)  ${field_name}
-	...  ELSE  сторінка_детальної_інформації отримати awards (reporting)  ${field_name}
+	# розгорунти блок, якщо потрібно
+	smarttender.розгорнути всі експандери
+    # отримати дані
+	${field_value}  run keyword  сторінка_детальної_інформації отримати ${field_name}
 	[Return]  ${field_value}
 
-сторінка_детальної_інформації отримати awards (not_reporting)
-	[Arguments]  ${field_name}
-	${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
-	${number}  	evaluate  '${reg.group('number')}'
-	${field}  	evaluate  '${reg.group('field')}'
-	${href}  smarttender._отримати посилання на сторінку оскарження  ${number}
+
+сторінка_детальної_інформації отримати awards[${award_index}].complaintPeriod.endDate
+	${href}  smarttender._отримати посилання на сторінку оскарження  ${award_index}
 	go to  ${href}
 	loading дочекатись закінчення загрузки сторінки
-	${field_selector}      set variable if
-    ...  '${field}' == 'complaintPeriod.endDate'  //*[@data-qa="period"]/p
-    ${get}  get text  ${field_selector}
+	Capture Page Screenshot
+	${selector}  set variable  //*[@data-qa="period"]/p
+    ${get}  get text  ${selector}
 	${get_reg}  evaluate  re.findall(ur'\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2}', u'${get}')  re
-	${complaintPeriod.startDate}  evaluate  u'${get_reg[0]}'
-	${complaintPeriod.endDate}  evaluate  u'${get_reg[1]}'
-	${ret}  convert date  ${${field}}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
+	${value}  convert date  ${get_reg[1]}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	go back
 	loading дочекатись закінчення загрузки сторінки
-	[Return]  ${ret}
+	[Return]  ${value}
 
 
 _отримати посилання на сторінку оскарження
-	[Arguments]  ${number}
-	${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${number}+1]@href
+	[Arguments]  ${award_index}
+	${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${award_index}+1]@href
 	return from keyword if  ${href.__len__()} != 0  ${href}
-	${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${number}]@href
+	${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${award_index}]@href
 	[Return]  ${href}
 
 
-сторінка_детальної_інформації отримати awards (reporting)
-	[Arguments]  ${field_name}
-    ${reg}  evaluate  re.search(r'.*?\\[(?P<index>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
-    ${award_index}  	evaluate  '${reg.group('index')}'
-    ${field}  	        evaluate  '${reg.group('field')}'
-    ${status}  run keyword and return status
-    ...  element should be visible  xpath=(//*[@data-qa="qualification-info"]//div[@class="expander-title"])[${award_index}]/i[contains(@class, "dropup")]
-    run keyword if  ${status} == ${false}  smarttender.розгорнути всі експандери
-    ${has_index}  run keyword and return status  should contain  ${field}  [
-    ${partial_field}  run keyword if  ${has_index} == ${true}  fetch from left  ${field}  [  ELSE  fetch from left  ${field}  .
-    ${field_value}  run keyword  smarttender.сторінка_детальної_інформації_awards ${partial_field}  ${field}  ${award_index}
+сторінка_детальної_інформації отримати awards[${award_index}].documents[${document_index}].title
+	${selector}  set variable  xpath=((//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[@data-qa="file-name"])[${document_index} + 1]
+	${field_value}  get text  ${selector}
 	[Return]  ${field_value}
 
 
-сторінка_детальної_інформації_awards documents
-    [Arguments]  ${field_name}  ${award_index}
-    ${reg}  evaluate  re.search(r'.*?\\[(?P<index>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
-    ${document_index}  	evaluate  '${reg.group('index')}'
-    ${field}  	        evaluate  '${reg.group('field')}'
-    ${field_value}  run keyword  smarttender.сторінка_детальної_інформації_awards_documents ${field}  ${award_index}  ${document_index}
+сторінка_детальної_інформації отримати awards[${award_index}].status
+	${selector}  set variable  xpath=(//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//div[text()='Статус']/following-sibling::*
+    ${field_value_in_smart_format}  get text  ${selector}
+	${field_value}  convert_award_status  ${field_value_in_smart_format}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати awards[${award_index}].value.amount
+	${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//div[contains(text(),'Сума пропозиції')]/following-sibling::*
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert_page_values  value.amount  ${field_value_in_smart_format}
     [Return]  ${field_value}
 
 
-сторінка_детальної_інформації_awards_documents title
-    [Arguments]  ${award_index}  ${document_index}
-    ${selector}  set variable  xpath=((//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[@data-qa="file-name"])[${document_index} + 1]
-    ${field_value}  get text  ${selector}
+сторінка_детальної_інформації отримати awards[${award_index}].value.valueAddedTaxIncluded
+	${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//div[contains(text(),'Сума пропозиції')]/following-sibling::*
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert_page_values  value.valueAddedTaxIncluded  ${field_value_in_smart_format}
     [Return]  ${field_value}
 
 
-сторінка_детальної_інформації_awards status
-    [Arguments]  ${field}  ${award_index}
-    ${selector}  set variable  xpath=(//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//div[text()='Статус']/following-sibling::*
-    ${field_value}  get text  ${selector}
-    ${field_value}  convert_award_status  ${field_value}
-    [Return]  ${field_value}
-
-
-сторінка_детальної_інформації_awards value
-    [Arguments]  ${field_name}  ${award_index}
-    ${field_value}  run keyword if  "currency" in "${field_name}"
-            ...  smarttender._сторінка_детальної_інформації_awards value.currency  ${field_name}  ${award_index}
-    ...  ELSE
-            ...  smarttender._сторінка_детальної_інформації_awards value.amount or value.valueAddedTaxIncluded  ${field_name}  ${award_index}
-    [Return]  ${field_value}
-
-
-_сторінка_детальної_інформації_awards value.amount or value.valueAddedTaxIncluded
-    [Arguments]  ${field_name}  ${award_index}
-    ${field}  fetch from right  ${field_name}  .
-    ${award_selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]
-    ${field_selector}  set variable if
-    ...  '${field}' == 'valueAddedTaxIncluded'                 //div[contains(text(),'Сума пропозиції')]/following-sibling::*
-    ...  '${field}' == 'amount'                                //div[contains(text(),'Сума пропозиції')]/following-sibling::*
-    ${field_value}  get text  xpath=${award_selector}${field_selector}
-    ${field_value}  convert_page_values  ${field}  ${field_value}
-    [Return]  ${field_value}
-
-
-_сторінка_детальної_інформації_awards value.currency
-    [Arguments]  ${field_name}  ${award_index}
+сторінка_детальної_інформації отримати awards[${award_index}].value.currency
     ${selector}  set variable  //*[@id="auction_results"]//*[@data-qa="captions"]//*[@class="ivu-col ivu-col-span-sm-4"]
     ${value}  get text  ${selector}
 	${field_value_in_smart_format}  fetch from right  ${value}  ${space}
@@ -3131,55 +3094,65 @@ _сторінка_детальної_інформації_awards value.currency
     [Return]  ${field_value}
 
 
-сторінка_детальної_інформації_awards suppliers
-    [Arguments]  ${field_name}  ${award_index}
-    ${reg}              evaluate  re.search(r'.*?\\[(?P<index>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
-    ${supplier_index}  	evaluate  '${reg.group('index')}'
-    ${field}  	        evaluate  '${reg.group('field')}'
-    ${partial_field}  fetch from left  ${field}  .
-    ${field_value}  run keyword  smarttender.сторінка_детальної_інформації_awards_suppliers ${partial_field}  ${field}  ${award_index}  ${supplier_index}
-    [Return]  ${field_value}
-
-
-сторінка_детальної_інформації_awards_suppliers contactPoint
-    [Arguments]  ${field_name}  ${award_index}  ${supplier_index}
-    ${award_selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]
-    ${reg}              evaluate  re.search(r'\\.(?P<field>.*)', '${field_name}')  re
-    ${field}  	        evaluate  '${reg.group('field')}'
-    ${field_selector}  set variable if
-    ...  '${field}' == 'telephone'                  //*[text()="Телефон"]/parent::*/following-sibling::*
-    ...  '${field}' == 'name'                       //*[text()="ПІБ"]/parent::*/following-sibling::*
-    ...  '${field}' == 'email'                      //*[text()="Email"]/parent::*/following-sibling::*
-    ${field_value}  get text  xpath=${award_selector}${field_selector}
-    [Return]  ${field_value}
-
-
-сторінка_детальної_інформації_awards_suppliers identifier
-    [Arguments]  ${field_name}  ${award_index}  ${supplier_index}
-    ${award_selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]
-    ${reg}              evaluate  re.search(r'\\.(?P<field>.*)', '${field_name}')  re
-    ${field}  	        evaluate  '${reg.group('field')}'
-    ${field_selector}  set variable if
-    ...  '${field}' == 'telephone'                  no such field on page
-    ...  '${field}' == 'legalName'                  //*[@class="expander-title"]
-    ...  '${field}' == 'id'                         //*[text()="Код ЄДРПОУ"]/parent::*/following-sibling::*
-    ...  '${field}' == 'scheme'                     //*[text()="Код ЄДРПОУ"]/parent::*
-    ${field_value}  get text  xpath=${award_selector}${field_selector}
-    return from keyword if  '${field}' == 'scheme' and "${field_value}" == "Код ЄДРПОУ"  UA-EDR
-    [Return]  ${field_value}
-
-
-сторінка_детальної_інформації_awards_suppliers address
-    [Arguments]  ${field_name}  ${award_index}  ${supplier_index}
-    log to console  Поле не отображается на странице
+сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].address.countryName
     ${field_value}  set variable  Поле не отображается на странице
     [Return]  ${field_value}
 
 
-сторінка_детальної_інформації_awards_suppliers name
-    [Arguments]  ${field_name}  ${award_index}  ${supplier_index}
-    ${award_selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]
-    ${field_value}  get text  xpath=${award_selector}//*[@class="expander-title"]
+сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].address.locality
+    ${field_value}  set variable  Поле не отображается на странице
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].address.postalCode
+    ${field_value}  set variable  Поле не отображается на странице
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].address.region
+    ${field_value}  set variable  Поле не отображается на странице
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].address.streetAddress
+    ${field_value}  set variable  Поле не отображается на странице
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].contactPoint.telephone
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="Телефон"]/parent::*/following-sibling::*
+    ${field_value}  get text  xpath=${selector}
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].contactPoint.name
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="ПІБ"]/parent::*/following-sibling::*
+    ${field_value}  get text  xpath=${selector}
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].contactPoint.email
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="Email"]/parent::*/following-sibling::*
+    ${field_value}  get text  xpath=${selector}
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].identifier.scheme
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="Код ЄДРПОУ"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  set variable if  "${field_value_in_smart_format}" == "Код ЄДРПОУ"  UA-EDR  ERROR
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].identifier.legalName
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="ПІБ"]/parent::*/following-sibling::*
+    ${field_value}  get text  xpath=${selector}
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].identifier.id
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="Код ЄДРПОУ"]/parent::*/following-sibling::*
+    ${field_value}  get text  xpath=${selector}
     [Return]  ${field_value}
 
 
@@ -3293,7 +3266,7 @@ Open button
 
 розгорнути всі експандери
     ${selector down}  Set Variable  //*[contains(@class,"expander")]/i[contains(@class,"down")]
-    Run Keyword And Ignore Error  loading дочекатися відображення елемента на сторінці  ${selector down}
+    Run Keyword And Ignore Error  loading дочекатися відображення елемента на сторінці  ${selector down}  2
     ${count}  Get Matching Xpath Count  ${selector down}
     Run Keyword If  ${count} != 0  Run Keywords
     ...  Repeat Keyword  ${count} times  Click Element  ${selector down}  AND
