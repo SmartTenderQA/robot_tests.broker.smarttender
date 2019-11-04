@@ -894,7 +894,7 @@ ${tender_cdb_id}                    ${None}
 	...  'reporting' in '${mode}'           ${False}
 	...                                     ${True}
 
-	run keyword if  '${description_en_status}' == 'PASS' and  ${description_en_add} == ${True}
+	run keyword if  "${description_en_status}" == "PASS" and  ${description_en_add} == ${True}
 	...  append to list  ${field_list}  description_en
 
 	run keyword if  '${mode}' != 'open_esco'
