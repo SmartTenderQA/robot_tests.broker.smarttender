@@ -1435,6 +1435,21 @@ ${tender_cdb_id}                    ${None}
 	[Return]  ${field_value}
 
 
+сторінка_детальної_інформації отримати causeDescription
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="negotiation-cause-description"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати cause
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="negotiation-cause"]//*[@data-qa="value"]
+	${field_value_in_smart_format}  get text  ${selector}
+	${field_value}  convert_negotiation_cause_from_smart_format  ${field_value_in_smart_format}
+	[Return]  ${field_value}
+
+
 сторінка_детальної_інформації отримати funders
     [Arguments]  ${field_name}
     ${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
@@ -1535,7 +1550,7 @@ _перейти до лоту якщо це потрібно
 	${number}  	evaluate  '${reg.group('number')}'
 	${field}  	evaluate  '${reg.group('field')}'
 	перейти до сторінки детальної інформаціїї
-    ${feature_block}  set variable  (//*[@data-qa="features-block"]//*[@class="delimeter ivu-row"])[${number}+1]
+    ${feature_block}  set variable  (//*[contains(@data-qa,"feature-list")])[${number}+1]
 	smarttender.розгорнути всі експандери
     ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field}  ${feature_block}
     [Return]  ${feature_field_name}
@@ -1742,12 +1757,11 @@ get_item_deliveryAddress_value
 
 нецінові_сторінка_детальної отримати featureOf
     [Arguments]  ${feature_block}
-	${selector}  set variable  xpath=${feature_block}//*[contains(@class, "feature-of")]
-	${feature_field_value_in_smart_format}  get text  ${selector}
+    ${feature_field_value_in_smart_format}  get element attribute  ${feature_block}@data-qa
 	${feature_field_value}  set variable if
-		...  "${feature_field_value_in_smart_format}" == "Критерії до закупівлі"  tenderer
-		...  "${feature_field_value_in_smart_format}" == "Критерії до лоту"  lot
-		...  "${feature_field_value_in_smart_format}" == "Критерії до номенклатури"  item
+		...  "${feature_field_value_in_smart_format}" == "tender-feature-list"  tenderer
+		...  "${feature_field_value_in_smart_format}" == "lot-feature-list"  lot
+		...  "${feature_field_value_in_smart_format}" == "nomenclature-feature-list"  item
 	[Return]  ${feature_field_value}
 
 
@@ -2037,7 +2051,7 @@ get_item_deliveryAddress_value
     [Documentation]  Отримати значення поля field_name з нецінового показника з feature_id в описі для тендера tender_uaid.
 	перейти до сторінки детальної інформаціїї
 	log to console  Отримати інформацію із нецінового показника
-	${feature_block}  set variable  (//*[@data-qa="features-block"]//*[@class="delimeter ivu-row"][contains(., "${feature_id}")])
+	${feature_block}  set variable  //*[contains(@data-qa,"feature-list")][contains(., "${feature_id}")]
 	smarttender.розгорнути всі експандери
     ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field_name}  ${feature_block}
     [Return]  ${feature_field_name}
