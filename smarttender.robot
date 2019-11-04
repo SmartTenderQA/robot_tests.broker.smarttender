@@ -3189,15 +3189,19 @@ _отримати посилання на сторінку оскарження
 
 сторінка_детальної_інформації отримати contracts
     [Arguments]  ${field_name}
-    ${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
-	${number}  	evaluate  '${reg.group('number')}'
-	${field}  	evaluate  '${reg.group('field')}'
-    ###########################################
-	#   перейти на сторінку контракта
-	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
-	open button  //*[@data-qa="contract"]/a
+	log  ${field_name}
+    ${field_value}  run keyword  smarttender.сторінка_детальної_інформації отримати ${field_name}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати contracts[${contract_index}].status
+	${have_contract}  run keyword and return status  wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	return from keyword if  ${have_contract} == ${False}  pending
 	###########################################
-	${field_value}  run keyword  smarttender.контракт_сторінка_детальної_інформації отримати ${field}
+	open button  //*[@data-qa="contract"]/a
+    ${selector}  set variable  //*[@data-qa="contract-status-info-title"]
+    ${field_value}  get text  ${selector}
+    ${field_value}  convert_contract_status  ${field_value}
 	go back
 	loading дочекатись закінчення загрузки сторінки
 	[Return]  ${field_value}
@@ -3211,13 +3215,6 @@ _дочекатися відображення посилання на дого�
 	element should be visible  ${contract_btn}
 	${contract_btn_href}  Get Element Attribute  ${contract_btn}@href
 	should not be equal as strings  ${contract_btn_href}  https://test.smarttender.biz/publichni-zakupivli-prozorro-dogovory/
-
-
-контракт_сторінка_детальної_інформації отримати status
-    ${selector}  set variable  //*[@data-qa="contract-status-info-title"]
-    ${field_value}  get text  ${selector}
-    ${field_value}  convert_contract_status  ${field_value}
-	[Return]  ${field_value}
 
 
 Видалити донора
