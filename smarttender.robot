@@ -1695,6 +1695,7 @@ _перейти до лоту якщо це потрібно
 	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  locality
 	${item_field_value}  set variable if
 		...  "Днепро" == "${item_field_value}"  Дніпро
+		...  "с." in "${item_field_value}"  ${item_field_value.replace(u"с.", "")}
 		...  ${item_field_value}
 	[Return]  ${item_field_value}
 
@@ -3169,13 +3170,19 @@ _отримати посилання на сторінку оскарження
 
 
 сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].identifier.legalName
-    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="ПІБ"]/parent::*/following-sibling::*
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]//*[@class="expander-title"]
     ${field_value}  get text  xpath=${selector}
     [Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].identifier.id
     ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="Код ЄДРПОУ"]/parent::*/following-sibling::*
+    ${field_value}  get text  xpath=${selector}
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].name
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]//*[@class="expander-title"]
     ${field_value}  get text  xpath=${selector}
     [Return]  ${field_value}
 
