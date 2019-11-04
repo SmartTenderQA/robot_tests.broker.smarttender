@@ -2137,7 +2137,7 @@ get_item_deliveryAddress_value
 Отримати інформацію із запитання
     [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name із запитання з question_id в описі для тендера tender_uaid.
-    #на той стороне решили не ждать, можно зарепортить
+    #на той стороне решили не ждать синхронизации, можно зарепортить
     ${test_list}  create list
     ...  Відображення заголовку анонімного запитання на тендер без відповіді
     ...  Відображення заголовку анонімного запитання на всі лоти без відповіді
@@ -2192,17 +2192,36 @@ get_item_deliveryAddress_value
 Створити вимогу про виправлення умов закупівлі
     [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${document}=${None}
     [Documentation]  Створює вимогу claim про виправлення умов закупівлі у статусі claim для тендера tender_uaid. Можна створити вимогу як з документом, який знаходиться за шляхом document, так і без нього.
-	log to console  Створити вимогу про виправлення умов закупівлі
-	debug
-    [Return]  ${complaintID}
+    ${title}  set variable  ${claim['data']['title']}
+    ${description}  set variable  ${claim['data']['description']}
+    ${tender_title}  smarttender.сторінка_детальної_інформації отримати title
+    smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+	вимога_вибрати тип запитання  ${tender_title}
+	вимога_натиснути кнопку Подати вимогу "Замовнику"
+	вимога_заповнити тему  ${title}
+	вимога_заповнити текст запитання  ${description}
+
+	run keyword if  "${document}" != "${None}"  вимога_завантажити документ  ${document}
+
+	wait until keyword succeeds  1m  1  вимога_натиснути кнопку "Подати"
+#    [Return]  ${complaintID}
     
     
 Створити вимогу про виправлення умов лоту
     [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${lot_id}  ${document}=${None}
-    [Documentation]  Створює вимогу claim про виправлення умов лоту у статусі claim для тендера tender_uaid. Можна створити вимогу як з документом, який знаходиться за шляхом document, так і без нього.  
-	log to console  Створити вимогу про виправлення умов лоту
-	debug
-    [Return]  ${complaintID}
+    [Documentation]  Створює вимогу claim про виправлення умов лоту у статусі claim для тендера tender_uaid. Можна створити вимогу як з документом, який знаходиться за шляхом document, так і без нього.
+	${title}  set variable  ${claim['data']['title']}
+    ${description}  set variable  ${claim['data']['description']}
+    smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+	вимога_вибрати тип запитання  ${lot_id}
+	вимога_натиснути кнопку Подати вимогу "Замовнику"
+	вимога_заповнити тему  ${title}
+	вимога_заповнити текст запитання  ${description}
+
+	run keyword if  "${document}" != "${None}"  вимога_завантажити документ  ${document}
+
+	wait until keyword succeeds  1m  1  вимога_натиснути кнопку "Подати"
+#    [Return]  ${complaintID}
     
     
 Створити вимогу про виправлення визначення переможця
@@ -2210,14 +2229,16 @@ get_item_deliveryAddress_value
     [Documentation]  Створює вимогу claim про виправлення визначення переможця під номером award_index в статусі claim для тендера tender_uaid. Можна створити вимогу як з документом, який знаходиться за шляхом document, так і без нього.  
 	log to console  Створити вимогу про виправлення визначення переможця
 	debug
-    [Return]  ${complaintID}
+#    [Return]  ${complaintID}
     
     
 Скасувати вимогу про виправлення умов закупівлі
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data}
-    [Documentation]  Перевести вимогу complaintID про виправлення умов закупівлі для тендера tender_uaid у статус cancelled, використовуючи при цьому дані cancellation_data.  
-	log to console  Скасувати вимогу про виправлення умов закупівлі
-	debug
+    [Documentation]  Перевести вимогу complaintID про виправлення умов закупівлі для тендера tender_uaid у статус cancelled, використовуючи при цьому дані cancellation_data.
+    ${cancellationReason}  set variable  ${cancellation_data['data']['cancellationReason']}
+	вимога_натиснути коригувати  ${complaintID}
+	вимога_натиснути Скасувати вимогу  ${cancellationReason}
+
     
     
 Скасувати вимогу про виправлення умов лоту
@@ -2231,9 +2252,12 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${field_name}  ${award_index}=${None}
     [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID  
 	log to console  Отримати інформацію із скарги
-	debug
+	${complaint_field_value}  run keyword if  "${field_name}" != "status"  run keywords
+	...  log to console  Отримати інформацію із скарги  AND
+	...  debug
+	...  ELSE  run keyword  вимога_отримати інформацію по полю ${field_name}  ${complaintID}
     [Return]  ${complaint_field_value}
-    
+
     
 Відповісти на вимогу про виправлення умов закупівлі
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}
@@ -2433,9 +2457,9 @@ get_item_deliveryAddress_value
 Скасувати цінову пропозицію
     [Arguments]  ${username}  ${tender_uaid}
     [Documentation]  Змінити статус цінової пропозиції для тендера tender_uaid користувача username на cancelled.
-    ${block}                            //*[@class='ivu-card ivu-card-bordered']
-    ${cancellation offers button}       ${block}\[last()]//div[@class="ivu-poptip-rel"]/button
-    ${cancel. offers confirm button}    ${block}\[last()]//div[@class="ivu-poptip-footer"]/button[2]
+    ${block}                            set variable  //*[@class='ivu-card ivu-card-bordered']
+    ${cancellation offers button}       set variable  ${block}\[last()]//div[@class="ivu-poptip-rel"]/button
+    ${cancel. offers confirm button}    set variable  ${block}\[last()]//div[@class="ivu-poptip-footer"]/button[2]
 	loading дочекатися відображення елемента на сторінці  ${cancellation offers button}
 	Click Element  ${cancellation offers button}
 	Click Element  ${cancel. offers confirm button}
@@ -3701,6 +3725,105 @@ _розгорнути лот по id
     ${question send btn}  Set Variable  //*[@data-qa="questions"]//button[contains(@class,"btn-success")]
     Click Element  ${question send btn}
     Run Keyword And Ignore Error  Wait Until Element Is Not Visible  ${question send btn}  30
+
+
+################################################################################
+#                             СКАРГИ/ВИМОГИ                                    #
+################################################################################
+вимога_вибрати тип запитання
+    [Arguments]  ${type}
+    ${dropdown_selector}  set variable  xpath=//*[@data-qa="complaints"]//*[@class="ivu-select-selection"]
+    ${type_selector}      set variable  xpath=//*[@class="ivu-select-dropdown-list"]/li[contains(text(),"${type}")]
+    click element  ${dropdown_selector}/i[last()]
+    loading дочекатися відображення елемента на сторінці  ${type_selector}
+    click element  ${type_selector}
+    sleep  2
+    ${get}  get text by JS  ${dropdown_selector}
+    should contain  ${get}  ${type}
+
+
+вимога_натиснути кнопку Подати вимогу "Замовнику"
+    ${complaint button}    Set Variable  //*[@data-qa="complaints"]//*[@data-qa="submit-claim"]
+    ${complaint send btn}  Set Variable  //*[@data-qa="complaints"]//button[contains(@class,"btn-success")]
+    loading дочекатися відображення елемента на сторінці  ${complaint button}
+    Click Element                  ${complaint button}
+
+
+вимога_заповнити тему
+    [Arguments]  ${text}
+    ${complaint theme}  Set Variable  //*[@data-qa="complaints"]//label[text()="Тема"]/following-sibling::div//input
+    loading дочекатися відображення елемента на сторінці  ${complaint theme}
+    Input Text  ${complaint theme}  ${text}
+    Sleep  .5
+    ${get}  Get Element Attribute  ${complaint theme}@value
+    Should Be Equal  ${get}  ${text}
+
+
+вимога_заповнити текст запитання
+    [Arguments]  ${text}
+    ${complaint text}  Set Variable  //*[@data-qa="complaints"]//label[text()="Опис"]/following-sibling::div//textarea
+    Input Text  ${complaint text}  ${text}
+    Sleep  .5
+    ${get}  Get Element Attribute  ${complaint text}@value
+    Should Be Equal  ${get}  ${text}
+
+
+вимога_завантажити документ
+    [Arguments]  ${document}
+    ${doc_name}  set variable  ${document.split('/')[-1]}
+    Choose File  //*[@data-qa="complaints"]//*[@data-qa="add-files"]//input  ${document}
+    wait until page contains  ${doc_name}  20
+
+
+вимога_натиснути кнопку "Подати"
+    ${complaint send btn}  Set Variable  //*[@data-qa="complaints"]//button[contains(@class,"btn-success")]
+    Click Element  ${complaint send btn}
+    loading дочекатись закінчення загрузки сторінки
+    Wait Until Element Is Not Visible  ${complaint send btn}  10
+
+
+вимога_натиснути коригувати
+    [Arguments]  ${name}
+    ${name}  set variable if  "${name}" == "None"  ${Empty}  ${name}
+    ${button}  set variable  //*[@data-qa="complaints" and contains(., "${name}")]//*[@data-qa="start-edit-mode"]
+    click element  ${button}
+    loading дочекатися зникнення елемента зі сторінки  ${button}
+
+
+вимога_натиснути Скасувати вимогу
+    [Arguments]  ${cancellationReason}
+    ${cancel_button}  set variable  //*[@data-qa="complaints"]//*[@data-qa="cancel-complaint"]
+    wait until keyword succeeds  20  1  click element  ${cancel_button}
+    ${cancel_reason_input}  set variable  //*[@data-qa="cancel-reason"]//input
+    input text  ${cancel_reason_input}  ${cancellationReason}
+    ${cancel_modal_button}  set variable  //*[@data-qa="cancel-modal-submit"]
+    wait until keyword succeeds  20  1  click element  ${cancel_modal_button}
+    loading дочекатися зникнення елемента зі сторінки  ${cancel_button}
+
+
+вимога_отримати інформацію по полю status
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint}  set variable  //*[@data-qa="complaints" and contains(., "${complaintID}")]
+    ${status}  set variable  //*[@data-qa="type-status"]//*[contains(@class, "complaint-status")]
+    ${text}  get text  ${complaint}${status}
+    ${dict_status}  create dictionary
+    ...  Чернетка=draft
+    ...  Вимога в обробці=claim
+    ...  Дана відповідь=answered
+    ...  Скарга в обробці=pending
+    ...  Недійсна=invalid
+    ...  Не задоволена=declined
+    ...  Вирішена=resolved
+    ...  Відхилена=canceled
+    ...  Прийнята до розгляду=accepted
+    ...  Задоволена=satisfied
+    ...  Прийнята до розгляду, скасована заявником=stopping
+    ...  Прийнята до розгляду, скасована комісією=stopped
+    ...  Помилково надіслана=mistaken
+    ...  Залишено без розгляду=ignored
+    ${status}  set variable  ${dict_status['${text}']}
+    [Return]  ${status}
 
 
 ################################################################################
