@@ -2397,9 +2397,16 @@ get_item_deliveryAddress_value
 
 Скасувати цінову пропозицію
     [Arguments]  ${username}  ${tender_uaid}
-    [Documentation]  Змінити статус цінової пропозиції для тендера tender_uaid користувача username на cancelled.  
-	log to console  Скасувати цінову пропозицію
-	debug
+    [Documentation]  Змінити статус цінової пропозиції для тендера tender_uaid користувача username на cancelled.
+    ${block}                            //*[@class='ivu-card ivu-card-bordered']
+    ${cancellation offers button}       ${block}\[last()]//div[@class="ivu-poptip-rel"]/button
+    ${cancel. offers confirm button}    ${block}\[last()]//div[@class="ivu-poptip-footer"]/button[2]
+	loading дочекатися відображення елемента на сторінці  ${cancellation offers button}
+	Click Element  ${cancellation offers button}
+	Click Element  ${cancel. offers confirm button}
+	loading дочекатись закінчення загрузки сторінки
+    ${status}  пропозиція_отримати інформацію по полю status
+    run keyword if  "${status}" != "None"  Скасувати цінову пропозицію  ${username}  ${tender_uaid}
 
 
 Завантажити документ у кваліфікацію
@@ -3579,7 +3586,7 @@ _розгорнути лот по id
     ${status_dict}  create dictionary
     ...  Пропозиція недійсна=invalid
     ...  Пропозиція подана=pending
-    ...  Пропозиція не подана=...
+    ...  Пропозиція не подана=None
     ${text}  get text  //*[@class="ivu-alert-message"]
     ${value}  get from dictionary  ${status_dict}  ${text}
     [Return]  ${value}
