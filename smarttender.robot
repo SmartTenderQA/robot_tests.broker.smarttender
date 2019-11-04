@@ -894,7 +894,7 @@ ${tender_cdb_id}                    ${None}
 	...  'reporting' in '${mode}'           ${False}
 	...                                     ${True}
 
-	run keyword if  "${description_en_status}" == "PASS" and  ${description_en_add} == ${True}
+	run keyword if  "${description_en_status}" == "PASS" and ${description_en_add} == ${True}
 	...  append to list  ${field_list}  description_en
 
 	run keyword if  '${mode}' != 'open_esco'
@@ -3064,7 +3064,7 @@ _план_сторінка_детальної_інформації отрима�
 	${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
 	${number}  	evaluate  '${reg.group('number')}'
 	${field}  	evaluate  '${reg.group('field')}'
-	${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${number}+1]@href
+	${href}  smarttender._отримати посилання на сторінку оскарження  ${number}
 	go to  ${href}
 	loading дочекатись закінчення загрузки сторінки
 	${field_selector}      set variable if
@@ -3077,6 +3077,14 @@ _план_сторінка_детальної_інформації отрима�
 	go back
 	loading дочекатись закінчення загрузки сторінки
 	[Return]  ${ret}
+
+
+_отримати посилання на сторінку оскарження
+	[Arguments]  ${number}
+	${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${number}+1]@href
+	return from keyword if  ${href.__len__()} != 0  ${href}
+	${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${number}]@href
+	[Return]  ${href}
 
 
 сторінка_детальної_інформації отримати awards (reporting)
