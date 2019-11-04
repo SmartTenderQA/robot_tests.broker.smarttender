@@ -299,7 +299,7 @@ ${tender_cdb_id}                    ${None}
    	webclient.header натиснути на елемент за назвою             Розрахунок
     dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
 	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
-	screen натиснути кнопку  мультилотову
+	screen натиснути кнопку  однолотову
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети
     webclient.додати бланк  GRID_ITEMS_HIERARCHY
@@ -428,12 +428,16 @@ ${tender_cdb_id}                    ${None}
 
 Оголосити закупівлю openua multilot
 	[Arguments]  ${tender_data}
-	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
-	webclient.header натиснути на елемент за назвою  Очистити
-	webclient.header натиснути на елемент за назвою  OK
-	webclient.header натиснути на елемент за назвою  Додати
-    webclient.вибрати тип процедури  Відкриті торги
-    webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+	log to console  Оголосити закупівлю openua multilot
+	${plan_uaid}  Отримати номер плану з артифакту
+    знайти план у webclient  ${plan_uaid}
+   	webclient.header натиснути на елемент за назвою             Розрахунок
+    dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
+	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
+	screen натиснути кнопку  мультилотову
+	screen заголовок повинен містити     Додавання. Тендери
+    webclient.видалити всі лоти та предмети
+    webclient.додати бланк  GRID_ITEMS_HIERARCHY
     # ОСНОВНІ ПОЛЯ
 	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
 	${title}  set variable  ${tender_data['title']}
@@ -488,12 +492,16 @@ ${tender_cdb_id}                    ${None}
 
 Оголосити закупівлю openua_defense multilot
 	[Arguments]  ${tender_data}
-	webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)
-	webclient.header натиснути на елемент за назвою  Очистити
-	webclient.header натиснути на елемент за назвою  OK
-	webclient.header натиснути на елемент за назвою  Додати
-    webclient.вибрати тип процедури  Переговорна процедура для потреб оборони
-    webclient.операція над чекбоксом  True  //*[@data-name="ISMULTYLOT"]//input
+		log to console  Оголосити закупівлю openua_defense multilot
+	${plan_uaid}  Отримати номер плану з артифакту
+    знайти план у webclient  ${plan_uaid}
+   	webclient.header натиснути на елемент за назвою             Розрахунок
+    dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
+	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
+	screen натиснути кнопку  мультилотову
+	screen заголовок повинен містити     Додавання. Тендери
+    webclient.видалити всі лоти та предмети
+    webclient.додати бланк  GRID_ITEMS_HIERARCHY
     # ОСНОВНІ ПОЛЯ
 	${tenderPeriod.endDate}  set variable  ${tender_data['tenderPeriod']['endDate']}
 	${title}  set variable  ${tender_data['title']}
@@ -550,11 +558,13 @@ ${tender_cdb_id}                    ${None}
 	webclient.header натиснути на елемент за назвою  OK
 	webclient.header натиснути на елемент за назвою  Додати
 	# ОСНОВНІ ПОЛЯ
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
 	${value.amount}  set variable  ${tender_data['value']['amount']}
 	${value.valueAddedTaxIncluded}  set variable  ${tender_data['value']['valueAddedTaxIncluded']}
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	:FOR  ${field}  in
+	...  mainProcurementCategory
 	...  value.amount
 	...  value.valueAddedTaxIncluded
 	...  title
@@ -564,7 +574,7 @@ ${tender_cdb_id}                    ${None}
 	# ПРЕДМЕТИ
 	${count_item}  set variable  1
 	:FOR  ${item}  IN  @{tender_data['items']}
-	\  run keyword if  '${count_item}' != '1'  webclient.додати бланк  GRID_ITEMS_HIERARCHY
+	\  run keyword if  '${count_item}' != '1'  webclient.додати бланк  GRID_ITEMS
 	\  Заповнити поля предмету  ${item}
 	\  ${count_item}  evaluate  ${count_item} + 1
 
@@ -849,12 +859,18 @@ ${tender_cdb_id}                    ${None}
 	${minimalStepPercentage_status}  ${minimalStepPercentage}  run keyword and ignore error  set variable  ${lot['minimalStepPercentage']}
 	${yearlyPaymentsPercentageRange_status}  ${yearlyPaymentsPercentageRange}  run keyword and ignore error  set variable  ${lot['yearlyPaymentsPercentageRange']}
 
+    ${en_add}  set variable if
+	...  'below' in '${mode}'               ${False}
+	...  'reporting' in '${mode}'           ${False}
+	...  'openua' in '${mode}'              ${False}
+	...                                     ${True}
+
 	${field_list}  create list
 	...  title
 	...  description
-	run keyword if  ('${title_en_status}' == 'PASS') and ('below' not in '${mode}')
+	run keyword if  ('${title_en_status}' == 'PASS') and (${en_add} == ${True})
 	...  append to list  ${field_list}  title_en
-	run keyword if  '${description_en_status}' == 'PASS'
+	run keyword if  ('${description_en_status}' == 'PASS') and (${en_add} == ${True})
 	...  append to list  ${field_list}  description_en
 	run keyword if  '${value_status}' == 'PASS'
 	...  append to list  ${field_list}  value.valueAddedTaxIncluded  value.amount
@@ -889,12 +905,13 @@ ${tender_cdb_id}                    ${None}
 	append to list  ${field_list}
 	...  description
 
-	${description_en_add}  set variable if
+    ${en_add}  set variable if
 	...  'below' in '${mode}'               ${False}
 	...  'reporting' in '${mode}'           ${False}
+	...  'openua' in '${mode}'              ${False}
 	...                                     ${True}
 
-	run keyword if  "${description_en_status}" == "PASS" and ${description_en_add} == ${True}
+	run keyword if  ("${description_en_status}" == "PASS") and (${en_add} == ${True})
 	...  append to list  ${field_list}  description_en
 
 	run keyword if  '${mode}' != 'open_esco'
@@ -2684,7 +2701,7 @@ get_item_deliveryAddress_value
 	${contactPoint.name}  set variable  ${supplier_data['data']['suppliers'][0]['contactPoint']['name']}
 	${contactPoint.telephone}  set variable  ${supplier_data['data']['suppliers'][0]['contactPoint']['telephone']}
 	${contactPoint.email}  set variable  ${supplier_data['data']['suppliers'][0]['contactPoint']['email']}
-	${${contactPoint.url}}  set variable  ${supplier_data['data']['suppliers'][0]['contactPoint']['url']}
+	${contactPoint.url}  set variable  ${supplier_data['data']['suppliers'][0]['contactPoint']['url']}
 	${address.postalCode}  set variable  ${supplier_data['data']['suppliers'][0]['address']['postalCode']}
 	${address.streetAddress}  set variable  ${supplier_data['data']['suppliers'][0]['address']['streetAddress']}
 	${address.locality}  set variable  ${supplier_data['data']['suppliers'][0]['address']['locality']}
@@ -2696,6 +2713,7 @@ get_item_deliveryAddress_value
 	...  sme=Суб'єкт малого підприємництва
 	...  large=Суб'єкт великого підприємництва
 	...  mid=Суб'єкт середнього підприємництва
+	...  not specified=Не субъект предпринимательства
 
 	заповнити simple input  //*[@data-name="OKPO"]//input  ${identifier.id}
 	заповнити simple input  //*[@data-name="NORG_DOC"]//input  ${identifier.legalName}
@@ -2703,7 +2721,7 @@ get_item_deliveryAddress_value
 	заповнити autocomplete field  //*[@data-name="IDSCALE"]//input  ${scale_dict['${scale}']}
 
 	заповнити simple input  //*[@data-name="CONTACTPERSON"]//input  ${contactPoint.name}
-	заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}
+	заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}  check=${False}
 	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}  check=${False}
 	заповнити simple input  //*[@data-name="URL"]//input  ${contactPoint.url}
 	заповнити simple input  //*[@data-name="PIND"]//input  ${address.postalCode}
