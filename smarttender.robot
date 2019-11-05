@@ -1134,7 +1134,11 @@ ${tender_cdb_id}                    ${None}
 Отримати інформацію із тендера
     [Arguments]  ${username}  ${tender_uaid}  ${field_name}
     [Documentation]  Отримати значення поля field_name для тендера tender_uaid.
-    run keyword if  'tender_owner' in '${username.lower()}'  перейти до сторінки детальної інформаціїї
+    comment  Повертаємося на сторінку детальної інформації по тендеру якщо ми не на ній
+    ${current_location}  get location
+    run keyword if  "${tender_detail_page}" != "${current_location}"  run keywords
+    ...  go to  ${tender_detail_page}  AND  loading дочекатись закінчення загрузки сторінки
+    #####################################
     ${field_name_splited}  set variable  ${field_name.split('[')[0]}
     ${field_value}  run keyword  smarttender.сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
     log location
