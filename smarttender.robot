@@ -69,45 +69,16 @@ ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
-#${hub}  fadsafasdf
-#${hub_url}                              http://192.168.4.113:4444/wd/hub
+
 
 
 *** Keywords ***
 Підготувати клієнт для користувача
 	[Arguments]   ${username}
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
-#	# todo не забыть убрать
-#	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
-#	Run Keyword If  ${hub.__len__()} != 0
-#			...  Create Webdriver  Chrome  alias=${username}
-#	...  ELSE
-#			...  run keywords
-#                    ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
-#                    ...  Отримати та залогувати data_session
-#    smart go to  ${USERS.users['${username}'].homepage}
-#    # /todo не забыть убрать
 	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
 	maximize browser window
 	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
-
-
-Отримати та залогувати data_session
-	${s2b}  get_library_instance  Selenium2Library
-	${webdriver}  Call Method  ${s2b}  _current_browser
-	${data}  evaluate  requests.get("${hub_url.replace('/wd/hub', '')}/grid/api/testsession?session=${webdriver.__dict__['capabilities']['webdriver.remote.sessionid']}")  requests
-	${data}  Set Variable  ${data.json()}
-	log many  ${data}  ${webdriver}  ${webdriver.__dict__}  ${webdriver.__dict__['capabilities']}
-
-	${keys}  Get Dictionary Keys  ${webdriver.__dict__['capabilities']}
-	${to console}  create list  platform  browserName  version
-	Log  тест запущен на ноде: ${data['proxyId']}  WARN
-	log to console  ------------------------------------------------------------------------------
-	:FOR  ${key}  IN  @{keys}
-	\  run keyword if  '${key}' in @{to console}  run keywords
-	\  ...  log  ${key} = ${webdriver.__dict__['capabilities']['${key}']}  WARN    AND
-	\  ...  log to console  ------------------------------------------------------------------------------
-	Set Global Variable  ${webdriver}
 
 
 Підготувати дані для оголошення тендера
@@ -2286,11 +2257,29 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${field_name}  ${award_index}=${None}
     [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID
 	log to console  Отримати інформацію із скарги
-	smarttender.Оновити сторінку з тендером  ${username}  ${tender_uaid}
-	smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+	smarttender.Синхронізувати тендер
+	#  Залежно від того це звичайна скарга чи award скарга відкриваємо потрібну сторінку
+	${is_award_complaint}  run keyword and return status  log  ${submissionMethodDetails}
+	run keyword if  ${is_award_complaint}
+			...  smarttender._перейти до сторінки вимоги_кваліфікація
+	...  ELSE
+			...  smarttender._перейти до сторінки вимоги
+	#
 	smarttender.розгорнути всі експандери
 	${complaint_field_value}  run keyword  вимога_отримати інформацію по полю ${field_name}  ${complaintID}
     [Return]  ${complaint_field_value}
+
+
+_перейти до сторінки вимоги
+	перейти до сторінки детальної інформаціїї
+    reload page
+    loading дочекатись закінчення загрузки сторінки
+	smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+
+
+_перейти до сторінки вимоги_кваліфікація
+	перейти до сторінки детальної інформаціїї
+    вимоги_кваліфікація перейти на сторінку по індексу  0
 
 
 Отримати інформацію із документа до скарги
