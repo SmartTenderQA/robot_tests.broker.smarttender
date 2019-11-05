@@ -2281,20 +2281,19 @@ get_item_deliveryAddress_value
 Отримати інформацію із скарги
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${field_name}  ${award_index}=${None}
     [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID
-    ########## На жалобу отвечает организатор, а синхронизации почему не нету ############
-#    перенес синхронизацияю в получение статуса, слишком много таких кейвордов
-#    ${test_list}  create list
-#    ...  Можливість створити, подати, відповісти і після того скасувати вимогу про виправлення умов закупівлі
-#    ...  Можливість створити, подати, відповісти і після того скасувати вимогу про виправлення умов лоту
-#    run keyword if  u"${TEST_NAME}" in @{test_list}
-#    ...  smarttender.Синхронізувати тендер
-    перейти до сторінки детальної інформаціїї
-    smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
-    ######################################################################################
-	${complaint_field_value}  run keyword if  "${field_name}" != "status"  run keywords
-	...  log to console  Отримати інформацію із скарги  AND
-	...  debug
-	...  ELSE  run keyword  вимога_отримати інформацію по полю ${field_name}  ${complaintID}
+	log to console  Отримати інформацію із скарги
+	smarttender.Оновити сторінку з тендером  ${username}  ${tender_uaid}
+	smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+	smarttender.розгорнути всі експандери
+	${complaint_field_value}  run keyword  вимога_отримати інформацію по полю ${field_name}  ${complaintID}
+    [Return]  ${complaint_field_value}
+
+
+Отримати інформацію із документа до скарги
+	[Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${document_id}  ${field_name}
+	log to console  Отримати інформацію із документа до скарги
+	smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+	${complaint_field_value}  run keyword  вимога_отримати інформацію з докуммента по полю ${field_name}  ${complaintID}
     [Return]  ${complaint_field_value}
 
     
@@ -3873,6 +3872,65 @@ _розгорнути лот по id
     ${status}  get from dictionary  ${dict_status}  ${text}
     [Return]  ${status}
 
+
+вимога_отримати інформацію по полю description
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_description_locator}  set variable  xpath=${complaint_locator}//*[@data-qa="description"]//*[@style="margin-left: 10px;"]
+    ${field_value}  get text  ${complaint_description_locator}
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію по полю title
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_title_locator}  set variable  xpath=${complaint_locator}//*[@class="break-word"]
+    ${field_value}  get text  ${complaint_title_locator}
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію по полю resolutionType
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_resolutionType_locator}  set variable  xpath=${complaint_locator}//span[contains(., "Тип рішення: ")]//*[@class="bold-text"]
+    ${field_value_in_smart_format}  get text  ${complaint_resolutionType_locator}
+    ${field_value}  set variable if
+        ...  "${field_value_in_smart_format}" == "Відхилено"  declined
+        ...  "${field_value_in_smart_format}" == "Недійсне"  invalid
+        ...  "${field_value_in_smart_format}" == "Вирішено"  resolved
+        ...  Error
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію по полю resolution
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_resolution_locator}  set variable  xpath=${complaint_locator}//*[@class="ivu-timeline-item-content" and contains(., "Тип рішення")]//*[@class="content break-word"]
+    ${field_value}  get text  ${complaint_resolution_locator}
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію по полю satisfied
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_satisfied_locator}  set variable  xpath=${complaint_locator}//*[text()="Вимога задовільнена"]
+    ${field_value}  run keyword and return status  element should be visible  ${complaint_satisfied_locator}
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію з докуммента по полю title
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+	smarttender.розгорнути всі експандери
+    ${complaint_doc_title_locator}  set variable  xpath=${complaint_locator}//*[@class="text-nowrap"]//a
+    ${field_value}  get text  ${complaint_doc_title_locator}
+    [Return]  ${field_value}
 
 вимога_отримати complaintID по ${title}
     Синхронізувати тендер
