@@ -3535,10 +3535,7 @@ _Дочекатись синхронізації
 
 
 перейти до сторінки детальної інформаціїї
-	${location}  get location
-	run keyword if  '/webclient/' in '${location}'  run keywords
-    ...  go to  ${tender_detail_page}  AND
-    ...  loading дочекатись закінчення загрузки сторінки
+	smart go to  ${tender_detail_page}
 
 
 перейти до лоту за необхідністю
