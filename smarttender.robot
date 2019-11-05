@@ -2091,7 +2091,6 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${feature_id}  ${field_name}
     [Documentation]  Отримати значення поля field_name з нецінового показника з feature_id в описі для тендера tender_uaid.
 	перейти до сторінки детальної інформаціїї
-	log to console  Отримати інформацію із нецінового показника
 	${feature_block}  set variable  //*[contains(@data-qa,"feature-list")][contains(., "${feature_id}")]
 	smarttender.розгорнути всі експандери
     ${feature_field_name}  run keyword  smarttender.нецінові_сторінка_детальної отримати ${field_name}  ${feature_block}
