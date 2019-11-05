@@ -2251,12 +2251,20 @@ get_item_deliveryAddress_value
     
 Отримати інформацію із скарги
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${field_name}  ${award_index}=${None}
-    [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID  
+    [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID
 	log to console  Отримати інформацію із скарги
-	${complaint_field_value}  run keyword if  "${field_name}" != "status"  run keywords
-	...  log to console  Отримати інформацію із скарги  AND
-	...  debug
-	...  ELSE  run keyword  вимога_отримати інформацію по полю ${field_name}  ${complaintID}
+	smarttender.Оновити сторінку з тендером  ${username}  ${tender_uaid}
+	smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+	smarttender.розгорнути всі експандери
+	${complaint_field_value}  run keyword  вимога_отримати інформацію по полю ${field_name}  ${complaintID}
+    [Return]  ${complaint_field_value}
+
+
+Отримати інформацію із документа до скарги
+	[Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${document_id}  ${field_name}
+	log to console  Отримати інформацію із документа до скарги
+	smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+	${complaint_field_value}  run keyword  вимога_отримати інформацію з докуммента по полю ${field_name}  ${complaintID}
     [Return]  ${complaint_field_value}
 
     
@@ -3789,7 +3797,7 @@ _розгорнути лот по id
 вимога_отримати інформацію по полю status
     [Arguments]  ${complaintID}
     ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
-    ${complaint}  set variable  //*[@data-qa="complaints" and contains(., "${complaintID}")]
+    ${complaint}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
     ${status}  set variable  //*[@data-qa="type-status"]//*[contains(@class, "complaint-status")]
     ${text}  get text  ${complaint}${status}
     ${dict_status}  create dictionary
@@ -3800,16 +3808,75 @@ _розгорнути лот по id
     ...  Недійсна=invalid
     ...  Не задоволена=declined
     ...  Вирішена=resolved
-    ...  Відхилена=canceled
+    ...  Відхилена=cancelled
     ...  Прийнята до розгляду=accepted
     ...  Задоволена=satisfied
     ...  Прийнята до розгляду, скасована заявником=stopping
     ...  Прийнята до розгляду, скасована комісією=stopped
     ...  Помилково надіслана=mistaken
     ...  Залишено без розгляду=ignored
-    ${status}  set variable  ${dict_status['${text}']}
+    ${status}  get from dictionary  ${dict_status}  ${text}
     [Return]  ${status}
 
+
+вимога_отримати інформацію по полю description
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_description_locator}  set variable  xpath=${complaint_locator}//*[@data-qa="description"]//*[@style="margin-left: 10px;"]
+    ${field_value}  get text  ${complaint_description_locator}
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію по полю title
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_title_locator}  set variable  xpath=${complaint_locator}//*[@class="break-word"]
+    ${field_value}  get text  ${complaint_title_locator}
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію по полю resolutionType
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_resolutionType_locator}  set variable  xpath=${complaint_locator}//span[contains(., "Тип рішення: ")]//*[@class="bold-text"]
+    ${field_value_in_smart_format}  get text  ${complaint_resolutionType_locator}
+    ${field_value}  set variable if
+        ...  "${field_value_in_smart_format}" == "Відхилено"  declined
+        ...  "${field_value_in_smart_format}" == "Недійсне"  invalid
+        ...  "${field_value_in_smart_format}" == "Вирішено"  resolved
+        ...  Error
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію по полю resolution
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_resolution_locator}  set variable  xpath=${complaint_locator}//*[@class="ivu-timeline-item-content" and contains(., "Тип рішення")]//*[@class="content break-word"]
+    ${field_value}  get text  ${complaint_resolution_locator}
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію по полю satisfied
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_satisfied_locator}  set variable  xpath=${complaint_locator}//*[text()="Вимога задовільнена"]
+    ${field_value}  run keyword and return status  element should be visible  ${complaint_satisfied_locator}
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію з докуммента по полю title
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+	smarttender.розгорнути всі експандери
+    ${complaint_doc_title_locator}  set variable  xpath=${complaint_locator}//*[@class="text-nowrap"]//a
+    ${field_value}  get text  ${complaint_doc_title_locator}
+    [Return]  ${field_value}
 
 ################################################################################
 #                               GET AUCTION HREF                               #
