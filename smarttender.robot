@@ -2243,10 +2243,18 @@ get_item_deliveryAddress_value
     
 Створити вимогу про виправлення визначення переможця
     [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${award_index}  ${document}=${None}
-    [Documentation]  Створює вимогу claim про виправлення визначення переможця під номером award_index в статусі claim для тендера tender_uaid. Можна створити вимогу як з документом, який знаходиться за шляхом document, так і без нього.  
-	log to console  Створити вимогу про виправлення визначення переможця
-	debug
-	${complaintID}  вимога_отримати complaintID по ${title}
+    [Documentation]  Створює вимогу claim про виправлення визначення переможця під номером award_index в статусі claim для тендера tender_uaid. Можна створити вимогу як з документом, який знаходиться за шляхом document, так і без нього.
+    ${title}  set variable  ${claim['data']['title']}
+    ${description}  set variable  ${claim['data']['description']}
+    вимоги_кваліфікація перейти на сторінку по індексу  ${award_index}
+    вимога_натиснути кнопку Подати вимогу "Замовнику"
+	вимога_заповнити тему  ${title}
+	вимога_заповнити текст запитання  ${description}
+	run keyword if  "${document}" != "${None}"  вимога_завантажити документ  ${document}
+	wait until keyword succeeds  1m  1  вимога_натиснути кнопку "Подати"
+	${complaintID}  вимога_отримати complaintID по ${title} на кваліфікації
+	go to  ${tender_detail_page}
+	loading дочекатись закінчення загрузки сторінки
     [Return]  ${complaintID}
     
     
@@ -2319,11 +2327,10 @@ get_item_deliveryAddress_value
 	
 Підтвердити вирішення вимоги про виправлення умов закупівлі
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${confirmation_data}
-    [Documentation]  Перевести вимогу complaintID про виправлення умов закупівлі для тендера tender_uaid у статус resolved, використовуючи при цьому дані confirmation_data.  
-	log to console  Підтвердити вирішення вимоги про виправлення умов закупівлі
-	${satisfied}  set variable  ${confirmation_data['data']['satisfied']}
+    [Documentation]  Перевести вимогу complaintID про виправлення умов закупівлі для тендера tender_uaid у статус resolved, використовуючи при цьому дані confirmation_data.
 	перейти до сторінки детальної інформаціїї
     smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+	${satisfied}  set variable  ${confirmation_data['data']['satisfied']}
     вимога_натиснути коригувати  ${complaintID}
     вимогу_натиснути Вимогу задоволено?  ${satisfied}
 
@@ -2331,8 +2338,13 @@ get_item_deliveryAddress_value
 Скасувати вимогу про виправлення визначення переможця
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data}  ${award_index}
     [Documentation]  Перевести вимогу complaintID про виправлення визначення переможця під номером award_index для тендера tender_uaid у статус cancelled, використовуючи при цьому дані confirmation_data.  
-	log to console  Скасувати вимогу про виправлення визначення переможця
-	debug
+	перейти до сторінки детальної інформаціїї
+    вимоги_кваліфікація перейти на сторінку по індексу  ${award_index}
+	${cancellationReason}  set variable  ${cancellation_data['data']['cancellationReason']}
+	вимога_натиснути коригувати  ${complaintID}
+	вимога_натиснути Скасувати вимогу  ${cancellationReason}
+	go to  ${tender_detail_page}
+	loading дочекатись закінчення загрузки сторінки
 
 
 Відповісти на вимогу про виправлення визначення переможця
@@ -2363,12 +2375,16 @@ get_item_deliveryAddress_value
 	dialog box натиснути кнопку  Так
 
 
-
 Підтвердити вирішення вимоги про виправлення визначення переможця
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${confirmation_data}  ${award_index}
     [Documentation]  Перевести вимогу complaintID про виправлення визначення переможця під номером award_index для тендера tender_uaid у статус resolved, використовуючи при цьому дані cancellation_data.  
-	log to console  Підтвердити вирішення вимоги про виправлення визначення переможця
-	debug
+	перейти до сторінки детальної інформаціїї
+    вимоги_кваліфікація перейти на сторінку по індексу  ${award_index}
+    ${satisfied}  set variable  ${confirmation_data['data']['satisfied']}
+    вимога_натиснути коригувати  ${complaintID}
+    вимогу_натиснути Вимогу задоволено?  ${satisfied}
+    go to  ${tender_detail_page}
+	loading дочекатись закінчення загрузки сторінки
 
 
 Завантажити документ
@@ -3752,8 +3768,8 @@ _розгорнути лот по id
 ################################################################################
 вимога_вибрати тип запитання
     [Arguments]  ${type}
-    ${dropdown_selector}  set variable  xpath=//*[@data-qa="complaints"]//*[@class="ivu-select-selection"]
-    ${type_selector}      set variable  xpath=//*[@class="ivu-select-dropdown-list"]/li[contains(text(),"${type}")]
+    ${dropdown_selector}  set variable  xpath=//*[@class="complaint-list"]//*[@class="ivu-select-selection"]
+    ${type_selector}      set variable  xpath=//*[@class="complaint-list"]//*[@class="ivu-select-dropdown-list"]/li[contains(text(),"${type}")]
     click element  ${dropdown_selector}/i[last()]
     loading дочекатися відображення елемента на сторінці  ${type_selector}
     click element  ${type_selector}
@@ -3763,8 +3779,8 @@ _розгорнути лот по id
 
 
 вимога_натиснути кнопку Подати вимогу "Замовнику"
-    ${complaint button}    Set Variable  //*[@data-qa="complaints"]//*[@data-qa="submit-claim"]
-    ${complaint send btn}  Set Variable  //*[@data-qa="complaints"]//button[contains(@class,"btn-success")]
+    ${complaint button}    Set Variable  //*[@class="complaint-list"]//*[@data-qa="submit-claim"]
+    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//button[contains(@class,"btn-success")]
     loading дочекатися відображення елемента на сторінці  ${complaint button}
     Click Element  ${complaint button}
     Wait Until Element Is Visible  ${complaint send btn}
@@ -3772,7 +3788,7 @@ _розгорнути лот по id
 
 вимога_заповнити тему
     [Arguments]  ${text}
-    ${complaint theme}  Set Variable  //*[@data-qa="complaints"]//label[text()="Тема"]/following-sibling::div//input
+    ${complaint theme}  Set Variable  //*[@class="complaint-list"]//label[text()="Тема"]/following-sibling::div//input
     loading дочекатися відображення елемента на сторінці  ${complaint theme}
     Input Text  ${complaint theme}  ${text}
     Sleep  .5
@@ -3782,7 +3798,7 @@ _розгорнути лот по id
 
 вимога_заповнити текст запитання
     [Arguments]  ${text}
-    ${complaint text}  Set Variable  //*[@data-qa="complaints"]//label[text()="Опис"]/following-sibling::div//textarea
+    ${complaint text}  Set Variable  //*[@class="complaint-list"]//label[text()="Опис"]/following-sibling::div//textarea
     Input Text  ${complaint text}  ${text}
     Sleep  .5
     ${get}  Get Element Attribute  ${complaint text}@value
@@ -3792,12 +3808,12 @@ _розгорнути лот по id
 вимога_завантажити документ
     [Arguments]  ${document}
     ${doc_name}  set variable  ${document.split('/')[-1]}
-    Choose File  //*[@data-qa="complaints"]//*[@data-qa="add-files"]//input  ${document}
+    Choose File  //*[@class="complaint-list"]//*[@data-qa="add-files"]//input  ${document}
     wait until page contains  ${doc_name}  20
 
 
 вимога_натиснути кнопку "Подати"
-    ${complaint send btn}  Set Variable  //*[@data-qa="complaints"]//button[contains(@class,"btn-success")]
+    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//button[contains(@class,"btn-success")]
     Click Element  ${complaint send btn}
     loading дочекатись закінчення загрузки сторінки
     Wait Until Element Is Not Visible  ${complaint send btn}  10
@@ -3805,18 +3821,18 @@ _розгорнути лот по id
 
 вимога_натиснути коригувати
     [Arguments]  ${name}
-    ${button}  set variable  //*[@data-qa="complaints" and contains(., "${name}")]//*[@data-qa="start-edit-mode"]
+    ${button}  set variable  //*[@class="complaint-list"]//*[@data-qa="complaints" and contains(., "${name}")]//*[@data-qa="start-edit-mode"]
     click element  ${button}
     loading дочекатися зникнення елемента зі сторінки  ${button}
 
 
 вимога_натиснути Скасувати вимогу
     [Arguments]  ${cancellationReason}
-    ${cancel_button}  set variable  //*[@data-qa="complaints"]//*[@data-qa="cancel-complaint"]
+    ${cancel_button}  set variable  //*[@class="complaint-list"]//*[@data-qa="cancel-complaint"]
     wait until keyword succeeds  20  1  click element  ${cancel_button}
-    ${cancel_reason_input}  set variable  //*[@data-qa="cancel-reason"]//input
+    ${cancel_reason_input}  set variable  //*[@class="complaint-list"]//*[@data-qa="cancel-reason"]//input
     input text  ${cancel_reason_input}  ${cancellationReason}
-    ${cancel_modal_button}  set variable  //*[@data-qa="cancel-modal-submit"]
+    ${cancel_modal_button}  set variable  //*[@class="complaint-list"]//*[@data-qa="cancel-modal-submit"]
     wait until keyword succeeds  20  1  click element  ${cancel_modal_button}
     loading дочекатися зникнення елемента зі сторінки  ${cancel_button}
 
@@ -3824,7 +3840,7 @@ _розгорнути лот по id
 вимогу_натиснути Вимогу задоволено?
     [Arguments]  ${satisfied}
     ${decision}  set variable if  "${satisfied}" == "${True}"  ${Empty}  un
-    ${decision_button}  set variable  //*[@data-qa="${decision}satisfied-decision"]
+    ${decision_button}  set variable  //*[@class="complaint-list"]//*[@data-qa="${decision}satisfied-decision"]
     loading дочекатися відображення елемента на сторінці  ${decision_button}
 	click element  ${decision_button}
 	loading дочекатись закінчення загрузки сторінки
@@ -3836,7 +3852,7 @@ _розгорнути лот по id
     smarttender.Синхронізувати тендер
     перейти до сторінки детальної інформаціїї
     smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
-    ${complaint}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint}  set variable  //*[@class="complaint-list"]//*[@data-qa="complaint" and contains(., "${complaintID}")]
     ${status}  set variable  //*[@data-qa="type-status"]//*[contains(@class, "complaint-status")]
     ${text}  get text  ${complaint}${status}
     ${dict_status}  create dictionary
@@ -3861,10 +3877,25 @@ _розгорнути лот по id
 вимога_отримати complaintID по ${title}
     Синхронізувати тендер
     smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
-    ${complaint}  set variable  //*[@data-qa="complaint" and contains(., "${title}")]
+    ${complaint}  set variable  //*[@class="complaint-list"]//*[@data-qa="complaint" and contains(., "${title}")]
     ${status}  set variable  //*[@data-qa="type-status"]//*[contains(text(), "UA-")]
     ${complaintID}  get text  ${complaint}${status}
     [Return]  ${complaintID}
+
+
+вимога_отримати complaintID по ${title} на кваліфікації
+    Синхронізувати тендер
+    ${complaint}  set variable  //*[@class="complaint-list"]//*[@data-qa="complaint" and contains(., "${title}")]
+    ${status}  set variable  //*[@data-qa="type-status"]//*[contains(text(), "UA-")]
+    ${complaintID}  get text  ${complaint}${status}
+    [Return]  ${complaintID}
+
+
+вимоги_кваліфікація перейти на сторінку по індексу
+    [Arguments]  ${award_index}
+    ${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${award_index}+1]@href
+    go to  ${href}
+    loading дочекатись закінчення загрузки сторінки
 
 
 ################################################################################
