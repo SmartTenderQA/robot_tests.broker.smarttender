@@ -3526,7 +3526,7 @@ _Дочекатись синхронізації
 
 сторінка_детальної_інформації активувати вкладку
     [Arguments]  ${tab_name}
-    ${tab_selector}  Set Variable  //*[@data-qa="tabs"]//*[text()="${tab_name}"]
+    ${tab_selector}  Set Variable  //*[@data-qa="tabs"]//*[contains(text(),"${tab_name}")]
     Wait Until Keyword Succeeds  10  2  Click Element  ${tab_selector}
     loading дочекатись закінчення загрузки сторінки
     ${status}  Run Keyword And Return Status
