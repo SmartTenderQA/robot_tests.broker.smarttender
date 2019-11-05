@@ -3331,7 +3331,7 @@ Open button
     Run Keyword And Ignore Error  loading дочекатися відображення елемента на сторінці  ${selector down}  2
     ${count}  Get Matching Xpath Count  ${selector down}
     Run Keyword If  ${count} != 0  Run Keywords
-    ...  Repeat Keyword  ${count} times  Click Element  ${selector down}  AND
+    ...  Repeat Keyword  ${count} times  run keyword and ignore error  Click Element  ${selector down}  AND
     ...  smarttender.розгорнути всі експандери
 
 
