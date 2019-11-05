@@ -2251,7 +2251,7 @@ get_item_deliveryAddress_value
 	вимога_заповнити текст запитання  ${description}
 	run keyword if  "${document}" != "${None}"  вимога_завантажити документ  ${document}
 	wait until keyword succeeds  1m  1  вимога_натиснути кнопку "Подати"
-	${complaintID}  вимога_отримати complaintID по ${title} на кваліфікації
+	${complaintID}  вимоги_кваліфікація отримати complaintID по ${title}
 	go to  ${tender_detail_page}
 	loading дочекатись закінчення загрузки сторінки
     [Return]  ${complaintID}
@@ -3940,7 +3940,7 @@ _розгорнути лот по id
     [Return]  ${complaintID}
 
 
-вимога_отримати complaintID по ${title} на кваліфікації
+вимоги_кваліфікація отримати complaintID по ${title}
     Синхронізувати тендер
     ${complaint}  set variable  //*[@class="complaint-list"]//*[@data-qa="complaint" and contains(., "${title}")]
     ${status}  set variable  //*[@data-qa="type-status"]//*[contains(text(), "UA-")]
