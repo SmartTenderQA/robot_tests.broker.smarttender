@@ -1139,6 +1139,7 @@ ${tender_cdb_id}                    ${None}
     run keyword if  "${tender_detail_page}" != "${current_location}"  run keywords
     ...  go to  ${tender_detail_page}  AND  loading дочекатись закінчення загрузки сторінки
     #####################################
+    smarttender.сторінка_детальної_інформації активувати вкладку  Тендер
     ${field_name_splited}  set variable  ${field_name.split('[')[0]}
     ${field_value}  run keyword  smarttender.сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
     log location
