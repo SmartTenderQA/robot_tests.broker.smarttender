@@ -830,9 +830,9 @@ click screen header
 
 
 видалити всі лоти та предмети
-    [Arguments]  ${index}=1
-    ${count}  Get Matching Xpath Count  //*[@data-name="GRID_ITEMS_HIERARCHY"]//tr[contains(@class,"Row")]
-    ${del_btn}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//*[@title="Видалити"][${index}]
+    [Arguments]  ${screen}=GRID_ITEMS_HIERARCHY  ${index}=1
+    ${count}  Get Matching Xpath Count  //*[@data-name="${screen}"]//tr[contains(@class,"Row")]
+    ${del_btn}  set variable  xpath=//*[@data-name="${screen}"]//*[@title="Видалити"][${index}]
 	return from keyword if  ${count} == 0
 	run keyword and ignore error  click element  ${del_btn}
 	loading дочекатись закінчення загрузки сторінки
