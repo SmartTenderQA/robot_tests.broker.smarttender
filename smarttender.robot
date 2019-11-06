@@ -2287,13 +2287,24 @@ get_item_deliveryAddress_value
 	#  Залежно від того це звичайна скарга чи award скарга відкриваємо потрібну сторінку
 	${is_award_complaint}  run keyword and return status  log  ${submissionMethodDetails}
 	run keyword if  ${is_award_complaint}
-			...  smarttender._перейти до сторінки вимоги_кваліфікація
+			...  smarttender._перейти до сторінки вимоги_кваліфікація  ${award_index}
 	...  ELSE
 			...  smarttender._перейти до сторінки вимоги
 	#
-	smarttender.розгорнути всі експандери
+	smarttender._розгорнути блок скарги  ${complaintID}
 	${complaint_field_value}  run keyword  вимога_отримати інформацію по полю ${field_name}  ${complaintID}
     [Return]  ${complaint_field_value}
+
+
+_розгорнути блок скарги
+	[Arguments]  ${complaintID}
+	${complaint_block_locator}  set variable  //*[@class="complaint-list"]//*[@data-qa="complaint" and contains(., "${complaintID}")]
+	${selector_down_locator}  Set Variable  //*[contains(@class,"expander")]/i[contains(@class,"down")]
+	${selector_down_visible}  run keyword and return status  element should be visible  xpath=${complaint_block_locator}${selector_down_locator}
+	return from keyword if  ${selector_down_visible} == ${False}
+	Click Element  xpath=${complaint_block_locator}${selector_down_locator}
+    # Для проверки
+    smarttender._розгорнути блок скарги  ${complaintID}
 
 
 _перейти до сторінки вимоги
@@ -2304,8 +2315,9 @@ _перейти до сторінки вимоги
 
 
 _перейти до сторінки вимоги_кваліфікація
+	[Arguments]  ${award_index}
 	перейти до сторінки детальної інформаціїї
-    вимоги_кваліфікація перейти на сторінку по індексу  0
+    вимоги_кваліфікація перейти на сторінку по індексу  ${award_index}
 
 
 Отримати інформацію із документа до скарги
@@ -3870,7 +3882,7 @@ _розгорнути лот по id
     smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
     ${complaint}  set variable  //*[@class="complaint-list"]//*[@data-qa="complaint" and contains(., "${complaintID}")]
     ${status}  set variable  //*[@data-qa="type-status"]//*[contains(@class, "complaint-status")]
-    ${text}  get text  ${complaint}${status}
+    ${text}  get text  xpath=${complaint}${status}
     ${dict_status}  create dictionary
     ...  Чернетка=draft
     ...  Вимога в обробці=claim
