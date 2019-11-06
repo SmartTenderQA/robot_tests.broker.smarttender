@@ -3247,27 +3247,42 @@ _отримати посилання на сторінку оскарження
 
 
 сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].address.countryName
-    ${field_value}  set variable  Поле не отображается на странице
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="Адреса"]/parent::*/following-sibling::*
+    ${address}  get text  xpath=${selector}
+    ${reg}  evaluate  re.search(u'^(?P<postalCode>[0-9]+), (?P<countryName>[^,]+), (?P<region>[^,]+), (?P<locality>[^,]+), (?P<streetAddress>.+)', u"""${address}""")  re
+	${field_value}  set variable  ${reg.group('countryName')}
     [Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].address.locality
-    ${field_value}  set variable  Поле не отображается на странице
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="Адреса"]/parent::*/following-sibling::*
+    ${address}  get text  xpath=${selector}
+    ${reg}  evaluate  re.search(u'^(?P<postalCode>[0-9]+), (?P<countryName>[^,]+), (?P<region>[^,]+), (?P<locality>[^,]+), (?P<streetAddress>.+)', u"""${address}""")  re
+	${field_value}  set variable  ${reg.group('locality')}
     [Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].address.postalCode
-    ${field_value}  set variable  Поле не отображается на странице
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="Адреса"]/parent::*/following-sibling::*
+    ${address}  get text  xpath=${selector}
+    ${reg}  evaluate  re.search(u'^(?P<postalCode>[0-9]+), (?P<countryName>[^,]+), (?P<region>[^,]+), (?P<locality>[^,]+), (?P<streetAddress>.+)', u"""${address}""")  re
+	${field_value}  set variable  ${reg.group('postalCode')}
     [Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].address.region
-    ${field_value}  set variable  Поле не отображается на странице
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="Адреса"]/parent::*/following-sibling::*
+    ${address}  get text  xpath=${selector}
+    ${reg}  evaluate  re.search(u'^(?P<postalCode>[0-9]+), (?P<countryName>[^,]+), (?P<region>[^,]+), (?P<locality>[^,]+), (?P<streetAddress>.+)', u"""${address}""")  re
+	${field_value}  set variable  ${reg.group('region')}
     [Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати awards[${award_index}].suppliers[${supplier_index}].address.streetAddress
-    ${field_value}  set variable  Поле не отображается на странице
+    ${selector}  set variable  (//*[@data-qa="qualification-info"])[${award_index} + 1]/ancestor::*[@class="ivu-card-body"]//*[text()="Адреса"]/parent::*/following-sibling::*
+    ${address}  get text  xpath=${selector}
+    ${reg}  evaluate  re.search(u'^(?P<postalCode>[0-9]+), (?P<countryName>[^,]+), (?P<region>[^,]+), (?P<locality>[^,]+), (?P<streetAddress>.+)', u"""${address}""")  re
+	${field_value}  set variable  ${reg.group('streetAddress')}
     [Return]  ${field_value}
 
 
