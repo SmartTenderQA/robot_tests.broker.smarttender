@@ -1859,9 +1859,9 @@ _перейти до лоту якщо це потрібно
 предмети_сторінка_детальної_інформації отримати deliveryAddress.region
     [Arguments]  ${item_block}
 	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  region
-	${item_field_value}  set variable if
-		...  "обл." in "${item_field_value}"  ${item_field_value.replace(u"обл.", u"область")}
-		...  ${item_field_value}
+#	${item_field_value}  set variable if
+#		...  "обл." in "${item_field_value}"  ${item_field_value.replace(u"обл.", u"область")}
+#		...  ${item_field_value}
 	[Return]  ${item_field_value}
 
 
