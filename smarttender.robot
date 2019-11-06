@@ -1651,6 +1651,12 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	[Return]  Пока отображается только улица а не .address.streetAddress
 
 
+сторінка_детальної_інформації отримати funders funders[${funder_index}].contactPoint.url
+	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
+	${locator}  set variable  xpath=${funder_block_locator}//*[@class="ivu-poptip-body-content"]//b[text()="Веб-сайт:"]/following-sibling::*
+	${field_value}  get element attribute  ${locator}@innerText
+	[Return]  ${field_value}
+
 
 сторінка_детальної_інформації отримати funders funders[${funder_index}].identifier.id
 	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
@@ -1663,7 +1669,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
 	${locator}  set variable  xpath=${funder_block_locator}//*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]
 	${field_value_in_smart_format}  get element attribute  ${locator}@innerText
-	${field_value}  set variable if  "${field_value_in_smart_format}" == "Код ЄДРПОУ"  XM-DAC  ERROR!
+	${field_value}  set variable if  "${field_value_in_smart_format}" == "Код ЄДРПОУ:"  XM-DAC  ERROR!
 	[Return]  ${field_value}
 
 
