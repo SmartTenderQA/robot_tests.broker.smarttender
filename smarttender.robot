@@ -92,9 +92,10 @@ ${tender_cdb_id}                    ${None}
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
 	${tender_data}  replace_unit_name  ${tender_data}
-	${tender_data}  replace_delivery_address  ${tender_data}
+    ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_delivery_address  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "viewer"  replacee_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
+    ${tender_data}  replace_funders  ${tender_data}
 	${tender_data}  clear_additional_classifications  ${tender_data}
 	log  ${tender_data}
 	log to console  ${tender_data}
@@ -1272,30 +1273,30 @@ ${tender_cdb_id}                    ${None}
 
 сторінка_детальної_інформації отримати milestones
 	[Arguments]  ${field_name}
-	${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
-	${number}  	evaluate  '${reg.group('number')}'
-	${field}  	evaluate  '${reg.group('field')}'
+	${field_value}  run keyword  сторінка_детальної_інформації отримати milestones ${field_name}
+	[Return]  ${field_value}
+###############################################
+###############################################
+сторінка_детальної_інформації отримати milestones milestones[${milestone_index}].code
+    ${locator}  set variable  xpath=(//*[@data-qa='paymentTerms-block']//*[@class="delimeter ivu-row"])[${milestone_index}+1]/div[last()]
+	${text}  get text  ${locator}
+	${field_value_in_smart_format}  evaluate  re.search("(?P<code>.*): (?P<percentage>[0-9]+)%", "${text}").group("code")  re
+	${field_value}  set variable if
+		...  "${field_value_in_smart_format}" == "Аванс"  prepayment
+		...  "${field_value_in_smart_format}" == "Пiсляоплата"  postpayment
+		...  Error!
+	[Return]  ${field_value}
 
-	${item_selector}  set variable  xpath=(//*[@data-qa='paymentTerms-block']//*[@class="delimeter ivu-row"])[${number}+1]
 
-	${milestones_all_values}  get text  ${item_selector}
-	${text}  set variable  ${milestones_all_values.replace('\n', '|')}
-	${reg}  evaluate  re.search(ur'(?P<title>.*)\\|(?P<duration_days>\\d*) (?P<duration_type>.*)\\|(?P<code>.*)\\: (?P<percentage>[\\d\\.\\,]*)', u"""${text}""")  re
+сторінка_детальної_інформації отримати milestones milestones[${milestone_index}].percentage
+    ${locator}  set variable  xpath=(//*[@data-qa='paymentTerms-block']//*[@class="delimeter ivu-row"])[${milestone_index}+1]/div[last()]
+	${text}  get text  ${locator}
+	${field_value}  evaluate  re.search("(?P<code>.*): (?P<percentage>[0-9]+)%", "${text}").group("percentage")  re
+	${field_value}  evaluate  int(${field_value})
+	[Return]  ${field_value}
 
-	${title}  			evaluate  u'${reg.group('title')}'
-	${days}  			evaluate  int(u'${reg.group('duration_days')}')
-	${type}  			evaluate  u'${reg.group('duration_type')}'
-	${code}  			evaluate  u'${reg.group('code')}'
-	${percentage}  		evaluate  int(u'${reg.group('percentage')}')
-	${is_anotherEvent}  run keyword and return status  should contain  ${title}  Інша подія  #чтобы тянуло без описания
-	${title}  run keyword if  ${is_anotherEvent} == ${True}  fetch from left  ${title}  |
-	...  ELSE  set variable  ${title}
-	####################################
-	#  WORK HERE
 
-	${code_dict}  		create dictionary
-	...  Аванс=prepayment
-	...  Пiсляоплата=postpayment
+сторінка_детальної_інформації отримати milestones milestones[${milestone_index}].title
 	${title_dict}  		create dictionary
 	...  Виконання робіт=executionOfWorks
 	...  Поставка товару=deliveryOfGoods
@@ -1305,18 +1306,30 @@ ${tender_cdb_id}                    ${None}
 	...  Дата виставлення рахунку=dateOfInvoicing
 	...  Дата закінчення звітного періоду=endDateOfTheReportingPeriod
 	...  Інша подія=anotherEvent
-	${type_dict}  		create dictionary
-	...  календарних днів=calendar
-	...  робочих днів=working
-	...  банківських днів=banking
-	${list_of_dict}		create list  code  title  type
-	####################################
-
-	${milestones_field_name}  set variable  ${field_name.split('.')[-1]}
-	${field_value}  run keyword if  '${milestones_field_name}' in ${list_of_dict}	Get From Dictionary  ${${milestones_field_name}_dict}  ${${milestones_field_name}}  ELSE  set variable  ${${milestones_field_name}}
+    ${locator}  set variable  xpath=(//*[@data-qa='paymentTerms-block']//*[@class="delimeter ivu-row"])[${milestone_index}+1]/div/div
+	${text}  get text  ${locator}
+	${field_value}  get from dictionary  ${title_dict}  ${text}
 	[Return]  ${field_value}
-###############################################
-###############################################
+
+
+сторінка_детальної_інформації отримати milestones milestones[${milestone_index}].duration.days
+    ${locator}  set variable  xpath=(//*[@data-qa='paymentTerms-block']//*[@class="delimeter ivu-row"])[${milestone_index}+1]/div[@class="ivu-col ivu-col-span-sm-6"]
+	${text}  get text  ${locator}
+	${field_value}  evaluate  re.search("(?P<days>[0-9]+) (?P<type>.+)", "${text}").group("days")  re
+	${field_value}  evaluate  int(${field_value})
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати milestones milestones[${milestone_index}].duration.type
+    ${locator}  set variable  xpath=(//*[@data-qa='paymentTerms-block']//*[@class="delimeter ivu-row"])[${milestone_index}+1]/div[@class="ivu-col ivu-col-span-sm-6"]
+	${text}  get text  ${locator}
+	${field_value_in_smart_format}  evaluate  re.search("(?P<days>[0-9]+) (?P<type>.+)", "${text}").group("type")  re
+	${field_value}  set variable if
+		...  "${field_value_in_smart_format}" == "календарних днів"  calendar
+		...  "${field_value_in_smart_format}" == "робочих днів"  working
+		...  "${field_value_in_smart_format}" == "банківських днів"  banking
+		...  Error!
+	[Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати mainProcurementCategory
@@ -1539,28 +1552,74 @@ ${tender_cdb_id}                    ${None}
 
 сторінка_детальної_інформації отримати funders
     [Arguments]  ${field_name}
-    ${reg}  evaluate  re.search(r'.*\\[(?P<number>\\d)\\]\\.(?P<field>.*)', '${field_name}')  re
-	${number}  	evaluate  int(${reg.group('number')}) + 1
-	${field}  	evaluate  '${reg.group('field')}'
-	${funder_selector}  set variable  xpath=(//*[@data-qa="donor"])[${number}]
-
-    comment  Отримати хвіст локатора по імені
-    ${field_selector}      set variable if
-    ...  '${field}' == 'name'                                //*[contains(@class, "ivu-poptip-rel")]
-    ...  '${field}' == 'address.countryName'                 //*[contains(@class, "ivu-poptip-rel")]
-    ...  '${field}' == 'contactPoint.url'                    //*[@class="ivu-poptip-body-content"]//a
-    ...  '${field}' == 'identifier.id'                       //*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]/following-sibling::*
-    ...  '${field}' == 'identifier.scheme'                   //*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]
-    ...  '${field}' == 'identifier.legalName'                //div[@class="ivu-poptip-rel"]
-    ...  ${empty}
-
-    ${field_value}  get element attribute  ${funder_selector}${field_selector}@innerText
-
-    ${converted_field_value}  convert_page_values  ${field}  ${field_value}
-    ${converted_field_value}  run keyword if  '${field}' == 'deliveryDate.endDate'
-    ...  convert date  ${field_value}  date_format=%d.%m.%Y result_format=%Y-%m-%dT%H:%M:%S${time_zone}
-    ...  ELSE  return from keyword  ${converted_field_value}
+    log to console  ${field_name}
+	${field_value}  run keyword  сторінка_детальної_інформації отримати funders ${field_name}
     [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати funders funders[${funder_index}].name
+	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
+	${locator}  set variable  xpath=${funder_block_locator}//*[contains(@class, "ivu-poptip-rel")]
+	${field_value}  get text  ${locator}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати funders funders[${funder_index}].address.countryName
+	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
+	log to console  .address.countryName
+	debug
+	[Return]  Пока отображается только улица а не .address.countryName
+
+
+сторінка_детальної_інформації отримати funders funders[${funder_index}].address.locality
+	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
+	log to console  .address.locality
+	debug
+	[Return]  Пока отображается только улица а не .address.locality
+
+
+сторінка_детальної_інформації отримати funders funders[${funder_index}].address.postalCode
+	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
+	log to console  .address.postalCode
+	debug
+	[Return]  Пока отображается только улица а не .address.postalCode
+
+
+сторінка_детальної_інформації отримати funders funders[${funder_index}].address.region
+	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
+	log to console  .address.region
+	debug
+	[Return]  Пока отображается только улица а не .address.region
+
+
+сторінка_детальної_інформації отримати funders funders[${funder_index}].address.streetAddress
+	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
+	log to console  .address.streetAddress
+	debug
+	[Return]  Пока отображается только улица а не .address.streetAddress
+
+
+
+сторінка_детальної_інформації отримати funders funders[${funder_index}].identifier.id
+	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
+	${locator}  set variable  xpath=${funder_block_locator}//*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]/following-sibling::*
+	${field_value}  get element attribute  ${locator}@innerText
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати funders funders[${funder_index}].identifier.scheme
+	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
+	${locator}  set variable  xpath=${funder_block_locator}//*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]
+	${field_value_in_smart_format}  get element attribute  ${locator}@innerText
+	${field_value}  set variable if  "${field_value_in_smart_format}" == "Код ЄДРПОУ"  XM-DAC  ERROR!
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати funders funders[${funder_index}].identifier.legalName
+	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
+	${locator}  set variable  xpath=${funder_block_locator}//*[contains(@class, "ivu-poptip-rel")]
+	${field_value}  get text  ${locator}
+	[Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати auctionPeriod.startDate
@@ -1759,7 +1818,8 @@ _перейти до лоту якщо це потрібно
 	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  locality
 	${item_field_value}  set variable if
 		...  "Днепро" == "${item_field_value}"  Дніпро
-		...  "с." in "${item_field_value}"  ${item_field_value.replace(u"с.", "")}
+		...  "с." in "${item_field_value}"  ${item_field_value.replace(u"с. ", "")}
+		...  "смт." in "${item_field_value}"  ${item_field_value.replace(u"смт. ", "")}
 		...  ${item_field_value}
 	[Return]  ${item_field_value}
 
