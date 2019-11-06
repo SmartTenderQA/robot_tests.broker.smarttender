@@ -65,6 +65,7 @@ ${breakdownDecription_input}        //*[@data-qa="financing-card-Description"]//
 ${plan_item_title_input}            //*[@data-qa="nomenclature-Title"]//input
 ${plan_item_quantity_root}          //*[@data-qa="nomenclature-Quantity"]
 ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
+${deliveryDate_root}                //*[@data-qa="nomenclature-delivery-date-to"]
 ######################################
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
@@ -624,6 +625,50 @@ ${tender_cdb_id}                    ${None}
 	dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
+
+
+Оголосити закупівлю negotiation
+	[Arguments]  ${tender_data}
+    ${plan_uaid}  Отримати номер плану з артифакту
+    знайти план у webclient  ${plan_uaid}
+   	webclient.header натиснути на елемент за назвою             Розрахунок
+    dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
+	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
+	screen натиснути кнопку  однолотову
+	screen заголовок повинен містити     Додавання. Тендери
+    webclient.видалити всі лоти та предмети
+    webclient.додати бланк  GRID_ITEMS_HIERARCHY
+
+	# ОСНОВНІ ПОЛЯ
+	${title}  set variable  ${tender_data['title']}
+	${description}  set variable  ${tender_data['description']}
+	${cause}  set variable  ${tender_data['cause']}
+	${cause_description}  set variable  ${tender_data['causeDescription']}
+
+	:FOR  ${field}  in
+	...  title
+	...  description
+	...  cause
+	...  cause_description
+	\  run keyword  webclient.заповнити поле ${field}  ${${field}}
+
+	# ПРЕДМЕТИ
+	${count_item}  set variable  1
+	:FOR  ${item}  IN  @{tender_data['items']}
+	\  run keyword if  '${count_item}' != '1'  webclient.додати бланк  GRID_ITEMS
+	\  Заповнити поля предмету  ${item}
+	\  ${count_item}  evaluate  ${count_item} + 1
+
+	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
+	run keyword if  '${is_milestones}' == 'PASS'  smarttender.додати умови оплати  ${milestones}
+
+    webclient.додати тендерну документацію
+	webclient.header натиснути на елемент за назвою  Додати
+	dialog box заголовок повинен містити  Оголосити закупівлю?
+	dialog box натиснути кнопку  Так
+	webclient.screen заголовок повинен містити  Завантаження документації
+    click element   ${screen_root_selector}//*[@alt="Close"]
+
 
 
 Оголосити закупівлю open_competitive_dialogue multilot
@@ -4160,16 +4205,23 @@ plan edit додати номенклатуру
 	${unit_name}  			set variable  ${item['unit']['name']}
 	${quantity}  			convert_float_to_string  ${item['quantity']}  s=3
 	${deliveryDate}  		set variable  ${item['deliveryDate']['endDate']}
+	${deliveryDate}         convert date  ${deliveryDate}  result_format=%Y-%m-%d  date_format=%Y-%m-%dT%H:%M:%S+02:00
 
-    plan edit вказати "Назва номенклатури"  ${description}  index=${field_number}
-    plan edit заповнити "Од. вим."          ${unit_name}    index=${field_number}
-    plan edit заповнити "Кількість"         ${quantity}     index=${field_number}
+    plan edit вказати "Назва номенклатури"  ${description}   index=${field_number}
+    plan edit заповнити "Од. вим."          ${unit_name}     index=${field_number}
+    plan edit заповнити "Кількість"         ${quantity}      index=${field_number}
     plan edit обрати "Код ДК021"            ${classification_id}
+    plan edit вказати "Дата поставки по"    ${deliveryDate}  index=${field_number}
 
     ${additionalClassifications_status}  ${additionalClassifications}  run keyword and ignore error  set variable  ${item['additionalClassifications']}
 	run keyword if  '${additionalClassifications_status}' == 'PASS'
 	...  plan edit Додати доп. класифікацію  ${additionalClassifications}  field_number=${field_number}+1
 
+
+plan edit вказати "Дата поставки по"
+    [Arguments]  ${value}  ${index}=1
+    ivu-datePicker input text  ${value}  root=${deliveryDate_root}  check=${False}
+    press key  //body  \\09
 
 
 plan edit вказати "Назва номенклатури"

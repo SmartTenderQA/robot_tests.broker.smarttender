@@ -187,14 +187,14 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="LOT_MINSTEP_PERCENT"]//input
 	${value}  evaluate  ${text} * 100
-	заповнити simple input  ${locator}  ${value}
+	заповнити simple input  ${locator}  ${value}  input_methon=Input Type Flex
 
 
 заповнити поле для lot yearlyPaymentsPercentageRange
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="LOT_PERCENT_REDUCTION"]//input
 	${value}  evaluate  ${text} * 100
-	заповнити simple input  ${locator}  ${value}
+	заповнити simple input  ${locator}  ${value}  input_methon=Input Type Flex
 
 
 ##################################################
