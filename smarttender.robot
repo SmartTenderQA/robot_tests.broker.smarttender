@@ -269,6 +269,7 @@ ${tender_cdb_id}                    ${None}
 	dialog box натиснути кнопку  Так
     webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
+    loading дочекатись закінчення загрузки сторінки
 	webclient.пошук тендера по title  ${tender_data['title']}
 
 
@@ -400,6 +401,7 @@ ${tender_cdb_id}                    ${None}
 	dialog box натиснути кнопку  Так
     webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
+    loading дочекатись закінчення загрузки сторінки
     wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
 	dialog box натиснути кнопку  Ні
 	webclient.пошук тендера по title  ${tender_data['title']}
@@ -463,6 +465,7 @@ ${tender_cdb_id}                    ${None}
 	...  dialog box натиснути кнопку  Так
     webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
+    loading дочекатись закінчення загрузки сторінки
     wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
 	dialog box натиснути кнопку  Ні
 	webclient.пошук тендера по title  ${tender_data['title']}
@@ -523,6 +526,7 @@ ${tender_cdb_id}                    ${None}
 
     webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
+    loading дочекатись закінчення загрузки сторінки
 
     wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
 	dialog box натиснути кнопку  Ні
@@ -589,6 +593,10 @@ ${tender_cdb_id}                    ${None}
     dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
 	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
 	screen натиснути кнопку  мультилотову
+    ${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  Увага
+	run keyword if  '${status}' == 'PASS'
+	...  dialog box натиснути кнопку  ОК  # <--- здесь ОК на кирилице
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети
     webclient.додати бланк  GRID_ITEMS_HIERARCHY
@@ -626,6 +634,7 @@ ${tender_cdb_id}                    ${None}
 	dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
+    loading дочекатись закінчення загрузки сторінки
 
 
 Оголосити закупівлю negotiation
@@ -636,6 +645,10 @@ ${tender_cdb_id}                    ${None}
     dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
 	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
 	screen натиснути кнопку  однолотову
+	${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  Увага
+	run keyword if  '${status}' == 'PASS'
+	...  dialog box натиснути кнопку  ОК  # <--- здесь ОК на кирилице
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети
     webclient.додати бланк  GRID_ITEMS_HIERARCHY
@@ -669,6 +682,7 @@ ${tender_cdb_id}                    ${None}
 	dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
+    loading дочекатись закінчення загрузки сторінки
 
 
 
@@ -798,6 +812,7 @@ ${tender_cdb_id}                    ${None}
 	dialog box натиснути кнопку  Так
     webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
+    loading дочекатись закінчення загрузки сторінки
     # Тут опционально появляется вопрос о ЕЦП
     ${status}  ${ret}  run keyword and ignore error
     ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
@@ -867,6 +882,7 @@ ${tender_cdb_id}                    ${None}
 	dialog box натиснути кнопку  Так
     webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
+    loading дочекатись закінчення загрузки сторінки
     ${status}  ${ret}  run keyword and ignore error
     ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
     run keyword if  '${status}' == 'PASS'  run keyword and ignore error
@@ -3056,6 +3072,7 @@ _дочекатися синхронізації плану
 	dialog box натиснути кнопку  Ні
 	screen заголовок повинен містити  Текстовий документ
 	click element   ${screen_root_selector}//*[@alt="Close"]
+	loading дочекатись закінчення загрузки сторінки
 
 
 Оновити сторінку з планом
