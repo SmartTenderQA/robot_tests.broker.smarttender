@@ -70,6 +70,8 @@ ${deliveryDate_root}                //*[@data-qa="nomenclature-delivery-date-to"
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
+${hub}
+${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 
 
@@ -77,9 +79,44 @@ ${tender_cdb_id}                    ${None}
 Підготувати клієнт для користувача
 	[Arguments]   ${username}
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
-	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
+	# todo не забыть убрать
+	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
+	Run Keyword If  ${hub.__len__()} != 0
+			...  Create Webdriver  Chrome  alias=${username}
+	...  ELSE
+			...  run keywords
+                    ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
+                    ...  Отримати та залогувати data_session
+    smart go to  ${USERS.users['${username}'].homepage}
+    # /todo не забыть убрать
 	maximize browser window
 	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
+
+
+#Это киворд для КСЗИ
+#Підготувати клієнт для користувача
+#	[Arguments]   ${username}
+#	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
+#	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
+#	maximize browser window
+#	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
+
+
+Отримати та залогувати data_session
+	${s2b}  get_library_instance  Selenium2Library
+	${webdriver}  Call Method  ${s2b}  _current_browser
+	${data}  evaluate  requests.get("${hub_url.replace('/wd/hub', '')}/grid/api/testsession?session=${webdriver.__dict__['capabilities']['webdriver.remote.sessionid']}")  requests
+	${data}  Set Variable  ${data.json()}
+	log many  ${data}  ${webdriver}  ${webdriver.__dict__}  ${webdriver.__dict__['capabilities']}
+	${keys}  Get Dictionary Keys  ${webdriver.__dict__['capabilities']}
+	${to console}  create list  platform  browserName  version
+	Log  тест запущен на ноде: ${data['proxyId']}  WARN
+	log to console  ------------------------------------------------------------------------------
+	:FOR  ${key}  IN  @{keys}
+	\  run keyword if  '${key}' in @{to console}  run keywords
+	\  ...  log  ${key} = ${webdriver.__dict__['capabilities']['${key}']}  WARN    AND
+	\  ...  log to console  ------------------------------------------------------------------------------
+	Set Global Variable  ${webdriver}
 
 
 Підготувати дані для оголошення тендера
