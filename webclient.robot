@@ -280,7 +280,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 ##################################################
 вибрати рівень прив'язки для feature
     [Arguments]  ${featureOf}
-    webclient.вибрати значення з випадаючого списку  //*[@data-name="CRITERIONBINDINGLEVEL"]  ${featureOf}
+    webclient.вибрати значення з випадаючого списку  //*[@data-name="CRITERIONBINDINGLEVEL"]  ${featureOf}  ${True}
 
 
 заповнити поле для feature title
@@ -716,13 +716,17 @@ dialog box заголовок повинен містити
 
 
 вибрати значення з випадаючого списку
-	[Arguments]  ${locator}  ${text}
+	[Arguments]  ${locator}  ${text}  ${check}=${False}
 	${dropdown_table_locator}  set variable  //*[contains(@class,"dxpcDropDown_DevEx") and contains(@style,"visibility: visible")]
-	wait until keyword succeeds  3x  1s  run keywords
+	wait until keyword succeeds  5x  1s  run keywords
 	...  click element  ${locator}  AND
-	...  wait until element is visible  ${dropdown_table_locator}  AND
+	...  loading дочекатися відображення елемента на сторінці  ${dropdown_table_locator}  AND
+	...  loading дочекатися відображення елемента на сторінці  ${dropdown_table_locator}//*[contains(text(), "${text}")]  AND
 	...  click element  ${dropdown_table_locator}//*[contains(text(), "${text}")]  AND
 	...  loading дочекатись закінчення загрузки сторінки
+	return from keyword if  ${check} == ${False}
+	${get}  get element attribute  ${locator}//input[not(@type="hidden")]@value
+	should be equal as strings  ${get}  ${text}
 
 
 заповнити фіксований випадаючий список
