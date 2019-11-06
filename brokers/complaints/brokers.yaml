@@ -287,8 +287,8 @@ PublicPortal:
 SmartTender:
     intervals:
         default:
-            enquiry: [0, 10]
-            tender:  [0, 20]
+            enquiry: [0, 30]
+            tender:  [0, 40]
         belowThreshold:
             enquiry: [10, 25]
             tender:  [0, 15]
