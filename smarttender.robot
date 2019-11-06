@@ -2333,8 +2333,8 @@ get_item_deliveryAddress_value
     [Documentation]  Створює вимогу claim про виправлення умов закупівлі у статусі claim для тендера tender_uaid. Можна створити вимогу як з документом, який знаходиться за шляхом document, так і без нього.
     ${title}  set variable  ${claim['data']['title']}
     ${description}  set variable  ${claim['data']['description']}
-    ${tender_title}  smarttender.сторінка_детальної_інформації отримати title
     перейти до сторінки детальної інформаціїї
+    ${tender_title}  smarttender.сторінка_детальної_інформації отримати title
     smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
 	вимога_вибрати тип запитання  ${tender_title}
 	вимога_натиснути кнопку Подати вимогу "Замовнику"
@@ -3986,7 +3986,7 @@ _розгорнути лот по id
 
 вимога_натиснути коригувати
     [Arguments]  ${name}
-    ${button}  set variable  //*[@class="complaint-list"]//*[@data-qa="complaints" and contains(., "${name}")]//*[@data-qa="start-edit-mode"]
+    ${button}  set variable  //*[@class="complaint-list"]//*[@data-qa="complaint" and contains(., "${name}")]//*[@data-qa="start-edit-mode"]
     click element  ${button}
     loading дочекатися зникнення елемента зі сторінки  ${button}
 
@@ -3995,9 +3995,10 @@ _розгорнути лот по id
     [Arguments]  ${cancellationReason}
     ${cancel_button}  set variable  //*[@class="complaint-list"]//*[@data-qa="cancel-complaint"]
     wait until keyword succeeds  20  1  click element  ${cancel_button}
-    ${cancel_reason_input}  set variable  //*[@class="complaint-list"]//*[@data-qa="cancel-reason"]//input
-    input text  ${cancel_reason_input}  ${cancellationReason}
-    ${cancel_modal_button}  set variable  //*[@class="complaint-list"]//*[@data-qa="cancel-modal-submit"]
+    ${cancel_reason_input}  set variable  //*[@data-qa="cancel-reason"]//input
+    loading дочекатися відображення елемента на сторінці  ${cancel_reason_input}
+    wait until keyword succeeds  20  1  input text  ${cancel_reason_input}  ${cancellationReason}
+    ${cancel_modal_button}  set variable  //*[@data-qa="cancel-modal-submit"]
     wait until keyword succeeds  20  1  click element  ${cancel_modal_button}
     loading дочекатися зникнення елемента зі сторінки  ${cancel_button}
 
