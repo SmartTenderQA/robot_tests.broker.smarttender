@@ -65,6 +65,7 @@ ${breakdownDecription_input}        //*[@data-qa="financing-card-Description"]//
 ${plan_item_title_input}            //*[@data-qa="nomenclature-Title"]//input
 ${plan_item_quantity_root}          //*[@data-qa="nomenclature-Quantity"]
 ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
+${deliveryDate_root}                //*[@data-qa="nomenclature-delivery-date-to"]
 ######################################
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
@@ -4148,16 +4149,23 @@ plan edit додати номенклатуру
 	${unit_name}  			set variable  ${item['unit']['name']}
 	${quantity}  			convert_float_to_string  ${item['quantity']}  s=3
 	${deliveryDate}  		set variable  ${item['deliveryDate']['endDate']}
+	${deliveryDate}         convert date  ${deliveryDate}  result_format=%Y-%m-%d  date_format=%Y-%m-%dT%H:%M:%S+02:00
 
-    plan edit вказати "Назва номенклатури"  ${description}  index=${field_number}
-    plan edit заповнити "Од. вим."          ${unit_name}    index=${field_number}
-    plan edit заповнити "Кількість"         ${quantity}     index=${field_number}
+    plan edit вказати "Назва номенклатури"  ${description}   index=${field_number}
+    plan edit заповнити "Од. вим."          ${unit_name}     index=${field_number}
+    plan edit заповнити "Кількість"         ${quantity}      index=${field_number}
     plan edit обрати "Код ДК021"            ${classification_id}
+    plan edit вказати "Дата поставки по"    ${deliveryDate}  index=${field_number}
 
     ${additionalClassifications_status}  ${additionalClassifications}  run keyword and ignore error  set variable  ${item['additionalClassifications']}
 	run keyword if  '${additionalClassifications_status}' == 'PASS'
 	...  plan edit Додати доп. класифікацію  ${additionalClassifications}  field_number=${field_number}+1
 
+
+plan edit вказати "Дата поставки по"
+    [Arguments]  ${value}  ${index}=1
+    ivu-datePicker input text  ${value}  root=${deliveryDate_root}  check=${False}
+    press key  //body  \\09
 
 
 plan edit вказати "Назва номенклатури"
