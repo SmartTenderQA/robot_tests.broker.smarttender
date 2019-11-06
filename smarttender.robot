@@ -541,6 +541,9 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	\  webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	\  Заповнити поля предмету  ${item}
 
+    # ЯКІСНІ ПОКАЗНИКИ
+    ${is_features}  ${features}  run keyword and ignore error  set variable  ${tender_data['features']}
+	run keyword if  '${is_features}' == 'PASS'  smarttender.додати якісні показники  ${features}
 
 	# УМОВИ ОПЛАТИ
 	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
@@ -575,11 +578,13 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
     знайти план у webclient  ${plan_uaid}
    	webclient.header натиснути на елемент за назвою             Розрахунок
     dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
-	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
-	screen натиснути кнопку  однолотову
 	screen заголовок повинен містити     Додавання. Тендери
-    webclient.видалити всі лоти та предмети
-    webclient.додати бланк  GRID_ITEMS_HIERARCHY
+    webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
+    webclient.додати бланк  GRID_ITEMS
+    #  Костыль, потому что не удаляется последняя номеклатура
+    grid вибрати рядок за номером  1
+    webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
+    ##########################################################
 	# ОСНОВНІ ПОЛЯ
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
 	${value.amount}  set variable  ${tender_data['value']['amount']}
@@ -619,7 +624,6 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	loading дочекатись закінчення загрузки сторінки
 	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
 	dialog box натиснути кнопку  Ні
-	webclient.пошук тендера по title  ${tender_data['title']}
 
 
 Оголосити закупівлю negotiation multilot
@@ -639,12 +643,14 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
     webclient.додати бланк  GRID_ITEMS_HIERARCHY
 
 	# ОСНОВНІ ПОЛЯ
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${cause}  set variable  ${tender_data['cause']}
 	${cause_description}  set variable  ${tender_data['causeDescription']}
 
 	:FOR  ${field}  in
+	...  mainProcurementCategory
 	...  title
 	...  description
 	...  cause
@@ -687,16 +693,18 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	run keyword if  '${status}' == 'PASS'
 	...  dialog box натиснути кнопку  ОК  # <--- здесь ОК на кирилице
 	screen заголовок повинен містити     Додавання. Тендери
-    webclient.видалити всі лоти та предмети
-    webclient.додати бланк  GRID_ITEMS_HIERARCHY
+    webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
+    webclient.додати бланк  GRID_ITEMS
 
 	# ОСНОВНІ ПОЛЯ
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${cause}  set variable  ${tender_data['cause']}
 	${cause_description}  set variable  ${tender_data['causeDescription']}
 
 	:FOR  ${field}  in
+	...  mainProcurementCategory
 	...  title
 	...  description
 	...  cause
@@ -956,9 +964,12 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${yearlyPaymentsPercentageRange_status}  ${yearlyPaymentsPercentageRange}  run keyword and ignore error  set variable  ${lot['yearlyPaymentsPercentageRange']}
 
     ${en_add}  set variable if
-	...  'below' in '${mode}'               ${False}
-	...  'reporting' in '${mode}'           ${False}
-	...  'openua' in '${mode}'              ${False}
+	...  'below' in '${mode}'                           ${False}
+	...  'reporting' in '${mode}'                       ${False}
+	...  'openua' in '${mode}'                          ${False}
+	...  'negotiation' in '${mode}'                     ${False}
+	...  'open_competitive_dialogue' == '${mode}'       ${False}
+	...  "${tender_data['procurementMethodType']}" == "competitiveDialogueUA"  ${False}
 	...                                     ${True}
 
 	${field_list}  create list
@@ -1002,10 +1013,13 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	...  description
 
     ${en_add}  set variable if
-	...  'below' in '${mode}'               ${False}
-	...  'reporting' in '${mode}'           ${False}
-	...  'openua' in '${mode}'              ${False}
-	...                                     ${True}
+	...  'below' in '${mode}'                           ${False}
+	...  'reporting' in '${mode}'                       ${False}
+	...  'openua' in '${mode}'                          ${False}
+	...  'negotiation' in '${mode}'                     ${False}
+	...  'open_competitive_dialogue' == '${mode}'       ${False}
+	...  "${tender_data['procurementMethodType']}" == "competitiveDialogueUA"  ${False}
+	...                                                 ${True}
 
 	run keyword if  ("${description_en_status}" == "PASS") and (${en_add} == ${True})
 	...  append to list  ${field_list}  description_en
