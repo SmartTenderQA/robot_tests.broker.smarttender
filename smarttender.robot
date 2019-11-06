@@ -2434,8 +2434,9 @@ get_item_deliveryAddress_value
 Отримати інформацію із скарги
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${field_name}  ${award_index}=${None}
     [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID
-	log to console  Отримати інформацію із скарги
-#	smarttender.Синхронізувати тендер
+	# Только в єтом тест-кейсе нужно подождать синхронизацию
+	run keyword if  "${TEST_NAME}" == "Відображення кінцевих статусів двох останніх вимог"
+		...  smarttender.Синхронізувати тендер
 	#  Залежно від того це звичайна скарга чи award скарга відкриваємо потрібну сторінку
 	${is_award_complaint}  run keyword and return status  log  ${submissionMethodDetails}
 	run keyword if  ${is_award_complaint}
