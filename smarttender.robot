@@ -4088,6 +4088,7 @@ _розгорнути лот по id
     ...  Прийнята до розгляду, скасована комісією=stopped
     ...  Помилково надіслана=mistaken
     ...  Залишено без розгляду=ignored
+    ...  Скасована прийнята скарга заявником=stopping
     ${status}  get from dictionary  ${dict_status}  ${text}
     [Return]  ${status}
 
@@ -4139,6 +4140,15 @@ _розгорнути лот по id
     ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
     ${complaint_satisfied_locator}  set variable  xpath=${complaint_locator}//*[text()="Вимога задовільнена"]
     ${field_value}  run keyword and return status  element should be visible  ${complaint_satisfied_locator}
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію по полю cancellationReason
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_cancellationReason_locator}  set variable  xpath=${complaint_locator}//*[@class="ivu-timeline-item-content" and contains(., "Отменена жалобщиком")]//*[@class="content break-word"]
+    ${field_value}  get text  ${complaint_cancellationReason_locator}
     [Return]  ${field_value}
 
 
