@@ -92,7 +92,7 @@ ${tender_cdb_id}                    ${None}
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
 	${tender_data}  replace_unit_name  ${tender_data}
-    ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_delivery_address  ${tender_data}  ELSE  set variable  ${tender_data}
+    ${tender_data}  replace_delivery_address  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "viewer"  replacee_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  replace_funders  ${tender_data}
@@ -2404,7 +2404,7 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${field_name}  ${award_index}=${None}
     [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID
 	log to console  Отримати інформацію із скарги
-	smarttender.Синхронізувати тендер
+#	smarttender.Синхронізувати тендер
 	#  Залежно від того це звичайна скарга чи award скарга відкриваємо потрібну сторінку
 	${is_award_complaint}  run keyword and return status  log  ${submissionMethodDetails}
 	run keyword if  ${is_award_complaint}
@@ -2430,8 +2430,6 @@ _розгорнути блок скарги
 
 _перейти до сторінки вимоги
 	перейти до сторінки детальної інформаціїї
-    reload page
-    loading дочекатись закінчення загрузки сторінки
 	smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
 
 
