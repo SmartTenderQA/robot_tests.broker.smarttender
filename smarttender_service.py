@@ -404,15 +404,20 @@ def replacee_procuringEntity(tender_data):
 
 
 def replace_funders(tender_data):
-    tender_data.data.funders[0].address = {
+    try:
+        tmp = tender_data[:]
+        tmp.data.funders[0].address = {
             "postalCode": "12345",
             "countryName": u"Україна",
             "streetAddress": u"вулиця Тестова 123",
             "region": u"Київська обл.",
             "locality": u"Київ"
         }
-    tender_data.data.funders[0].name = tender_data.data.funders[0].identifier.legalName
-    return tender_data
+        tmp.data.funders[0].name = tmp.data.funders[0].identifier.legalName
+        return tmp
+    except:
+        print("popali v except")
+        return tender_data
 
 
 def replace_unit_name(tender_data):
