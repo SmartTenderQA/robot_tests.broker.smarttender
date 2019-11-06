@@ -251,7 +251,7 @@ def convert_unit_code(value):
 def convert_unit_name(value):
     units_map = {
         u'Штука': u'штуки',
-        u'Упаковка': u'упаковка',
+        u'Упаковка': u'упаков',
         u'Флакон': u'Флакон',
         u'Набір(товару)': u'набір',
         u'кг': u'кілограми',
@@ -448,6 +448,17 @@ def replace_delivery_address(tender_data):
             if cdb_locality in list_of_keys:
                 item['deliveryAddress']['region'] = delivery_address_replace[cdb_locality]['region']
                 item['deliveryAddress']['locality'] = delivery_address_replace[cdb_locality]['locality']
+
+    return tender_data
+
+
+def replace_delivery_address_for_viewer(tender_data):
+    for item in tender_data['data'].get('items'):
+        cdb_deliveryAddress = item.get('deliveryAddress')
+        if cdb_deliveryAddress:
+            cdb_locality = cdb_deliveryAddress.get('locality')
+            if cdb_locality == u"Київ":
+                item['deliveryAddress']['region'] = u"Київська область"
 
     return tender_data
 

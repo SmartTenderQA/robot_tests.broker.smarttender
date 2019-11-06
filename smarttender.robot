@@ -129,7 +129,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
 	${tender_data}  replace_unit_name  ${tender_data}
-    ${tender_data}  replace_delivery_address  ${tender_data}
+    ${tender_data}  run keyword if  "${role_name}" == "viewer"  replace_delivery_address_for_viewer  ${tender_data}  ELSE  replace_delivery_address  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "viewer"  replacee_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  replace_funders  ${tender_data}
@@ -1684,7 +1684,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 сторінка_детальної_інформації отримати complaintPeriod.startDate
     [Arguments]  ${field_name}=None
-	${selector}  set variable  xpath=//*[@data-qa="period"]/*[@class="period"]
+	${selector}  set variable  xpath=//*[@data-qa="period"]/*[contains(@class,"period")]
 	${status}  run keyword and return status  element should be visible  ${selector}
 	run keyword if  ${status} == ${False}  smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
 	${text}  get text  ${selector}
@@ -1698,7 +1698,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 сторінка_детальної_інформації отримати complaintPeriod.endDate
     [Arguments]  ${field_name}=None
-	${selector}  set variable  xpath=//*[@data-qa="period"]/*[@class="period"]
+	${selector}  set variable  xpath=//*[@data-qa="period"]/*[contains(@class,"period")]
 	${status}  run keyword and return status  element should be visible  ${selector}
 	run keyword if  ${status} == ${False}  smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
 	${text}  get text  ${selector}
@@ -1810,7 +1810,7 @@ _перейти до лоту якщо це потрібно
 
 предмети_сторінка_детальної_інформації отримати deliveryLocation.latitude
     [Arguments]  ${item_block}
-	${selector}  set variable  xpath=${item_block}//a
+	${selector}  set variable  xpath=${item_block}//a[@data-qa="nomenclature-maplink"]
 	${item_field_value}  get element attribute  ${selector}@href
 	${reg}  evaluate  re.search(u'(?P<lat>\\d+.\\d+),(?P<lon>\\d+.\\d+)', u"""${item_field_value}""")  re
 	${lat}	evaluate  float(${reg.group('lat')})
@@ -1819,7 +1819,7 @@ _перейти до лоту якщо це потрібно
 
 предмети_сторінка_детальної_інформації отримати deliveryLocation.longitude
     [Arguments]  ${item_block}
-    ${selector}  set variable  xpath=${item_block}//a
+    ${selector}  set variable  xpath=${item_block}//a[@data-qa="nomenclature-maplink"]
 	${item_field_value}  get element attribute  ${selector}@href
 	${reg}  evaluate  re.search(u'(?P<lat>\\d+.\\d+),(?P<lon>\\d+.\\d+)', u"""${item_field_value}""")  re
 	${lon}	evaluate  float(${reg.group('lon')})
