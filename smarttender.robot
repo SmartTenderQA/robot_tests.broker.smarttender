@@ -1859,9 +1859,6 @@ _перейти до лоту якщо це потрібно
 предмети_сторінка_детальної_інформації отримати deliveryAddress.region
     [Arguments]  ${item_block}
 	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  region
-#	${item_field_value}  set variable if
-#		...  "обл." in "${item_field_value}"  ${item_field_value.replace(u"обл.", u"область")}
-#		...  ${item_field_value}
 	[Return]  ${item_field_value}
 
 
@@ -3390,6 +3387,7 @@ _отримати посилання на сторінку оскарження
     ${address}  get text  xpath=${selector}
     ${reg}  evaluate  re.search(u'^(?P<postalCode>[0-9]+), (?P<countryName>[^,]+), (?P<region>[^,]+), (?P<locality>[^,]+), (?P<streetAddress>.+)', u"""${address}""")  re
 	${field_value}  set variable  ${reg.group('region')}
+	${field_value}  set variable  ${field_value.replace(u"обл.", u"область")}
     [Return]  ${field_value}
 
 
