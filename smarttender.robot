@@ -1570,8 +1570,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 сторінка_детальної_інформації отримати qualificationPeriod.endDate
     [Arguments]  ${field_name}=None
-    reload page
-	loading дочекатись закінчення загрузки сторінки
+    smarttender.Синхронізувати тендер
 	${selector}  set variable  xpath=//*[@data-qa="prequalification"]//*[@data-qa="date-end"]
 	loading дочекатися відображення елемента на сторінці  ${selector}
 	${field_value}  get text  ${selector}
@@ -1581,6 +1580,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 сторінка_детальної_інформації отримати auctionPeriod.endDate
     [Arguments]  ${field_name}=None
+    smarttender.Синхронізувати тендер
 	${selector}  set variable  xpath=//*[@data-qa="auction-period"]//*[@data-qa="date-end"]
 	${field_value}  get text  ${selector}
 	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
@@ -1865,6 +1865,7 @@ _перейти до лоту якщо це потрібно
 предмети_сторінка_детальної_інформації отримати deliveryAddress.region
     [Arguments]  ${item_block}
 	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  region
+	${item_field_value}  set variable  ${item_field_value.replace(u"обл.", u"область")}
 	[Return]  ${item_field_value}
 
 
