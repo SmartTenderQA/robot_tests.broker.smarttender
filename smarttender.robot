@@ -592,6 +592,10 @@ ${tender_cdb_id}                    ${None}
     dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
 	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
 	screen натиснути кнопку  мультилотову
+    ${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  Увага
+	run keyword if  '${status}' == 'PASS'
+	...  dialog box натиснути кнопку  ОК  # <--- здесь ОК на кирилице
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети
     webclient.додати бланк  GRID_ITEMS_HIERARCHY
@@ -640,6 +644,10 @@ ${tender_cdb_id}                    ${None}
     dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
 	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
 	screen натиснути кнопку  однолотову
+	${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  Увага
+	run keyword if  '${status}' == 'PASS'
+	...  dialog box натиснути кнопку  ОК  # <--- здесь ОК на кирилице
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети
     webclient.додати бланк  GRID_ITEMS_HIERARCHY
