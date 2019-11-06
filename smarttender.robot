@@ -1202,7 +1202,6 @@ ${tender_cdb_id}                    ${None}
     ${field_name_splited}  set variable  ${field_name.split('[')[0]}
     ${field_value}  run keyword  smarttender.сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
     log location
-    capture page screenshot
     [Return]  ${field_value}
 
 
@@ -1853,8 +1852,6 @@ get_item_deliveryAddress_value
 	${item_field_value}  get text by JS  ${selector}
     ${reg}  evaluate  re.search(u'(?P<postalCode>.+),${space*2}(?P<countryName>.+),${space*2}(?P<region>.+),${space*2}(?P<locality>.+),${space*2}(?P<streetAddress>.+)', u"""${item_field_value}""")  re
 	${group_value}  set variable  ${reg.group('${group}')}
-	# Якщо locality=="Київ", то в цбд region=="місто Київ", а ми відображаємо "Київська обл."
-	return from keyword if  "region" == "${group}" and "${reg.group('locality')}" == "Київ"  місто Київ
 	[Return]  ${group_value}
 ###########################################################################
 
@@ -2442,7 +2439,14 @@ _перейти до сторінки вимоги_кваліфікація
 Отримати інформацію із документа до скарги
 	[Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${document_id}  ${field_name}
 	log to console  Отримати інформацію із документа до скарги
-	smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
+	#  Залежно від того це звичайна скарга чи award скарга відкриваємо потрібну сторінку
+	${is_award_complaint}  run keyword and return status  log  ${submissionMethodDetails}
+	run keyword if  ${is_award_complaint}
+			...  smarttender._перейти до сторінки вимоги_кваліфікація  0
+	...  ELSE
+			...  smarttender._перейти до сторінки вимоги
+	#
+	smarttender._розгорнути блок скарги  ${complaintID}
 	${complaint_field_value}  run keyword  вимога_отримати інформацію з докуммента по полю ${field_name}  ${complaintID}
     [Return]  ${complaint_field_value}
 
@@ -3268,7 +3272,6 @@ _план_сторінка_детальної_інформації отрима�
 	${href}  smarttender._отримати посилання на сторінку оскарження  ${award_index}
 	go to  ${href}
 	loading дочекатись закінчення загрузки сторінки
-	Capture Page Screenshot
 	${selector}  set variable  //*[@data-qa="period"]/p
     ${get}  get text  ${selector}
 	${get_reg}  evaluate  re.findall(ur'\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2}', u'${get}')  re
@@ -4013,9 +4016,6 @@ _розгорнути лот по id
 
 вимога_отримати інформацію по полю status
     [Arguments]  ${complaintID}
-    smarttender.Синхронізувати тендер
-    перейти до сторінки детальної інформаціїї
-    smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
     ${complaint}  set variable  //*[@class="complaint-list"]//*[@data-qa="complaint" and contains(., "${complaintID}")]
     ${status}  set variable  //*[@data-qa="type-status"]//*[contains(@class, "complaint-status")]
     ${text}  get text  xpath=${complaint}${status}
