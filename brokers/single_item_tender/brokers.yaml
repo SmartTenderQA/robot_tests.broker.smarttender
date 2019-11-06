@@ -287,18 +287,30 @@ PublicPortal:
 SmartTender:
     intervals:
         default:
-            enquiry: [0, 10]
+            enquiry: [0, 11]
             tender:  [0, 20]
-        belowThreshold:
-            enquiry: [0, 20]
-            tender:  [0, 15]
             accelerator: 1440
-        openua:
-            accelerator: 1440
-            tender:  [0, 15]
-        openeu:
-            tender:  [0, 30]
-            accelerator: 1440
+            openua:
+                accelerator: 1440
+                tender:  [0, 30]
+            openeu:
+                accelerator: 1440
+                tender:  [0, 30]
+            openua_defense:
+                accelerator: 1440
+                tender:  [0, 30]
+            open_competitive_dialogue:
+                accelerator: 1440
+                tender:  [0, 30]
+            open_esco:
+                accelerator: 1440
+                enquiry: [0, 15]
+                tender:  [0, 30]
+            open_framework:
+                accelerator: 1440
+                tender:  [0, 30]
+            framework_selection:
+                accelerator: 360
     keywords_file: smarttender
     roles:
         provider:       SmartTender_Provider1
