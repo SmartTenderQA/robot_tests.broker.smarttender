@@ -334,8 +334,8 @@ def convert_award_status(value):
 def conver_resolutionType(value):
     map = {
         u'resolved': u'Задоволено',
-        u'invalid': u'Відхилено',
-        u'declined': u'Не задоволено'
+        u'invalid': u'Не задоволено',
+        u'declined': u'Відхилено'
     }
     if value in map:
         result = map[value]
