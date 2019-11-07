@@ -2186,9 +2186,8 @@ get_item_deliveryAddress_value
 	webclient.header натиснути на елемент за назвою  Зберегти
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
-	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
-	...  dialog box натиснути кнопку  Ні
+    run keyword and ignore error  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	run keyword and ignore error  dialog box натиснути кнопку  Ні
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
     sleep  60
