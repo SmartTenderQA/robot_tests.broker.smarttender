@@ -2935,6 +2935,7 @@ _перейти до сторінки вимоги_кваліфікація
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
     [Documentation]  Перевести договір під номером contract_num до тендера tender_uaid в статус active.
     log to console  Підтвердити підписання контракту
+    debug
     знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
@@ -3045,7 +3046,7 @@ _перейти до сторінки вимоги_кваліфікація
 
 	заповнити simple input  //*[@data-name="CONTACTPERSON"]//input  ${contactPoint.name}
 	заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}  check=${False}
-	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}  check=${False}
+	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}  #check=${False}
 	заповнити simple input  //*[@data-name="URL"]//input  ${contactPoint.url}
 	заповнити simple input  //*[@data-name="PIND"]//input  ${address.postalCode}
 	заповнити simple input  //*[@data-name="APOTR"]//input  ${address.streetAddress}
