@@ -133,8 +133,9 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
     ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "viewer"  replacee_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  replace_funders  ${tender_data}
-    ${tender_data}  replace_minimalStepPercentage  ${tender_data}
+    ${tender_data}  run keyword if  "${MODE}" == "open_esco"  replace_minimalStepPercentage  ${tender_data}  ELSE  set variable  ${tender_data}
 	${tender_data}  clear_additional_classifications  ${tender_data}
+	${tender_data}  run keyword if  "${MODE}" == "open_framework"  replace_agreementDuration  ${tender_data}  ELSE  set variable  ${tender_data}
 	log  ${tender_data}
 	log to console  ${tender_data}
 	[Return]  ${tender_data}
@@ -3378,6 +3379,21 @@ _план_сторінка_детальної_інформації отрима�
 	[Return]  ${item_selector}
 
 
+сторінка_детальної_інформації отримати agreements
+	[Arguments]  ${field_name}
+	${field_value}  run keyword  сторінка_детальної_інформації отримати ${field_name}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати agreements[${agreement_index}].status
+	${field_locator}  set variable  //*[@data-qa="agreement-status"]//*[@data-qa="value"]
+	${field_value_in_smart_format}  get text  ${field_locator}
+	${field_value}  set variable if
+		...  "${field_value_in_smart_format}" == "Укладена рамкова угода"  active
+		...  Error!
+	[Return]  ${field_value}
+
+
 сторінка_детальної_інформації отримати awards
 	[Arguments]  ${field_name}
 	# розгорунти блок, якщо потрібно
@@ -3407,6 +3423,23 @@ _отримати посилання на сторінку оскарження
 	return from keyword if  ${href.__len__()} != 0  ${href}
 	${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${award_index}]@href
 	[Return]  ${href}
+
+
+сторінка_детальної_інформації отримати maxAwardsCount
+	[Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="max-winner-count"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	${field_value}  convert to integer  ${field_value}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати agreementDuration
+	[Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="agreement-duration"]/div[@class="second ivu-col ivu-col-span-xs-24 ivu-col-span-sm-15"]
+	${value}  get text  ${selector}
+	${reg}  evaluate  re.search(u'(?P<years>[0-9]+).+(?P<months>[0-9]+).+(?P<days>[0-9]+)', u"""${value}""")  re
+	${field_value}  set variable  P${reg.group('years')}Y${reg.group('months')}M${reg.group('days')}DT0H0M0S
+	[Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати awards[${award_index}].documents[${document_index}].title

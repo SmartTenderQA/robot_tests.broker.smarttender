@@ -471,8 +471,19 @@ def replace_minimalStepPercentage(tender_data):
     try:
         if "minimalStepPercentage" in tender_data.data.keys():
             tender_data.data.minimalStepPercentage = 0.026
-            for lot in tender_data['data'].get('lots'):
-                lot.minimalStepPercentage = 0.026
+            tender_data.data.lots[0].minimalStepPercentage = 0.026
+        return tender_data
+    except:
+        print("popali v except")
+        return tender_data
+
+
+def replace_agreementDuration(tender_data):
+    try:
+        if "agreementDuration" in tender_data.data.keys():
+            agreementDuration = tender_data.data.agreementDuration
+            # Убираем часы, минуты и секунды с периода
+            tender_data.data.agreementDuration = agreementDuration.split("T")[0] + "T0H0M0S"
             return tender_data
     except:
         print("popali v except")
@@ -500,7 +511,6 @@ def clear_additional_classifications(tender_data):
     for item in tender_data['data']['items']:
         if 'additionalClassifications' in item.keys():
             del item['additionalClassifications']
-
     return tender_data
 
 
