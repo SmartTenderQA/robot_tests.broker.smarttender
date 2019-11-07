@@ -219,7 +219,8 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для item quantity
 	[Arguments]  ${quantity}
 	${locator}  set variable  //*[@data-name="QUANTITY"]//input
-	заповнити simple input  ${locator}  ${quantity.__str__()}  input_methon=Input Type Flex
+	clear input by JS  ${locator}
+	заповнити autocomplete field  ${locator}  ${quantity}  check=${False}  input_methon=Input Type Flex
 
 
 заповнити поле для item unit.name
