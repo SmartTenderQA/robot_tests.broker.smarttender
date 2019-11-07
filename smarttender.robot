@@ -70,7 +70,7 @@ ${deliveryDate_root}                //*[@data-qa="nomenclature-delivery-date-to"
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
-${hub}  dasdasasd
+${hub}
 ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 
