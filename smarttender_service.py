@@ -469,10 +469,11 @@ def replace_delivery_address_for_viewer(tender_data):
 
 def replace_minimalStepPercentage(tender_data):
     try:
-        tender_data.data.minimalStepPercentage = 0.026
-        for lot in tender_data['data'].get('lots'):
-            lot.minimalStepPercentage = 0.026
-        return tender_data
+        if "minimalStepPercentage" in tender_data.data.keys():
+            tender_data.data.minimalStepPercentage = 0.026
+            for lot in tender_data['data'].get('lots'):
+                lot.minimalStepPercentage = 0.026
+            return tender_data
     except:
         print("popali v except")
         return tender_data
