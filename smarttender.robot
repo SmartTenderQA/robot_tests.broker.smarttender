@@ -641,6 +641,10 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети
     webclient.додати бланк  GRID_ITEMS_HIERARCHY
+    #  Костыль, потому что не удаляется последняя номеклатура
+    grid вибрати рядок за номером  1
+    webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
+    ##########################################################
 
 	# ОСНОВНІ ПОЛЯ
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
@@ -699,6 +703,10 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
     webclient.додати бланк  GRID_ITEMS
+    #  Костыль, потому что не удаляется последняя номеклатура
+    grid вибрати рядок за номером  1
+    webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
+    ##########################################################
 
 	# ОСНОВНІ ПОЛЯ
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
