@@ -251,7 +251,7 @@ def convert_unit_code(value):
 def convert_unit_name(value):
     units_map = {
         u'Штука': u'штуки',
-        u'Упаковка': u'упаков',
+        u'Упаковка': u'упаковка',
         u'Флакон': u'Флакон',
         u'Набір(товару)': u'набір',
         u'кг': u'кілограми',
@@ -459,8 +459,23 @@ def replace_delivery_address_for_viewer(tender_data):
             cdb_locality = cdb_deliveryAddress.get('locality')
             if cdb_locality == u"Київ":
                 item['deliveryAddress']['region'] = u"Київська область"
+            elif cdb_locality == u"Дніпро":
+                item['deliveryAddress']['locality'] = u"Київ"
+                item['deliveryAddress']['region'] = u"Київська область"
+
 
     return tender_data
+
+
+def replace_minimalStepPercentage(tender_data):
+    try:
+        tender_data.data.minimalStepPercentage = 0.026
+        for lot in tender_data['data'].get('lots'):
+            lot.minimalStepPercentage = 0.026
+        return tender_data
+    except:
+        print("popali v except")
+        return tender_data
 
 
 def sync_tender_by_cdb_id(cdb_id):
