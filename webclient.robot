@@ -516,6 +516,7 @@ check for open screen
 отримати номер тендера
 	${locator}  set variable if
 	...  '${mode}' == 'negotiation'  xpath=(//*[contains(@class, "rowselected")]/td)[7]
+	...  '${mode}' == 'reporting'    xpath=(//*[contains(@class, "rowselected")]/td)[7]
 	...  xpath=(//*[contains(@class, "rowselected")]/td/a)[1]
 	${UAID}  get text  ${locator}
 	[Return]  ${UAID}
