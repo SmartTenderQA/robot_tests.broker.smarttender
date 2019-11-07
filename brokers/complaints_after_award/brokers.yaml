@@ -23,12 +23,12 @@ Default:
             #
             # First number in list:  Delay before period starts (for startDate)
             # Second number in list: Duration of period (for endDate)
-            enquiry: [0, 11]
-            tender:  [0, 31]
+            enquiry: [0, 1]
+            tender:  [0, 2]
             # accelerator: Integer value
             # This is not a name of period
             # Please refer to API documentation to find out what's this
-            accelerator: 1440
+            accelerator: 360
         openua:
             accelerator: 1440
             tender:  [0, 15]
@@ -40,10 +40,10 @@ Default:
             tender:  [0, 30]
         openua_defense:
             accelerator: 1440
-            tender:  [0, 30]
+            tender:  [0, 6]
         open_competitive_dialogue:
             accelerator: 1440
-            tender:  [0, 45]
+            tender:  [0, 30]
         open_esco:
              accelerator: 1440
              enquiry: [0, 15]
@@ -287,12 +287,12 @@ PublicPortal:
 SmartTender:
     intervals:
         default:
-            enquiry: [0, 10]
-            tender:  [0, 40]
+            enquiry: [0, 1]
+            tender:  [0, 2]
         belowThreshold:
-            enquiry: [10, 25]
-            tender:  [0, 15]
-            accelerator: 1440
+            enquiry: [0, 8]
+            tender:  [0, 10]
+            accelerator: 360
         openua:
             accelerator: 1440
             tender:  [0, 50]
