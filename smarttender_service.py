@@ -495,10 +495,10 @@ def sync_tender_by_cdb_id(cdb_id):
 
 
 def clear_additional_classifications(tender_data):
-    if 'additionalClassifications' in tender_data['data'].keys():
+    if tender_data['data']['additionalClassifications']['scheme'] == 'ДКПП':
         del tender_data['data']['additionalClassifications']
     for item in tender_data['data']['items']:
-        if 'additionalClassifications' in item.keys():
+        if item['additionalClassifications']['scheme'] == 'ДКПП':
             del item['additionalClassifications']
 
     return tender_data
