@@ -70,7 +70,7 @@ ${deliveryDate_root}                //*[@data-qa="nomenclature-delivery-date-to"
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
-${hub}
+${hub}  dasdasasd
 ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 
@@ -133,6 +133,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
     ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "viewer"  replacee_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  replace_funders  ${tender_data}
+    ${tender_data}  replace_minimalStepPercentage  ${tender_data}
 	${tender_data}  clear_additional_classifications  ${tender_data}
 	log  ${tender_data}
 	log to console  ${tender_data}
@@ -1728,6 +1729,42 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	${field_value}  convert date  ${date}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	reload page
 	loading дочекатись закінчення загрузки сторінки
+	[Return]  ${field_value}
+
+сторінка_детальної_інформації отримати fundingKind
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="title" and contains(., "Джерело фінансування")]//*[@data-qa="value"]
+	${field_value_in_smart_format}  get text  ${selector}
+    ${field_value}  set variable if
+        ...  "${field_value_in_smart_format}" == "Співфінансування з бюджетних коштів"  budget
+        ...  "${field_value_in_smart_format}" == "Фінансування виключно за рахунок Учасника"  other
+        ...  Error!
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати NBUdiscountRate
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="nbu-discount-rate"]//*[@data-qa="value"]
+	${value_in_smart_format}  get text  ${selector}
+	${field_value_in_smart_format}  set variable  ${value_in_smart_format.replace("%", "").replace(",", ".")}
+    ${field_value}  evaluate  float(${field_value_in_smart_format.replace("%", "").replace(",", ".")}) / 100
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати yearlyPaymentsPercentageRange
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="cost-reduction-percent"]//*[@data-qa="value"]
+	${field_value_in_smart_format}  get text  ${selector}
+    ${field_value}  evaluate  float(${field_value_in_smart_format.split(" - ")[-1].replace("%", "").replace(",", ".")}) / 100
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати minimalStepPercentage
+	[Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="budget-min-step"]//span
+	${field_value_in_smart_format}  get text  ${selector}
+    ${field_value}  evaluate  float(${field_value_in_smart_format}) / 100
+    ${field_value}  evaluate  '%.3f' % ${field_value}
 	[Return]  ${field_value}
 
 
