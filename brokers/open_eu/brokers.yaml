@@ -40,10 +40,10 @@ Default:
             tender:  [0, 30]
         openua_defense:
             accelerator: 1440
-            tender:  [0, 6]
+            tender:  [0, 30]
         open_competitive_dialogue:
             accelerator: 1440
-            tender:  [0, 30]
+            tender:  [0, 45]
         open_esco:
              accelerator: 1440
              enquiry: [0, 15]
@@ -288,7 +288,7 @@ SmartTender:
     intervals:
         default:
             enquiry: [0, 10]
-            tender:  [0, 20]
+            tender:  [0, 40]
         belowThreshold:
             enquiry: [10, 25]
             tender:  [0, 15]

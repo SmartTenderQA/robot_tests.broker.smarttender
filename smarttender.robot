@@ -70,6 +70,8 @@ ${deliveryDate_root}                //*[@data-qa="nomenclature-delivery-date-to"
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
+${hub}
+${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 
 
@@ -77,9 +79,44 @@ ${tender_cdb_id}                    ${None}
 Підготувати клієнт для користувача
 	[Arguments]   ${username}
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
-	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
+	# todo не забыть убрать
+	${caps}  evaluate  dict({'browserName': 'chrome', 'version': 'Last', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': []}})
+	Run Keyword If  ${hub.__len__()} != 0
+			...  Create Webdriver  Chrome  alias=${username}
+	...  ELSE
+			...  run keywords
+                    ...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${caps}  AND
+                    ...  Отримати та залогувати data_session
+    smart go to  ${USERS.users['${username}'].homepage}
+    # /todo не забыть убрать
 	maximize browser window
 	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
+
+
+#Это киворд для КСЗИ
+#Підготувати клієнт для користувача
+#	[Arguments]   ${username}
+#	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
+#	Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
+#	maximize browser window
+#	run keyword if  'viewer' not in '${username.lower()}'  smarttender.Авторизуватися  ${username}
+
+
+Отримати та залогувати data_session
+	${s2b}  get_library_instance  Selenium2Library
+	${webdriver}  Call Method  ${s2b}  _current_browser
+	${data}  evaluate  requests.get("${hub_url.replace('/wd/hub', '')}/grid/api/testsession?session=${webdriver.__dict__['capabilities']['webdriver.remote.sessionid']}")  requests
+	${data}  Set Variable  ${data.json()}
+	log many  ${data}  ${webdriver}  ${webdriver.__dict__}  ${webdriver.__dict__['capabilities']}
+	${keys}  Get Dictionary Keys  ${webdriver.__dict__['capabilities']}
+	${to console}  create list  platform  browserName  version
+	Log  тест запущен на ноде: ${data['proxyId']}  WARN
+	log to console  ------------------------------------------------------------------------------
+	:FOR  ${key}  IN  @{keys}
+	\  run keyword if  '${key}' in @{to console}  run keywords
+	\  ...  log  ${key} = ${webdriver.__dict__['capabilities']['${key}']}  WARN    AND
+	\  ...  log to console  ------------------------------------------------------------------------------
+	Set Global Variable  ${webdriver}
 
 
 Підготувати дані для оголошення тендера
@@ -91,11 +128,12 @@ ${tender_cdb_id}                    ${None}
 	...  Це ключове слово викликається в циклі для кожної ролі, яка бере участь в поточному сценарії.
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
-	${tender_data}  replace_unit_name  ${tender_data}
-    ${tender_data}  replace_delivery_address  ${tender_data}
+    ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_unit_name  ${tender_data}  ELSE  set variable  ${tender_data}
+    ${tender_data}  run keyword if  "${role_name}" == "viewer"  replace_delivery_address_for_viewer  ${tender_data}  ELSE  replace_delivery_address  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "viewer"  replacee_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  replace_funders  ${tender_data}
+    ${tender_data}  replace_minimalStepPercentage  ${tender_data}
 	${tender_data}  clear_additional_classifications  ${tender_data}
 	log  ${tender_data}
 	log to console  ${tender_data}
@@ -504,6 +542,9 @@ ${tender_cdb_id}                    ${None}
 	\  webclient.додати бланк  GRID_ITEMS_HIERARCHY
 	\  Заповнити поля предмету  ${item}
 
+    # ЯКІСНІ ПОКАЗНИКИ
+    ${is_features}  ${features}  run keyword and ignore error  set variable  ${tender_data['features']}
+	run keyword if  '${is_features}' == 'PASS'  smarttender.додати якісні показники  ${features}
 
 	# УМОВИ ОПЛАТИ
 	${is_milestones}  ${milestones}  run keyword and ignore error  set variable  ${tender_data['milestones']}
@@ -538,11 +579,13 @@ ${tender_cdb_id}                    ${None}
     знайти план у webclient  ${plan_uaid}
    	webclient.header натиснути на елемент за назвою             Розрахунок
     dialog box вибрати строку зі списка  Сформировать закупку из планов  delta=2
-	screen заголовок повинен містити     Сформувати однолотову чи багатолотову закупівлю?
-	screen натиснути кнопку  однолотову
 	screen заголовок повинен містити     Додавання. Тендери
-    webclient.видалити всі лоти та предмети
-    webclient.додати бланк  GRID_ITEMS_HIERARCHY
+    webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
+    webclient.додати бланк  GRID_ITEMS
+    #  Костыль, потому что не удаляется последняя номеклатура
+    grid вибрати рядок за номером  1
+    webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
+    ##########################################################
 	# ОСНОВНІ ПОЛЯ
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
 	${value.amount}  set variable  ${tender_data['value']['amount']}
@@ -582,7 +625,6 @@ ${tender_cdb_id}                    ${None}
 	loading дочекатись закінчення загрузки сторінки
 	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
 	dialog box натиснути кнопку  Ні
-	webclient.пошук тендера по title  ${tender_data['title']}
 
 
 Оголосити закупівлю negotiation multilot
@@ -600,14 +642,20 @@ ${tender_cdb_id}                    ${None}
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети
     webclient.додати бланк  GRID_ITEMS_HIERARCHY
+    #  Костыль, потому что не удаляется последняя номеклатура
+    grid вибрати рядок за номером  1
+    webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
+    ##########################################################
 
 	# ОСНОВНІ ПОЛЯ
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${cause}  set variable  ${tender_data['cause']}
 	${cause_description}  set variable  ${tender_data['causeDescription']}
 
 	:FOR  ${field}  in
+	...  mainProcurementCategory
 	...  title
 	...  description
 	...  cause
@@ -630,6 +678,10 @@ ${tender_cdb_id}                    ${None}
 
     webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
+	${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
 	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
@@ -650,16 +702,22 @@ ${tender_cdb_id}                    ${None}
 	run keyword if  '${status}' == 'PASS'
 	...  dialog box натиснути кнопку  ОК  # <--- здесь ОК на кирилице
 	screen заголовок повинен містити     Додавання. Тендери
-    webclient.видалити всі лоти та предмети
-    webclient.додати бланк  GRID_ITEMS_HIERARCHY
+    webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
+    webclient.додати бланк  GRID_ITEMS
+    #  Костыль, потому что не удаляется последняя номеклатура
+    grid вибрати рядок за номером  1
+    webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
+    ##########################################################
 
 	# ОСНОВНІ ПОЛЯ
+	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${cause}  set variable  ${tender_data['cause']}
 	${cause_description}  set variable  ${tender_data['causeDescription']}
 
 	:FOR  ${field}  in
+	...  mainProcurementCategory
 	...  title
 	...  description
 	...  cause
@@ -678,6 +736,10 @@ ${tender_cdb_id}                    ${None}
 
     webclient.додати тендерну документацію
 	webclient.header натиснути на елемент за назвою  Додати
+	${status}  ${ret}  run keyword and ignore error
+	...  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
+	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
+	...  dialog box натиснути кнопку  Так
 	dialog box заголовок повинен містити  Оголосити закупівлю?
 	dialog box натиснути кнопку  Так
 	webclient.screen заголовок повинен містити  Завантаження документації
@@ -919,9 +981,11 @@ ${tender_cdb_id}                    ${None}
 	${yearlyPaymentsPercentageRange_status}  ${yearlyPaymentsPercentageRange}  run keyword and ignore error  set variable  ${lot['yearlyPaymentsPercentageRange']}
 
     ${en_add}  set variable if
-	...  'below' in '${mode}'               ${False}
-	...  'reporting' in '${mode}'           ${False}
-	...  'openua' in '${mode}'              ${False}
+	...  'below' in '${mode}'                           ${False}
+	...  'reporting' in '${mode}'                       ${False}
+	...  'openua' in '${mode}'                          ${False}
+	...  'negotiation' in '${mode}'                     ${False}
+	...  "${tender_data['procurementMethodType']}" == "competitiveDialogueUA"  ${False}
 	...                                     ${True}
 
 	${field_list}  create list
@@ -965,10 +1029,12 @@ ${tender_cdb_id}                    ${None}
 	...  description
 
     ${en_add}  set variable if
-	...  'below' in '${mode}'               ${False}
-	...  'reporting' in '${mode}'           ${False}
-	...  'openua' in '${mode}'              ${False}
-	...                                     ${True}
+	...  'below' in '${mode}'                           ${False}
+	...  'reporting' in '${mode}'                       ${False}
+	...  'openua' in '${mode}'                          ${False}
+	...  'negotiation' in '${mode}'                     ${False}
+	...  "${tender_data['procurementMethodType']}" == "competitiveDialogueUA"  ${False}
+	...                                                 ${True}
 
 	run keyword if  ("${description_en_status}" == "PASS") and (${en_add} == ${True})
 	...  append to list  ${field_list}  description_en
@@ -1159,7 +1225,7 @@ ${tender_cdb_id}                    ${None}
 
 
 Пошук тендера по ідентифікатору
-	[Arguments]   ${username}  ${tender_uaid}
+	[Arguments]   ${username}  ${tender_uaid}  ${second_stage_data}=${None}
 	[Documentation]   Знайти тендер з uaid рівним tender_uaid.
 	${tender_detail_page_exist}  run keyword and return status  variable should exist  ${tender_detail_page}
 	return from keyword if  ${tender_detail_page_exist}
@@ -1533,8 +1599,7 @@ ${tender_cdb_id}                    ${None}
 
 сторінка_детальної_інформації отримати qualificationPeriod.endDate
     [Arguments]  ${field_name}=None
-    reload page
-	loading дочекатись закінчення загрузки сторінки
+    smarttender.Синхронізувати тендер
 	${selector}  set variable  xpath=//*[@data-qa="prequalification"]//*[@data-qa="date-end"]
 	loading дочекатися відображення елемента на сторінці  ${selector}
 	${field_value}  get text  ${selector}
@@ -1544,6 +1609,7 @@ ${tender_cdb_id}                    ${None}
 
 сторінка_детальної_інформації отримати auctionPeriod.endDate
     [Arguments]  ${field_name}=None
+    smarttender.Синхронізувати тендер
 	${selector}  set variable  xpath=//*[@data-qa="auction-period"]//*[@data-qa="date-end"]
 	${field_value}  get text  ${selector}
 	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
@@ -1614,6 +1680,12 @@ ${tender_cdb_id}                    ${None}
 	[Return]  Пока отображается только улица а не .address.streetAddress
 
 
+сторінка_детальної_інформації отримати funders funders[${funder_index}].contactPoint.url
+	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
+	${locator}  set variable  xpath=${funder_block_locator}//*[@class="ivu-poptip-body-content"]//b[text()="Веб-сайт:"]/following-sibling::*
+	${field_value}  get element attribute  ${locator}@innerText
+	[Return]  ${field_value}
+
 
 сторінка_детальної_інформації отримати funders funders[${funder_index}].identifier.id
 	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
@@ -1626,7 +1698,7 @@ ${tender_cdb_id}                    ${None}
 	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
 	${locator}  set variable  xpath=${funder_block_locator}//*[@class="ivu-poptip-body-content"]//b[text()="Код ЄДРПОУ:"]
 	${field_value_in_smart_format}  get element attribute  ${locator}@innerText
-	${field_value}  set variable if  "${field_value_in_smart_format}" == "Код ЄДРПОУ"  XM-DAC  ERROR!
+	${field_value}  set variable if  "${field_value_in_smart_format}" == "Код ЄДРПОУ:"  XM-DAC  ERROR!
 	[Return]  ${field_value}
 
 
@@ -1647,7 +1719,7 @@ ${tender_cdb_id}                    ${None}
 
 сторінка_детальної_інформації отримати complaintPeriod.startDate
     [Arguments]  ${field_name}=None
-	${selector}  set variable  xpath=//*[@data-qa="period"]/*[@class="period"]
+	${selector}  set variable  xpath=//*[@data-qa="period"]/*[contains(@class,"period")]
 	${status}  run keyword and return status  element should be visible  ${selector}
 	run keyword if  ${status} == ${False}  smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
 	${text}  get text  ${selector}
@@ -1661,7 +1733,7 @@ ${tender_cdb_id}                    ${None}
 
 сторінка_детальної_інформації отримати complaintPeriod.endDate
     [Arguments]  ${field_name}=None
-	${selector}  set variable  xpath=//*[@data-qa="period"]/*[@class="period"]
+	${selector}  set variable  xpath=//*[@data-qa="period"]/*[contains(@class,"period")]
 	${status}  run keyword and return status  element should be visible  ${selector}
 	run keyword if  ${status} == ${False}  smarttender.сторінка_детальної_інформації активувати вкладку  Вимоги/скарги на умови закупівлі
 	${text}  get text  ${selector}
@@ -1671,6 +1743,42 @@ ${tender_cdb_id}                    ${None}
 	${field_value}  convert date  ${date}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	reload page
 	loading дочекатись закінчення загрузки сторінки
+	[Return]  ${field_value}
+
+сторінка_детальної_інформації отримати fundingKind
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="title" and contains(., "Джерело фінансування")]//*[@data-qa="value"]
+	${field_value_in_smart_format}  get text  ${selector}
+    ${field_value}  set variable if
+        ...  "${field_value_in_smart_format}" == "Співфінансування з бюджетних коштів"  budget
+        ...  "${field_value_in_smart_format}" == "Фінансування виключно за рахунок Учасника"  other
+        ...  Error!
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати NBUdiscountRate
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="nbu-discount-rate"]//*[@data-qa="value"]
+	${value_in_smart_format}  get text  ${selector}
+	${field_value_in_smart_format}  set variable  ${value_in_smart_format.replace("%", "").replace(",", ".")}
+    ${field_value}  evaluate  float(${field_value_in_smart_format.replace("%", "").replace(",", ".")}) / 100
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати yearlyPaymentsPercentageRange
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="cost-reduction-percent"]//*[@data-qa="value"]
+	${field_value_in_smart_format}  get text  ${selector}
+    ${field_value}  evaluate  float(${field_value_in_smart_format.split(" - ")[-1].replace("%", "").replace(",", ".")}) / 100
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати minimalStepPercentage
+	[Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="budget-min-step"]//span
+	${field_value_in_smart_format}  get text  ${selector}
+    ${field_value}  evaluate  float(${field_value_in_smart_format}) / 100
+    ${field_value}  evaluate  '%.3f' % ${field_value}
 	[Return]  ${field_value}
 
 
@@ -1773,7 +1881,7 @@ _перейти до лоту якщо це потрібно
 
 предмети_сторінка_детальної_інформації отримати deliveryLocation.latitude
     [Arguments]  ${item_block}
-	${selector}  set variable  xpath=${item_block}//a
+	${selector}  set variable  xpath=${item_block}//a[@data-qa="nomenclature-maplink"]
 	${item_field_value}  get element attribute  ${selector}@href
 	${reg}  evaluate  re.search(u'(?P<lat>\\d+.\\d+),(?P<lon>\\d+.\\d+)', u"""${item_field_value}""")  re
 	${lat}	evaluate  float(${reg.group('lat')})
@@ -1782,7 +1890,7 @@ _перейти до лоту якщо це потрібно
 
 предмети_сторінка_детальної_інформації отримати deliveryLocation.longitude
     [Arguments]  ${item_block}
-    ${selector}  set variable  xpath=${item_block}//a
+    ${selector}  set variable  xpath=${item_block}//a[@data-qa="nomenclature-maplink"]
 	${item_field_value}  get element attribute  ${selector}@href
 	${reg}  evaluate  re.search(u'(?P<lat>\\d+.\\d+),(?P<lon>\\d+.\\d+)', u"""${item_field_value}""")  re
 	${lon}	evaluate  float(${reg.group('lon')})
@@ -1822,9 +1930,7 @@ _перейти до лоту якщо це потрібно
 предмети_сторінка_детальної_інформації отримати deliveryAddress.region
     [Arguments]  ${item_block}
 	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  region
-	${item_field_value}  set variable if
-		...  "обл." in "${item_field_value}"  ${item_field_value.replace(u"обл.", u"область")}
-		...  ${item_field_value}
+	${item_field_value}  set variable  ${item_field_value.replace(u"обл.", u"область")}
 	[Return]  ${item_field_value}
 
 
@@ -2080,9 +2186,8 @@ get_item_deliveryAddress_value
 	webclient.header натиснути на елемент за назвою  Зберегти
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
-	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
-	...  dialog box натиснути кнопку  Ні
+    run keyword and ignore error  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	run keyword and ignore error  dialog box натиснути кнопку  Ні
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
     sleep  60
@@ -2400,8 +2505,9 @@ get_item_deliveryAddress_value
 Отримати інформацію із скарги
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${field_name}  ${award_index}=${None}
     [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID
-	log to console  Отримати інформацію із скарги
-#	smarttender.Синхронізувати тендер
+	# Только в єтом тест-кейсе нужно подождать синхронизацию
+	run keyword if  "${TEST_NAME}" == "Відображення кінцевих статусів двох останніх вимог"
+		...  smarttender.Синхронізувати тендер
 	#  Залежно від того це звичайна скарга чи award скарга відкриваємо потрібну сторінку
 	${is_award_complaint}  run keyword and return status  log  ${submissionMethodDetails}
 	run keyword if  ${is_award_complaint}
@@ -2576,6 +2682,11 @@ _перейти до сторінки вимоги_кваліфікація
     ${selector}  set variable  xpath=${doc_block}//*[@data-qa="file-name"]
     ${document_field}  get text  ${selector}
     [Return]  ${document_field}
+
+
+документи_сторінка_детальної_інформації отримати documentOf
+    [Arguments]  ${doc_block}
+    [Return]  tender
 
 
 Подати цінову пропозицію
@@ -2789,13 +2900,20 @@ _перейти до сторінки вимоги_кваліфікація
     [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінює поле fieldname угоди тендера tender_uaid на fieldvalue
     run keyword if  '${fieldname}' == 'value.amountNet'  run keywords
+    ...  log to console  Редагувати угоду       AND
+    ...  debug  AND
     ...  знайти тендер у webclient  ${tender_uaid}  AND
 	...  активувати вкладку  Пропозиції  AND
-	...  grid вибрати рядок за номером  ${award_num}+1  AND
+	...  grid вибрати рядок за номером  ${contract_index}+1  AND
 	...  header натиснути на елемент за назвою  Надіслати вперед  AND
     ...  header натиснути на елемент за назвою  Прикріпити договір
     run keyword  редагувати поле угоди ${fieldname}  ${fieldvalue}
 
+
+редагувати поле угоди value.amount
+    [Arguments]  ${fieldvalue}
+    log to console  редагувати поле угоди value.amount
+    debug
 
 
 Встановити дату підписання угоди
@@ -3269,6 +3387,7 @@ _план_сторінка_детальної_інформації отрима�
 
 
 сторінка_детальної_інформації отримати awards[${award_index}].complaintPeriod.endDate
+	Синхронізувати тендер
 	${href}  smarttender._отримати посилання на сторінку оскарження  ${award_index}
 	go to  ${href}
 	loading дочекатись закінчення загрузки сторінки
@@ -3353,6 +3472,7 @@ _отримати посилання на сторінку оскарження
     ${address}  get text  xpath=${selector}
     ${reg}  evaluate  re.search(u'^(?P<postalCode>[0-9]+), (?P<countryName>[^,]+), (?P<region>[^,]+), (?P<locality>[^,]+), (?P<streetAddress>.+)', u"""${address}""")  re
 	${field_value}  set variable  ${reg.group('region')}
+	${field_value}  set variable  ${field_value.replace(u"обл.", u"область")}
     [Return]  ${field_value}
 
 
@@ -3425,6 +3545,54 @@ _отримати посилання на сторінку оскарження
 	go back
 	loading дочекатись закінчення загрузки сторінки
 	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати contracts[${contract_index}].value.amount
+	Синхронізувати тендер
+	перейти до сторінки детальної інформаціїї
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
+	loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="contract-amount"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert_page_values  value.amount  ${field_value_in_smart_format}
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати contracts[${contract_index}].dateSigned
+	Синхронізувати тендер
+	перейти до сторінки детальної інформаціїї
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
+	loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="contract-party-date-signed"]//*[@data-qa="value"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert date  ${field_value_in_smart_format}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT00:00:00${time_zone}
+    [Return]  ${field_value}
+
+
+smarttender.сторінка_детальної_інформації отримати contracts[${contract_index}].period.startDate
+	Синхронізувати тендер
+	перейти до сторінки детальної інформаціїї
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
+	loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="contract-date-from"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert date  ${field_value_in_smart_format}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT00:00:00${time_zone}
+    [Return]  ${field_value}
+
+
+smarttender.сторінка_детальної_інформації отримати contracts[${contract_index}].period.endDate
+	Синхронізувати тендер
+	перейти до сторінки детальної інформаціїї
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
+	loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="contract-date-to"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert date  ${field_value_in_smart_format}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT00:00:00${time_zone}
+    [Return]  ${field_value}
 
 
 _дочекатися відображення посилання на договір
@@ -3706,9 +3874,6 @@ _Дочекатись синхронізації
     ${tab_selector}  Set Variable  //*[@data-qa="tabs"]//*[contains(text(), "${tab_name}")]
     Wait Until Keyword Succeeds  10  2  Click Element  ${tab_selector}
     loading дочекатись закінчення загрузки сторінки
-    ${status}  Run Keyword And Return Status
-    ...  Element Should Be Visible  ${tab_selector}/ancestor::div[contains(@class,"tab-active")]
-    Run Keyword If  '${status}' == 'False'  Click Element  ${tab_selector}
 
 
 перейти до сторінки детальної інформаціїї
@@ -3979,7 +4144,7 @@ _розгорнути лот по id
 
 
 вимога_натиснути кнопку "Подати"
-    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//button[contains(@class,"btn-success")]
+    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//*[@data-qa="new-complaint"]//button[contains(@class,"btn-success")]
     Click Element  ${complaint send btn}
     loading дочекатись закінчення загрузки сторінки
     Wait Until Element Is Not Visible  ${complaint send btn}  10
@@ -4034,6 +4199,7 @@ _розгорнути лот по id
     ...  Прийнята до розгляду, скасована комісією=stopped
     ...  Помилково надіслана=mistaken
     ...  Залишено без розгляду=ignored
+    ...  Скасована прийнята скарга заявником=stopping
     ${status}  get from dictionary  ${dict_status}  ${text}
     [Return]  ${status}
 
@@ -4085,6 +4251,15 @@ _розгорнути лот по id
     ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
     ${complaint_satisfied_locator}  set variable  xpath=${complaint_locator}//*[text()="Вимога задовільнена"]
     ${field_value}  run keyword and return status  element should be visible  ${complaint_satisfied_locator}
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію по полю cancellationReason
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_cancellationReason_locator}  set variable  xpath=${complaint_locator}//*[@class="ivu-timeline-item-content" and contains(., "Отменена жалобщиком")]//*[@class="content break-word"]
+    ${field_value}  get text  ${complaint_cancellationReason_locator}
     [Return]  ${field_value}
 
 

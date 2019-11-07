@@ -108,7 +108,8 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле NBUdiscountRate
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="NBUDISCRAT"]//input
-	заповнити simple input  ${locator}  ${text}  check=${False}
+	clear input by JS  ${locator}
+	заповнити simple input  ${locator}  ${text}  check=${False}  input_methon=Input Type Flex
 
 
 заповнити поле fundingKind
@@ -174,6 +175,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для lot minimalStep.amount
 	[Arguments]  ${minimalStep}
 	${locator}  set variable  //*[@data-name="LOT_MINSTEP"]//input
+	clear input by JS  ${locator}
 	заповнити autocomplete field  ${locator}  ${minimalStep}  check=${True}  input_methon=Input Type Flex
 
 
@@ -187,6 +189,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="LOT_MINSTEP_PERCENT"]//input
 	${value}  evaluate  ${text} * 100
+	clear input by JS  ${locator}
 	заповнити simple input  ${locator}  ${value}  input_methon=Input Type Flex
 
 
@@ -194,6 +197,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="LOT_PERCENT_REDUCTION"]//input
 	${value}  evaluate  ${text} * 100
+	clear input by JS  ${locator}
 	заповнити simple input  ${locator}  ${value}  input_methon=Input Type Flex
 
 
@@ -203,6 +207,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
+	clear input by JS  ${locator}
 	заповнити autocomplete field  ${locator}  ${description}  input_methon=Input Type Flex
 
 заповнити поле для item description_en
@@ -214,6 +219,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для item quantity
 	[Arguments]  ${quantity}
 	${locator}  set variable  //*[@data-name="QUANTITY"]//input
+	clear input by JS  ${locator}
 	заповнити autocomplete field  ${locator}  ${quantity}  check=${False}  input_methon=Input Type Flex
 
 
@@ -261,6 +267,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для item deliveryAddress.locality
 	[Arguments]  ${deliveryAddress.locality}
 	${locator}  set variable  //*[@data-name="CITY_KOD"]//input
+	clear input by JS  ${locator}
 	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${True}  input_methon=Input Type Flex
 
 
@@ -519,6 +526,7 @@ check for open screen
 отримати номер тендера
 	${locator}  set variable if
 	...  '${mode}' == 'negotiation'  xpath=(//*[contains(@class, "rowselected")]/td)[7]
+	...  '${mode}' == 'reporting'    xpath=(//*[contains(@class, "rowselected")]/td)[7]
 	...  xpath=(//*[contains(@class, "rowselected")]/td/a)[1]
 	${UAID}  get text  ${locator}
 	[Return]  ${UAID}
@@ -837,9 +845,9 @@ click screen header
 
 
 видалити всі лоти та предмети
-    [Arguments]  ${index}=1
-    ${count}  Get Matching Xpath Count  //*[@data-name="GRID_ITEMS_HIERARCHY"]//tr[contains(@class,"Row")]
-    ${del_btn}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//*[@title="Видалити"][${index}]
+    [Arguments]  ${screen}=GRID_ITEMS_HIERARCHY  ${index}=1
+    ${count}  Get Matching Xpath Count  //*[@data-name="${screen}"]//tr[contains(@class,"Row")]
+    ${del_btn}  set variable  xpath=//*[@data-name="${screen}"]//*[@title="Видалити"][${index}]
 	return from keyword if  ${count} == 0
 	run keyword and ignore error  click element  ${del_btn}
 	loading дочекатись закінчення загрузки сторінки

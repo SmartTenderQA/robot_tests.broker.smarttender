@@ -333,8 +333,8 @@ def convert_award_status(value):
 def conver_resolutionType(value):
     map = {
         u'resolved': u'Задоволено',
-        u'invalid': u'Відхилено',
-        u'declined': u'Не задоволено'
+        u'invalid': u'Не задоволено',
+        u'declined': u'Відхилено'
     }
     if value in map:
         result = map[value]
@@ -451,6 +451,33 @@ def replace_delivery_address(tender_data):
     return tender_data
 
 
+def replace_delivery_address_for_viewer(tender_data):
+    for item in tender_data['data'].get('items'):
+        cdb_deliveryAddress = item.get('deliveryAddress')
+        if cdb_deliveryAddress:
+            cdb_locality = cdb_deliveryAddress.get('locality')
+            if cdb_locality == u"Київ":
+                item['deliveryAddress']['region'] = u"Київська область"
+            elif cdb_locality == u"Дніпро":
+                item['deliveryAddress']['locality'] = u"Київ"
+                item['deliveryAddress']['region'] = u"Київська область"
+
+
+    return tender_data
+
+
+def replace_minimalStepPercentage(tender_data):
+    try:
+        if "minimalStepPercentage" in tender_data.data.keys():
+            tender_data.data.minimalStepPercentage = 0.026
+            for lot in tender_data['data'].get('lots'):
+                lot.minimalStepPercentage = 0.026
+            return tender_data
+    except:
+        print("popali v except")
+        return tender_data
+
+
 def sync_tender_by_cdb_id(cdb_id):
     url = "https://test.smarttender.biz/api/qa/synctender"
     payload = "{CdbId:'" + str(cdb_id) + "'}"
@@ -467,10 +494,10 @@ def sync_tender_by_cdb_id(cdb_id):
 
 
 def clear_additional_classifications(tender_data):
-    if 'additionalClassifications' in tender_data['data'].keys():
+    if tender_data['data']['additionalClassifications']['scheme'] == 'ДКПП':
         del tender_data['data']['additionalClassifications']
     for item in tender_data['data']['items']:
-        if 'additionalClassifications' in item.keys():
+        if item['additionalClassifications']['scheme'] == 'ДКПП':
             del item['additionalClassifications']
 
     return tender_data
