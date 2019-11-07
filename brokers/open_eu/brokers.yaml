@@ -43,7 +43,7 @@ Default:
             tender:  [0, 30]
         open_competitive_dialogue:
             accelerator: 1440
-            tender:  [0, 30]
+            tender:  [0, 45]
         open_esco:
              accelerator: 1440
              enquiry: [0, 15]
