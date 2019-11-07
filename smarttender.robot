@@ -4241,6 +4241,8 @@ _розгорнути лот по id
 
 вимоги_кваліфікація перейти на сторінку по індексу
     [Arguments]  ${award_index}
+    ${current_location}  get_location
+    return from keyword if  "AppealNew" in "${current_location}"
     ${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${award_index}+1]@href
     go to  ${href}
     loading дочекатись закінчення загрузки сторінки
