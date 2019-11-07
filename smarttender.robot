@@ -128,7 +128,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	...  Це ключове слово викликається в циклі для кожної ролі, яка бере участь в поточному сценарії.
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
-	${tender_data}  replace_unit_name  ${tender_data}
+    ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_unit_name  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "viewer"  replace_delivery_address_for_viewer  ${tender_data}  ELSE  replace_delivery_address  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "viewer"  replacee_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
@@ -1584,8 +1584,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 сторінка_детальної_інформації отримати qualificationPeriod.endDate
     [Arguments]  ${field_name}=None
-    reload page
-	loading дочекатись закінчення загрузки сторінки
+    smarttender.Синхронізувати тендер
 	${selector}  set variable  xpath=//*[@data-qa="prequalification"]//*[@data-qa="date-end"]
 	loading дочекатися відображення елемента на сторінці  ${selector}
 	${field_value}  get text  ${selector}
@@ -1595,6 +1594,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 сторінка_детальної_інформації отримати auctionPeriod.endDate
     [Arguments]  ${field_name}=None
+    smarttender.Синхронізувати тендер
 	${selector}  set variable  xpath=//*[@data-qa="auction-period"]//*[@data-qa="date-end"]
 	${field_value}  get text  ${selector}
 	${field_value}  convert date  ${field_value}  date_format=%d.%m.%Y %H:%M  result_format=%Y-%m-%dT%H:%M:%S${time_zone}
@@ -1879,6 +1879,7 @@ _перейти до лоту якщо це потрібно
 предмети_сторінка_детальної_інформації отримати deliveryAddress.region
     [Arguments]  ${item_block}
 	${item_field_value}  smarttender.get_item_deliveryAddress_value  ${item_block}  region
+	${item_field_value}  set variable  ${item_field_value.replace(u"обл.", u"область")}
 	[Return]  ${item_field_value}
 
 
@@ -2631,6 +2632,11 @@ _перейти до сторінки вимоги_кваліфікація
     ${selector}  set variable  xpath=${doc_block}//*[@data-qa="file-name"]
     ${document_field}  get text  ${selector}
     [Return]  ${document_field}
+
+
+документи_сторінка_детальної_інформації отримати documentOf
+    [Arguments]  ${doc_block}
+    [Return]  tender
 
 
 Подати цінову пропозицію
@@ -3483,6 +3489,54 @@ _отримати посилання на сторінку оскарження
 	[Return]  ${field_value}
 
 
+сторінка_детальної_інформації отримати contracts[${contract_index}].value.amount
+	Синхронізувати тендер
+	перейти до сторінки детальної інформаціїї
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
+	loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="contract-amount"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert_page_values  value.amount  ${field_value_in_smart_format}
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати contracts[${contract_index}].dateSigned
+	Синхронізувати тендер
+	перейти до сторінки детальної інформаціїї
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
+	loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="contract-party-date-signed"]//*[@data-qa="value"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert date  ${field_value_in_smart_format}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT00:00:00${time_zone}
+    [Return]  ${field_value}
+
+
+smarttender.сторінка_детальної_інформації отримати contracts[${contract_index}].period.startDate
+	Синхронізувати тендер
+	перейти до сторінки детальної інформаціїї
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
+	loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="contract-date-from"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert date  ${field_value_in_smart_format}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT00:00:00${time_zone}
+    [Return]  ${field_value}
+
+
+smarttender.сторінка_детальної_інформації отримати contracts[${contract_index}].period.endDate
+	Синхронізувати тендер
+	перейти до сторінки детальної інформаціїї
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
+	loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="contract-date-to"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert date  ${field_value_in_smart_format}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT00:00:00${time_zone}
+    [Return]  ${field_value}
+
+
 _дочекатися відображення посилання на договір
 	${contract_btn}  set variable  //*[@data-qa="contract"]/a
 	sleep  5s
@@ -4032,7 +4086,7 @@ _розгорнути лот по id
 
 
 вимога_натиснути кнопку "Подати"
-    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//button[contains(@class,"btn-success")]
+    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//*[@data-qa="new-complaint"]//button[contains(@class,"btn-success")]
     Click Element  ${complaint send btn}
     loading дочекатись закінчення загрузки сторінки
     Wait Until Element Is Not Visible  ${complaint send btn}  10
@@ -4087,6 +4141,7 @@ _розгорнути лот по id
     ...  Прийнята до розгляду, скасована комісією=stopped
     ...  Помилково надіслана=mistaken
     ...  Залишено без розгляду=ignored
+    ...  Скасована прийнята скарга заявником=stopping
     ${status}  get from dictionary  ${dict_status}  ${text}
     [Return]  ${status}
 
@@ -4138,6 +4193,15 @@ _розгорнути лот по id
     ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
     ${complaint_satisfied_locator}  set variable  xpath=${complaint_locator}//*[text()="Вимога задовільнена"]
     ${field_value}  run keyword and return status  element should be visible  ${complaint_satisfied_locator}
+    [Return]  ${field_value}
+
+
+вимога_отримати інформацію по полю cancellationReason
+    [Arguments]  ${complaintID}
+    ${complaintID}  set variable if  "${complaintID}" == "None"  ${Empty}  ${complaintID}
+    ${complaint_locator}  set variable  //*[@data-qa="complaint" and contains(., "${complaintID}")]
+    ${complaint_cancellationReason_locator}  set variable  xpath=${complaint_locator}//*[@class="ivu-timeline-item-content" and contains(., "Отменена жалобщиком")]//*[@class="content break-word"]
+    ${field_value}  get text  ${complaint_cancellationReason_locator}
     [Return]  ${field_value}
 
 
