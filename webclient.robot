@@ -108,7 +108,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле NBUdiscountRate
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="NBUDISCRAT"]//input
-	заповнити simple input  ${locator}  ${text}  check=${False}
+	заповнити simple input  ${locator}  ${text}  check=${False}  input_methon=Input Type Flex
 
 
 заповнити поле fundingKind
