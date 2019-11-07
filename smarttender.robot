@@ -1227,7 +1227,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 
 Пошук тендера по ідентифікатору
-	[Arguments]   ${username}  ${tender_uaid}
+	[Arguments]   ${username}  ${tender_uaid}  ${second_stage_data}=${None}
 	[Documentation]   Знайти тендер з uaid рівним tender_uaid.
 	${tender_detail_page_exist}  run keyword and return status  variable should exist  ${tender_detail_page}
 	return from keyword if  ${tender_detail_page_exist}
