@@ -2634,6 +2634,11 @@ _перейти до сторінки вимоги_кваліфікація
     [Return]  ${document_field}
 
 
+документи_сторінка_детальної_інформації отримати documentOf
+    [Arguments]  ${doc_block}
+    [Return]  tender
+
+
 Подати цінову пропозицію
     [Arguments]  ${username}  ${tender_uaid}  ${bid}  ${lots_ids}=${None}  ${features_names}=${None}
     [Documentation]  Подати цінову пропозицію bid для тендера tender_uaid на лоти lots_ids (якщо lots_ids != None) з неціновими показниками features_names (якщо features_names != None).
@@ -3482,6 +3487,54 @@ _отримати посилання на сторінку оскарження
 	go back
 	loading дочекатись закінчення загрузки сторінки
 	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати contracts[${contract_index}].value.amount
+	Синхронізувати тендер
+	перейти до сторінки детальної інформаціїї
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
+	loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="contract-amount"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert_page_values  value.amount  ${field_value_in_smart_format}
+    [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати contracts[${contract_index}].dateSigned
+	Синхронізувати тендер
+	перейти до сторінки детальної інформаціїї
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
+	loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="contract-party-date-signed"]//*[@data-qa="value"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert date  ${field_value_in_smart_format}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT00:00:00${time_zone}
+    [Return]  ${field_value}
+
+
+smarttender.сторінка_детальної_інформації отримати contracts[${contract_index}].period.startDate
+	Синхронізувати тендер
+	перейти до сторінки детальної інформаціїї
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
+	loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="contract-date-from"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert date  ${field_value_in_smart_format}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT00:00:00${time_zone}
+    [Return]  ${field_value}
+
+
+smarttender.сторінка_детальної_інформації отримати contracts[${contract_index}].period.endDate
+	Синхронізувати тендер
+	перейти до сторінки детальної інформаціїї
+	wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	open button  //*[@data-qa="contract"]/a
+	loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="contract-date-to"]
+    ${field_value_in_smart_format}  get text  xpath=${selector}
+    ${field_value}  convert date  ${field_value_in_smart_format}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT00:00:00${time_zone}
+    [Return]  ${field_value}
 
 
 _дочекатися відображення посилання на договір
