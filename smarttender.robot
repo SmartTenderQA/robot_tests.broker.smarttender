@@ -4086,7 +4086,7 @@ _розгорнути лот по id
 
 
 вимога_натиснути кнопку "Подати"
-    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//button[contains(@class,"btn-success")]
+    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//*[@data-qa="new-complaint"]//button[contains(@class,"btn-success")]
     Click Element  ${complaint send btn}
     loading дочекатись закінчення загрузки сторінки
     Wait Until Element Is Not Visible  ${complaint send btn}  10
