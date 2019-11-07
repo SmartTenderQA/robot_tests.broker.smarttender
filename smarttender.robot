@@ -985,7 +985,6 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	...  'reporting' in '${mode}'                       ${False}
 	...  'openua' in '${mode}'                          ${False}
 	...  'negotiation' in '${mode}'                     ${False}
-	...  'open_competitive_dialogue' == '${mode}'       ${False}
 	...  "${tender_data['procurementMethodType']}" == "competitiveDialogueUA"  ${False}
 	...                                     ${True}
 
@@ -1034,7 +1033,6 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	...  'reporting' in '${mode}'                       ${False}
 	...  'openua' in '${mode}'                          ${False}
 	...  'negotiation' in '${mode}'                     ${False}
-	...  'open_competitive_dialogue' == '${mode}'       ${False}
 	...  "${tender_data['procurementMethodType']}" == "competitiveDialogueUA"  ${False}
 	...                                                 ${True}
 
@@ -2903,13 +2901,20 @@ _перейти до сторінки вимоги_кваліфікація
     [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінює поле fieldname угоди тендера tender_uaid на fieldvalue
     run keyword if  '${fieldname}' == 'value.amountNet'  run keywords
+    ...  log to console  Редагувати угоду       AND
+    ...  debug  AND
     ...  знайти тендер у webclient  ${tender_uaid}  AND
 	...  активувати вкладку  Пропозиції  AND
-	...  grid вибрати рядок за номером  ${award_num}+1  AND
+	...  grid вибрати рядок за номером  ${contract_index}+1  AND
 	...  header натиснути на елемент за назвою  Надіслати вперед  AND
     ...  header натиснути на елемент за назвою  Прикріпити договір
     run keyword  редагувати поле угоди ${fieldname}  ${fieldvalue}
 
+
+редагувати поле угоди value.amount
+    [Arguments]  ${fieldvalue}
+    log to console  редагувати поле угоди value.amount
+    debug
 
 
 Встановити дату підписання угоди
