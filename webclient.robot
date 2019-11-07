@@ -108,7 +108,8 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле NBUdiscountRate
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="NBUDISCRAT"]//input
-	заповнити simple input  ${locator}  ${text}  check=${False}  input_methon=Input Type Flex
+	clear input by JS  ${locator}
+	заповнити simple input  ${locator}  ${text.__str__()}  check=${False}  input_methon=Input Type Flex
 
 
 заповнити поле fundingKind
@@ -174,6 +175,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для lot minimalStep.amount
 	[Arguments]  ${minimalStep}
 	${locator}  set variable  //*[@data-name="LOT_MINSTEP"]//input
+	clear input by JS  ${locator}
 	заповнити autocomplete field  ${locator}  ${minimalStep}  check=${True}  input_methon=Input Type Flex
 
 
@@ -187,14 +189,16 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="LOT_MINSTEP_PERCENT"]//input
 	${value}  evaluate  ${text} * 100
-	заповнити simple input  ${locator}  ${value}  input_methon=Input Type Flex
+	clear input by JS  ${locator}
+	заповнити simple input  ${locator}  ${value.__str__()}  input_methon=Input Type Flex
 
 
 заповнити поле для lot yearlyPaymentsPercentageRange
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="LOT_PERCENT_REDUCTION"]//input
 	${value}  evaluate  ${text} * 100
-	заповнити simple input  ${locator}  ${value}  input_methon=Input Type Flex
+	clear input by JS  ${locator}
+	заповнити simple input  ${locator}  ${value.__str__()}  input_methon=Input Type Flex
 
 
 ##################################################
@@ -203,6 +207,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для item description
 	[Arguments]  ${description}
 	${locator}  set variable  //*[@data-name="KMAT"]//input
+	clear input by JS  ${locator}
 	заповнити autocomplete field  ${locator}  ${description}  input_methon=Input Type Flex
 
 заповнити поле для item description_en
@@ -214,7 +219,8 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для item quantity
 	[Arguments]  ${quantity}
 	${locator}  set variable  //*[@data-name="QUANTITY"]//input
-	заповнити autocomplete field  ${locator}  ${quantity}  check=${False}  input_methon=Input Type Flex
+	clear input by JS  ${locator}
+	заповнити autocomplete field  ${locator}  ${quantity}  input_methon=Input Type Flex
 
 
 заповнити поле для item unit.name
@@ -232,7 +238,10 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для item additionalClassifications.scheme
 	[Arguments]  ${additionalClassifications.scheme}
 	${locator}  set variable  //*[@data-name="CLASSIFICATIONSCHEME"]
-	${dict}  create dictionary  ДКПП=ДКПП (ДК 016:2010)  ДК003=Классификатор профессий (ДК 003:2010)  ДК015=Классификация видов научно-технической деятельности (ДК 015-97)  ДК018=Государственный классификатор зданий и сооружений (ДК 018-2000)  INN=Спеціальні норми та інше
+	${dict}  create dictionary
+	...  ДКПП=ДКПП (ДК 016:2010)  ДК003=Классификатор профессий (ДК 003:2010)  ДК015=Классификация видов научно-технической деятельности (ДК 015-97)
+	...  ДК018=Государственный классификатор зданий и сооружений (ДК 018-2000)  INN=Спеціальні норми та інше
+	...  UA-ROAD=Індекс автомобільних доріг
 	${scheme_converted}  get from dictionary  ${dict}  ${additionalClassifications.scheme}
 	заповнити фіксований випадаючий список  ${locator}  ${scheme_converted}
 
@@ -258,6 +267,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для item deliveryAddress.locality
 	[Arguments]  ${deliveryAddress.locality}
 	${locator}  set variable  //*[@data-name="CITY_KOD"]//input
+	clear input by JS  ${locator}
 	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${True}  input_methon=Input Type Flex
 
 
@@ -280,7 +290,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 ##################################################
 вибрати рівень прив'язки для feature
     [Arguments]  ${featureOf}
-    webclient.вибрати значення з випадаючого списку  //*[@data-name="CRITERIONBINDINGLEVEL"]  ${featureOf}
+    webclient.вибрати значення з випадаючого списку  //*[@data-name="CRITERIONBINDINGLEVEL"]  ${featureOf}  ${True}
 
 
 заповнити поле для feature title
@@ -350,13 +360,13 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для угоди value.amountNet
 	[Arguments]  ${fieldvalue}
 	${amount_input}  set variable  //div/*[text()='Сума без ПДВ']/following-sibling::table//input
-	заповнити simple input  ${amount_input}  '${fieldvalue}'  check=${False}
+	заповнити simple input  ${amount_input}  ${fieldvalue.__str__()}  check=${False}
 
 
 заповнити поле для угоди value.amount
 	[Arguments]  ${fieldvalue}
 	${amount_input}  set variable  //div/*[text()='Сума за договором, грн.:']/following-sibling::table//input
-	заповнити simple input  ${amount_input}  '${fieldvalue}'  check=${False}
+	заповнити simple input  ${amount_input}  ${fieldvalue.__str__()}  check=${False}
 
 
 заповнити поле для угоди id
@@ -645,6 +655,8 @@ grid вибрати рядок за номером
 
 вибрати переможця за номером
     [Arguments]  ${award_num}
+    log to console  вибрати переможця за номером
+    debug
     ${winners}  set variable
     ...  //*[@data-placeid="BIDS"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//*[@data-placeid="BIDS"]//div[text()="Постачальник"]/ancestor::td[1]/preceding-sibling::*)][text()]
     Wait Until Keyword Succeeds  10  2  Click Element  xpath=(${winners})[${award_num}]
@@ -717,13 +729,17 @@ dialog box заголовок повинен містити
 
 
 вибрати значення з випадаючого списку
-	[Arguments]  ${locator}  ${text}
+	[Arguments]  ${locator}  ${text}  ${check}=${False}
 	${dropdown_table_locator}  set variable  //*[contains(@class,"dxpcDropDown_DevEx") and contains(@style,"visibility: visible")]
-	wait until keyword succeeds  3x  1s  run keywords
+	wait until keyword succeeds  5x  1s  run keywords
 	...  click element  ${locator}  AND
-	...  wait until element is visible  ${dropdown_table_locator}  AND
+	...  loading дочекатися відображення елемента на сторінці  ${dropdown_table_locator}  AND
+	...  loading дочекатися відображення елемента на сторінці  ${dropdown_table_locator}//*[contains(text(), "${text}")]  AND
 	...  click element  ${dropdown_table_locator}//*[contains(text(), "${text}")]  AND
 	...  loading дочекатись закінчення загрузки сторінки
+	return from keyword if  ${check} == ${False}
+	${get}  get element attribute  ${locator}//input[not(@type="hidden")]@value
+	should be equal as strings  ${get}  ${text}
 
 
 заповнити фіксований випадаючий список
@@ -776,7 +792,7 @@ dialog box заголовок повинен містити
 	click element  ${locator}
 	clear input by JS  ${locator}
 	run keyword  ${input_methon}  ${locator}  ${text}
-	run keyword if  '${action_after_input}' == 'click screen header'  click screen header  ELSE
+	run keyword if  '${action_after_input}' == 'click screen header'  run keywords  loading дочекатись закінчення загрузки сторінки  AND  click screen header  ELSE
 	...  press key  //body  \\13
 	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=2s
 	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}
@@ -845,6 +861,7 @@ click screen header
 	#  Стати на комірку з потрібним предметом
 	${item_row_locator}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//td[contains(text(),"${item_id}")]/ancestor::tr[1]
 	click element  ${item_row_locator}
+	loading дочекатись закінчення загрузки сторінки
 	wait until page contains element  ${item_row_locator}[contains(@class,"rowselected")]  5
     #  Видалити
 	${del_btn}  set variable  xpath=//*[@data-name="GRID_ITEMS_HIERARCHY"]//*[@title="Видалити"][${index}]
@@ -869,6 +886,7 @@ click screen header
 	#  Стати на комірку з потрібним показником
 	${feature_row_locator}  set variable  xpath=//*[@data-name="GRID_CRITERIA"]//td[contains(text(),"${feature_id}")]/ancestor::tr[1]
 	click element  ${feature_row_locator}
+	loading дочекатись закінчення загрузки сторінки
 	wait until page contains element  ${feature_row_locator}[contains(@class,"rowselected")]  5
     #  Видалити
 	${del_btn}  set variable  xpath=//*[@data-name="GRID_CRITERIA"]//*[@title="Видалити"][${index}]

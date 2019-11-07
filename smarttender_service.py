@@ -19,7 +19,6 @@ unitname_dict_smartweb = {
     u'місяць': u'міс',
     u'пачка': u'пачка',
     u'упаковка': u'упаков',
-    u'набір': u'набор',
     u'гектар': u'га',
     u'Флакон': u'флак',
 }
@@ -251,7 +250,7 @@ def convert_unit_code(value):
 def convert_unit_name(value):
     units_map = {
         u'Штука': u'штуки',
-        u'Упаковка': u'упаков',
+        u'Упаковка': u'упаковка',
         u'Флакон': u'Флакон',
         u'Набір(товару)': u'набір',
         u'кг': u'кілограми',
@@ -459,8 +458,35 @@ def replace_delivery_address_for_viewer(tender_data):
             cdb_locality = cdb_deliveryAddress.get('locality')
             if cdb_locality == u"Київ":
                 item['deliveryAddress']['region'] = u"Київська область"
+            elif cdb_locality == u"Дніпро":
+                item['deliveryAddress']['locality'] = u"Київ"
+                item['deliveryAddress']['region'] = u"Київська область"
+
 
     return tender_data
+
+
+def replace_minimalStepPercentage(tender_data):
+    try:
+        if "minimalStepPercentage" in tender_data.data.keys():
+            tender_data.data.minimalStepPercentage = 0.026
+            tender_data.data.lots[0].minimalStepPercentage = 0.026
+        return tender_data
+    except:
+        print("popali v except")
+        return tender_data
+
+
+def replace_agreementDuration(tender_data):
+    try:
+        if "agreementDuration" in tender_data.data.keys():
+            agreementDuration = tender_data.data.agreementDuration
+            # Убираем часы, минуты и секунды с периода
+            tender_data.data.agreementDuration = agreementDuration.split("T")[0] + "T0H0M0S"
+            return tender_data
+    except:
+        print("popali v except")
+        return tender_data
 
 
 def sync_tender_by_cdb_id(cdb_id):
@@ -484,7 +510,6 @@ def clear_additional_classifications(tender_data):
     for item in tender_data['data']['items']:
         if 'additionalClassifications' in item.keys():
             del item['additionalClassifications']
-
     return tender_data
 
 

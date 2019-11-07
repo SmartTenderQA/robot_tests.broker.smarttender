@@ -133,7 +133,9 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
     ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  run keyword if  "${role_name}" == "viewer"  replacee_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
     ${tender_data}  replace_funders  ${tender_data}
+    ${tender_data}  run keyword if  "${MODE}" == "open_esco"  replace_minimalStepPercentage  ${tender_data}  ELSE  set variable  ${tender_data}
 	${tender_data}  clear_additional_classifications  ${tender_data}
+	${tender_data}  run keyword if  "${MODE}" == "open_framework"  replace_agreementDuration  ${tender_data}  ELSE  set variable  ${tender_data}
 	log  ${tender_data}
 	log to console  ${tender_data}
 	[Return]  ${tender_data}
@@ -641,6 +643,10 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети
     webclient.додати бланк  GRID_ITEMS_HIERARCHY
+    #  Костыль, потому что не удаляется последняя номеклатура
+    grid вибрати рядок за номером  1
+    webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
+    ##########################################################
 
 	# ОСНОВНІ ПОЛЯ
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
@@ -699,6 +705,10 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
     webclient.додати бланк  GRID_ITEMS
+    #  Костыль, потому что не удаляется последняя номеклатура
+    grid вибрати рядок за номером  1
+    webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
+    ##########################################################
 
 	# ОСНОВНІ ПОЛЯ
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
@@ -799,8 +809,8 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	...  dialog box заголовок повинен містити  Увага! Бюджет перевищує 133 000 євро. Вам потрібно обрати тип процедури «Відкриті торги з публікаціє...
 	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
 	...  dialog box натиснути кнопку  Так
-	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
-	dialog box натиснути кнопку  Ні
+	run keyword and ignore error  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	run keyword and ignore error  dialog box натиснути кнопку  Ні
 
 
 Оголосити закупівлю open_esco multilot
@@ -976,7 +986,6 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	...  'reporting' in '${mode}'                       ${False}
 	...  'openua' in '${mode}'                          ${False}
 	...  'negotiation' in '${mode}'                     ${False}
-	...  'open_competitive_dialogue' == '${mode}'       ${False}
 	...  "${tender_data['procurementMethodType']}" == "competitiveDialogueUA"  ${False}
 	...                                     ${True}
 
@@ -1025,7 +1034,6 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	...  'reporting' in '${mode}'                       ${False}
 	...  'openua' in '${mode}'                          ${False}
 	...  'negotiation' in '${mode}'                     ${False}
-	...  'open_competitive_dialogue' == '${mode}'       ${False}
 	...  "${tender_data['procurementMethodType']}" == "competitiveDialogueUA"  ${False}
 	...                                                 ${True}
 
@@ -1218,7 +1226,7 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 
 
 Пошук тендера по ідентифікатору
-	[Arguments]   ${username}  ${tender_uaid}
+	[Arguments]   ${username}  ${tender_uaid}  ${second_stage_data}=${None}
 	[Documentation]   Знайти тендер з uaid рівним tender_uaid.
 	${tender_detail_page_exist}  run keyword and return status  variable should exist  ${tender_detail_page}
 	return from keyword if  ${tender_detail_page_exist}
@@ -1738,6 +1746,42 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	loading дочекатись закінчення загрузки сторінки
 	[Return]  ${field_value}
 
+сторінка_детальної_інформації отримати fundingKind
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="title" and contains(., "Джерело фінансування")]//*[@data-qa="value"]
+	${field_value_in_smart_format}  get text  ${selector}
+    ${field_value}  set variable if
+        ...  "${field_value_in_smart_format}" == "Співфінансування з бюджетних коштів"  budget
+        ...  "${field_value_in_smart_format}" == "Фінансування виключно за рахунок Учасника"  other
+        ...  Error!
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати NBUdiscountRate
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="nbu-discount-rate"]//*[@data-qa="value"]
+	${value_in_smart_format}  get text  ${selector}
+	${field_value_in_smart_format}  set variable  ${value_in_smart_format.replace("%", "").replace(",", ".")}
+    ${field_value}  evaluate  float(${field_value_in_smart_format.replace("%", "").replace(",", ".")}) / 100
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати yearlyPaymentsPercentageRange
+    [Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="cost-reduction-percent"]//*[@data-qa="value"]
+	${field_value_in_smart_format}  get text  ${selector}
+    ${field_value}  evaluate  float(${field_value_in_smart_format.split(" - ")[-1].replace("%", "").replace(",", ".")}) / 100
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати minimalStepPercentage
+	[Arguments]  ${field_name}=None
+	${selector}  set variable  xpath=//*[@data-qa="budget-min-step"]//span
+	${field_value_in_smart_format}  get text  ${selector}
+    ${field_value}  evaluate  float(${field_value_in_smart_format}) / 100
+    ${field_value}  evaluate  '%.3f' % ${field_value}
+	[Return]  ${field_value}
+
 
 сторінка_детальної_інформації отримати items
 	[Arguments]  ${field_name}
@@ -2143,9 +2187,8 @@ get_item_deliveryAddress_value
 	webclient.header натиснути на елемент за назвою  Зберегти
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
-	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
-	...  dialog box натиснути кнопку  Ні
+    run keyword and ignore error  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	run keyword and ignore error  dialog box натиснути кнопку  Ні
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
     sleep  60
@@ -2860,10 +2903,10 @@ _перейти до сторінки вимоги_кваліфікація
     run keyword if  '${fieldname}' == 'value.amountNet'  run keywords
     ...  знайти тендер у webclient  ${tender_uaid}  AND
 	...  активувати вкладку  Пропозиції  AND
-	...  grid вибрати рядок за номером  ${award_num}+1  AND
-	...  header натиснути на елемент за назвою  Надіслати вперед  AND
+	...  grid вибрати рядок за номером  ${contract_index}+1  AND
+	#...  header натиснути на елемент за назвою  Надіслати вперед  AND
     ...  header натиснути на елемент за назвою  Прикріпити договір
-    run keyword  редагувати поле угоди ${fieldname}  ${fieldvalue}
+    run keyword  заповнити поле для угоди ${fieldname}  ${fieldvalue}
 
 
 
@@ -2892,6 +2935,7 @@ _перейти до сторінки вимоги_кваліфікація
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
     [Documentation]  Перевести договір під номером contract_num до тендера tender_uaid в статус active.
     log to console  Підтвердити підписання контракту
+    debug
     знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
@@ -3002,7 +3046,7 @@ _перейти до сторінки вимоги_кваліфікація
 
 	заповнити simple input  //*[@data-name="CONTACTPERSON"]//input  ${contactPoint.name}
 	заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}  check=${False}
-	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}  check=${False}
+	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}  #check=${False}
 	заповнити simple input  //*[@data-name="URL"]//input  ${contactPoint.url}
 	заповнити simple input  //*[@data-name="PIND"]//input  ${address.postalCode}
 	заповнити simple input  //*[@data-name="APOTR"]//input  ${address.streetAddress}
@@ -3328,6 +3372,21 @@ _план_сторінка_детальної_інформації отрима�
 	[Return]  ${item_selector}
 
 
+сторінка_детальної_інформації отримати agreements
+	[Arguments]  ${field_name}
+	${field_value}  run keyword  сторінка_детальної_інформації отримати ${field_name}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати agreements[${agreement_index}].status
+	${field_locator}  set variable  //*[@data-qa="agreement-status"]//*[@data-qa="value"]
+	${field_value_in_smart_format}  get text  ${field_locator}
+	${field_value}  set variable if
+		...  "${field_value_in_smart_format}" == "Укладена рамкова угода"  active
+		...  Error!
+	[Return]  ${field_value}
+
+
 сторінка_детальної_інформації отримати awards
 	[Arguments]  ${field_name}
 	# розгорунти блок, якщо потрібно
@@ -3338,6 +3397,7 @@ _план_сторінка_детальної_інформації отрима�
 
 
 сторінка_детальної_інформації отримати awards[${award_index}].complaintPeriod.endDate
+	Синхронізувати тендер
 	${href}  smarttender._отримати посилання на сторінку оскарження  ${award_index}
 	go to  ${href}
 	loading дочекатись закінчення загрузки сторінки
@@ -3356,6 +3416,23 @@ _отримати посилання на сторінку оскарження
 	return from keyword if  ${href.__len__()} != 0  ${href}
 	${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${award_index}]@href
 	[Return]  ${href}
+
+
+сторінка_детальної_інформації отримати maxAwardsCount
+	[Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="max-winner-count"]//*[@data-qa="value"]
+	${field_value}  get text  ${selector}
+	${field_value}  convert to integer  ${field_value}
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати agreementDuration
+	[Arguments]  ${field_name}
+    ${selector}  set variable  //*[@data-qa="agreement-duration"]/div[@class="second ivu-col ivu-col-span-xs-24 ivu-col-span-sm-15"]
+	${value}  get text  ${selector}
+	${reg}  evaluate  re.search(u'(?P<years>[0-9]+).+(?P<months>[0-9]+).+(?P<days>[0-9]+)', u"""${value}""")  re
+	${field_value}  set variable  P${reg.group('years')}Y${reg.group('months')}M${reg.group('days')}DT0H0M0S
+	[Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати awards[${award_index}].documents[${document_index}].title
