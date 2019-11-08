@@ -1,0 +1,883 @@
+users:
+    Tender_Owner:
+        auth_ds:
+            tenders:  [test.quintagroup.com, test.quintagroup.com]
+            plans:    [test.quintagroup.com, test.quintagroup.com]
+            auctions: [test.quintagroup.com, bc698baa8b814908bc75405ed3d63548]
+        api_key:      e9c3ccb8e8124f26941d5f9639a4ebc3
+        auth_dasu: [test.quintagroup.com, e9c3ccb8e8124f26941d5f9639a4ebc3]
+        broker:   Quinta
+        auth_edr: [test.quintagroup.com, f5111c99a97a45348d8165ba8fcf0d62]
+        browser:  phantomjs
+        position: [0, 0]
+        size:     [1400, 900]
+    Tender_User:
+        auth_ds:
+            tenders:  [test.quintagroup.com, test.quintagroup.com]
+            plans:    [test.quintagroup.com, test.quintagroup.com]
+            auctions: [test.quintagroup.com, bc698baa8b814908bc75405ed3d63548]
+        api_key:  e9c3ccb8e8124f26941d5f9639a4ebc3
+        auth_dasu: [test.quintagroup.com, e9c3ccb8e8124f26941d5f9639a4ebc3]
+        broker:   Quinta
+        auth_edr: [test.quintagroup.com, f5111c99a97a45348d8165ba8fcf0d62]
+        browser:  phantomjs
+        position: [0, 0]
+        size:     [1400, 900]
+    Tender_User1:
+        auth_ds:
+            tenders:  [test.quintagroup.com, test.quintagroup.com]
+            plans:    [test.quintagroup.com, test.quintagroup.com]
+            auctions: [test.quintagroup.com, bc698baa8b814908bc75405ed3d63548]
+        api_key:  e9c3ccb8e8124f26941d5f9639a4ebc3
+        auth_dasu: [test.quintagroup.com, e9c3ccb8e8124f26941d5f9639a4ebc3]
+        broker:   Quinta
+        auth_edr: [test.quintagroup.com, f5111c99a97a45348d8165ba8fcf0d62]
+        browser:  phantomjs
+        position: [0, 0]
+        size:     [1400, 900]
+    Tender_User2:
+        auth_ds:
+            tenders:  [test.quintagroup.com, test.quintagroup.com]
+            plans:    [test.quintagroup.com, test.quintagroup.com]
+            auctions: [test.quintagroup.com, bc698baa8b814908bc75405ed3d63548]
+        api_key:  e9c3ccb8e8124f26941d5f9639a4ebc3
+        auth_dasu: [test.quintagroup.com, e9c3ccb8e8124f26941d5f9639a4ebc3]
+        broker:   Quinta
+        auth_edr: [test.quintagroup.com, f5111c99a97a45348d8165ba8fcf0d62]
+        browser:  phantomjs
+        position: [0, 0]
+        size:     [1400, 900]
+    Tender_Viewer:
+        auth_ds:
+            tenders:      [test.quintagroup.com, test.quintagroup.com]
+            plans:        [test.quintagroup.com, test.quintagroup.com]
+            monitorings:  [test.quintagroup.com, test.quintagroup.com]
+            auctions: [test.quintagroup.com, bc698baa8b814908bc75405ed3d63548]
+        api_key:  ""
+        auth_dasu: [test.quintagroup.com, e9c3ccb8e8124f26941d5f9639a4ebc3]
+        broker:   Quinta
+        browser:  chrome
+        auth_edr: [test.quintagroup.com, f5111c99a97a45348d8165ba8fcf0d62]
+        position: [0, 0]
+        size:     [1400, 900]
+    Dasu_User:
+        auth_ds:
+            monitorings:  [test.quintagroup.com, test.quintagroup.com]
+            plans:        [test.quintagroup.com, test.quintagroup.com]
+            tenders:      [test.quintagroup.com, test.quintagroup.com]
+        auth_dasu: [robot_test_sas, 9987b551710b44699bf2ad10188bcf65]
+        api_key:  9987b551710b44699bf2ad10188bcf65
+        broker:   Quinta
+        browser:  phantomjs
+        auth_edr: [test.quintagroup.com, f5111c99a97a45348d8165ba8fcf0d62]
+        position: [0, 0]
+        size:     [1400, 900]
+    Etender_Owner:
+        broker:   Etender
+        homepage: "https://uat-prozorro.e-tender.ua/#/"
+        login:    auto_owner
+        password: Qq123456
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    Etender_Provider1:
+        broker:   Etender
+        homepage: "https://uat-prozorro.e-tender.ua/#/"
+        login:    auto_provider1
+        password: Qq123456
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    Etender_Provider2:
+        broker:   Etender
+        homepage: "https://uat-prozorro.e-tender.ua/#/"
+        login:    auto_provider2
+        password: Qq123456
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    Etender_Viewer:
+        broker:   Etender
+        homepage: "https://uat-prozorro.e-tender.ua/#/"
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    DZO_Owner:
+        broker:   DZO
+        homepage: "http://dz2.byustudio.in.ua"
+        login:    ovramet.s@gmail.com
+        password: Password1
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    DZO_Provider:
+        broker:   DZO
+        homepage: "http://dz2.byustudio.in.ua"
+        login:    halyna.khimka@gmail.com
+        password: JHO5VUp5n
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    DZO_Provider1:
+        broker:   DZO
+        homepage: "http://dz2.byustudio.in.ua"
+        login:    dzoprovider2@gmail.com
+        password: UxYkGVVfk
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    DZO_Viewer:
+        broker:   DZO
+        homepage: "http://dz2.byustudio.in.ua/?test_mode=guest"
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    u25h8_Owner:
+        broker:   b25h8
+        homepage: "http://25h8.byustudio.in.ua"
+        login:    prozorroytenderowner@gmail.com
+        password: 123456
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    u25h8_Provider:
+        broker:   b25h8
+        homepage: "http://25h8.byustudio.in.ua"
+        login:    prozorroyprovider1@gmail.com
+        password: 123456
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    u25h8_Provider1:
+        broker:   b25h8
+        homepage: "http://25h8.byustudio.in.ua"
+        login:    prozorroyprovider2@gmail.com
+        password: 123456
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    u25h8_Viewer:
+        broker:   b25h8
+        homepage: "http://25h8.byustudio.in.ua"
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    allbiz_Owner:
+        broker:   tendersallbiz
+        homepage: "https://tenders.all.biz"
+        login:    prozorroytenderowner@gmail.com
+        password: 123456
+        browser:  Firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    allbiz_Provider:
+        broker:   tendersallbiz
+        homepage: "https://tenders.all.biz"
+        login:    prozorroyprovider1@gmail.com
+        password: 123456
+        browser:  Firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    allbiz_Provider1:
+        broker:   tendersallbiz
+        homepage: "https://tenders.all.biz"
+        login:    prozorroyprovider2@gmail.com
+        password: 123456
+        browser:  Firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    allbiz_Viewer:
+        broker:   tendersallbiz
+        homepage: "https://tenders.all.biz"
+        browser:  Firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    tenderonline_Owner:
+        broker:   tenderonline
+        homepage: "http://tender-online.com.ua"
+        login:    prozorroytenderowner@gmail.com
+        password: 123456
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    tenderonline_Provider:
+        broker:   tenderonline
+        homepage: "http://tender-online.com.ua"
+        login:    prozorroyprovider1@gmail.com
+        password: 123456
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    tenderonline_Provider1:
+        broker:   tenderonline
+        homepage: "http://tender-online.com.ua"
+        login:    prozorroyprovider2@gmail.com
+        password: 123456
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    tenderonline_Viewer:
+        broker:   tenderonline
+        homepage: "http://tender-online.com.ua"
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    ztv_Owner:
+        broker:   ztv
+        homepage: "http://ztv.byustudio.in.ua/web/"
+        login:    ztvtenderowner@gmail.com
+        password: 123456
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    ztv_Provider:
+        broker:   ztv
+        homepage: "http://ztv.byustudio.in.ua/web/"
+        login:    ztvprovider1@gmail.com
+        password: 123456
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    ztv_Provider1:
+        broker:   ztv
+        homepage: "http://ztv.byustudio.in.ua/web/"
+        login:    ztvprovider2@gmail.com
+        password: 123456
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    ztv_Viewer:
+        broker:   ztv
+        homepage: "http://ztv.byustudio.in.ua/web/"
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    Newtend_Owner:
+        broker:   Newtend
+        homepage: "http://dev23.newtend.com/opc/tenders"
+        login:    ten2312@mailinator.com
+        password: 123123
+        browser:  chrome
+        position: [0, 0]
+        size:     [1200, 1200]
+    Newtend_Provider1:
+        broker:   Newtend
+        homepage: "http://dev23.newtend.com/opc/tenders"
+        login:    ten2316@mailinator.com
+        password: 123123
+        browser:  chrome
+        position: [700, 0]
+        size:     [800, 700]
+    Newtend_Viewer:
+        broker:   Newtend
+        homepage: "http://dev23.newtend.com/opc"
+        browser:  chrome
+        position: [800, 400]
+        size:     [800, 700]
+    PrivatMarket_Viewer:
+        broker:   PrivatMarket
+        homepage: "https://zakupivli24.pb.ua/prz-stage/tender"
+        email:    pbecommercetest2@ukr.net
+        browser:  chrome
+        position: [0, 0]
+        size:     [1920, 1080]
+    PrivatMarket_Provider:
+        broker:   PrivatMarket
+        homepage: "https://zakupivli24.pb.ua/prz-stage/tender"
+        email:    pbecommercetest2@ukr.net
+        login:    380270010001
+        password: password0001
+        browser:  chrome
+        position: [0, 0]
+        size:     [1920, 1080]
+    PrivatMarket_Provider1:
+        broker:   PrivatMarket
+        homepage: "https://zakupivli24.pb.ua/prz-stage/tender"
+        email:    pbecommercetest2@ukr.net
+        login:    380270010002
+        password: zakupivli24
+        browser:  chrome
+        position: [0, 0]
+        size:     [1920, 1080]
+    PrivatMarket_Owner:
+        broker: PrivatMarket
+        homepage: "https://zakupivli24.pb.ua/prz-stage/tender"
+        email: pbecommercetest1@ukr.net
+        login: 380270010003
+        password: zakupivli24
+        browser: chrome
+        position: [0, 0]
+        size: [1920, 1080]
+    Prom_Owner:
+        broker:   Prom
+        homepage: "http://zakupki.dz-test.net/"
+        default_page: "https://my.zakupki.dz-test.net/cabinet/purchases/state_purchase/list"
+        login:    test@test12.com
+        password: 12345678
+        browser:  chrome
+        position: [0, 0]
+        size:     [1280, 1024]
+    Prom_Viewer:
+        broker:   Prom
+        homepage: "http://zakupki.dz-test.net/"
+        default_page: "https://my.zakupki.dz-test.net/cabinet/purchases/state_purchase/list"
+        login:    test@test13.com
+        password: 12345678
+        browser:  chrome
+        position: [640, 0]
+        size:     [1280, 1024]
+    Prom_Provider:
+        broker:   Prom
+        homepage: "http://zakupki.dz-test.net/"
+        default_page: "https://my.zakupki.dz-test.net/cabinet/purchases/state_purchase/list"
+        login:    test@test14.com
+        password: 12345678
+        browser:  chrome
+        position: [640, 0]
+        size:     [1280, 1024]
+    Publicbid_Owner:
+        broker:   Publicbid
+        homepage: "http://217.76.194.185:56034/"
+        login:    owner_pb@yopmail.com
+        password: P@ssw0rd
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 720]
+    Publicbid_Viewer:
+        broker:   Publicbid
+        homepage: "http://217.76.194.185:56034/"
+        browser:  chrome
+        position: [0, 450]
+        size:     [1000, 720]
+    Publicbid_Provider1:
+        broker:   Publicbid
+        homepage: "http://217.76.194.185:56034/"
+        login:    provider_pb@yopmail.com
+        password: P@ssw0rd
+        browser:  chrome
+        position: [450, 0]
+        size:     [1000, 720]
+    upetem_Owner:
+        broker:   upetem
+        homepage: "https://80.92.239.165/"
+        login:    testuser_tender_owner@yopmail.com
+        password: P@ssw0rd
+        browser:  chrome
+        position: [0, 0]
+        size:     [1200, 900]
+    upetem_Provider:
+        broker:   upetem
+        homepage: "https://80.92.239.165/"
+        login:    testuser_provider@yopmail.com
+        password: P@ssw0rd
+        browser:  chrome
+        position: [0, 450]
+        size:     [1000, 800]
+    upetem_Provider1:
+        broker:   upetem
+        homepage: "https://80.92.239.165/"
+        login:    testuser_provider1@yopmail.com
+        password: P@ssw0rd
+        browser:  chrome
+        position: [450, 0]
+        size:     [1000, 800]
+    upetem_Viewer:
+        broker:   upetem
+        homepage: "https://80.92.239.165/"
+        browser:  chrome
+        position: [450, 450]
+        size:     [1000, 800]
+    PublicPortal_Viewer:
+        broker:   PublicPortal
+        homepage: "https://qa23.prozorro.gov.ua/tender/search/"
+        browser:  Chrome
+        position: [450, 0]
+        size:     [1200, 720]
+    SmartTender_Viewer:
+      broker:   SmartTender
+      homepage: "http://test.smarttender.biz"
+      browser:  chrome
+      position: [0, 450]
+      size:     [1280, 1024]
+    SmartTender_Provider1:
+        broker:   SmartTender
+        homepage: "http://test.smarttender.biz"
+        login:    SmartTenderProvider1@gmail.com
+        password: nowihs
+        browser:  chrome
+        position: [0, 450]
+        size:     [1280, 1024]
+    SmartTender_Provider2:
+        broker:   SmartTender
+        homepage: "http://test.smarttender.biz"
+        login:    SmartTenderProvider2@gmail.com
+        password: np3ozi
+        browser:  chrome
+        position: [0, 450]
+        size:     [1280, 1024]
+    SmartTender_Provider3:
+        broker:   SmartTender
+        homepage: "http://test.smarttender.biz"
+        login:    monosmarttender@gmail.com
+        password: monosmart11
+        browser:  chrome
+        position: [0, 450]
+        size:     [1280, 1024]
+    SmartTender_Owner:
+        broker:   SmartTender
+        homepage: "http://test.smarttender.biz"
+        login:    PPR_BV
+        password: 123321
+        browser:  chrome
+        position: [0, 0]
+        size:     [1280, 1024]
+    uatenders_Owner:
+        broker:   uatenders
+        homepage: "http://dev.zakupki.com.ua/tender/list"
+        login:    Azarov.andreas@Gmail.com
+        password: 111111
+        browser:  chrome
+        position: [750, 0]
+        size:     [1280, 800]
+    uatenders_Provider:
+        broker:   uatenders
+        homepage: "http://dev.zakupki.com.ua/tender/list"
+        login:    andreynichik@gmail.com
+        password: 111111
+        browser:  chrome
+        position: [750, 0]
+        size:     [1280, 800]
+    uatenders_Viewer:
+        broker:   uatenders
+        homepage: "http://dev.zakupki.com.ua/tender/list"
+        login:    Azarov.andreas@Gmail.com
+        password: 111111
+        browser:  chrome
+        position: [750, 0]
+        size:     [1280, 800]
+    ubiz_Owner:
+        broker:   ubiz
+        homepage: "http://test.ubiz.com.ua/prozorro"
+        login:    tender_owner@yopmail.com
+        password: 123456
+        browser:  chrome
+        position: [0, 0]
+        size:     [1280, 1000]
+    ubiz_Provider1:
+        broker:   ubiz
+        homepage: "http://test.ubiz.com.ua/prozorro"
+        login:    tender_provider@yopmail.com
+        password: 123456
+        browser:  chrome
+        position: [0, 800]
+        size:     [1280, 1000]
+    ubiz_Provider2:
+        broker:   ubiz
+        homepage: "http://test.ubiz.com.ua/prozorro"
+        login:    tender_provider1@yopmail.com
+        password: 123456
+        browser:  chrome
+        position: [800, 0]
+        size:     [1280, 1000]
+    ubiz_Viewer:
+        broker:   ubiz
+        homepage: "http://test.ubiz.com.ua/prozorro"
+        browser:  chrome
+        position: [0, 500]
+        size:     [1280, 1000]
+    zakpro_Owner:
+        broker:   zakpro
+        homepage: "https://market.zakupkipro.com/"
+        login:    owner.t@zakupkipro.com
+        password: own_pwd_44
+        browser:  firefox
+        position: [10, 10]
+        size:     [1366, 800]
+    zakpro_Provider:
+        broker:   zakpro
+        homepage: "https://market.zakupkipro.com/"
+        login:    provider1.t@zakupkipro.com
+        password: pr1_pwd_55
+        browser:  firefox
+        position: [30, 30]
+        size:     [1366, 800]
+    zakpro_Provider1:
+        broker:   zakpro
+        homepage: "https://market.zakupkipro.com/"
+        login:    provider2.t@zakupkipro.com
+        password: pr2_pwd_66
+        browser:  firefox
+        position: [50, 50]
+        size:     [1366, 800]
+    zakpro_Viewer:
+        broker:   zakpro
+        homepage: "https://market.zakupkipro.com/"
+        browser:  firefox
+        position: [70, 70]
+        size:     [1366, 800]
+    proztorg_Owner:
+        broker:   proztorg
+        homepage: "http://proztorg.com.ua/user/statePurchase"
+        login:    i.brus@ts.com
+        password: zloyvizl
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 500]
+    proztorg_Provider1:
+        broker:   proztorg
+        homepage: "http://proztorg.com.ua/user/statePurchase"
+        login:    vizl@te.net.ua
+        password: zloyvizl
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 500]
+    proztorg_Provider2:
+        broker:   proztorg
+        homepage: "http://proztorg.com.ua/user/statePurchase"
+        login:    brus.andreevich@gmail.com
+        password: zloyvizl
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 500]
+    proztorg_Viewer:
+        broker:   proztorg
+        homepage: "http://proztorg.com.ua/user/statePurchase"
+        login:    yuliya.belousova@mail.ru
+        password: 646086646086
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 500]
+    uub_Owner:
+        broker:   uub
+        homepage: "https://prozorro.uub.com.ua/Registration.aspx?CN=-1"
+        default_page: "https://prozorro.uub.com.ua/PositionList.aspx?CN=-1"
+        login:    UUB_Owner@1.ua
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    uub_Provider:
+        broker:   uub
+        homepage: "https://prozorro.uub.com.ua/Registration.aspx?CN=-2"
+        default_page: "https://prozorro.uub.com.ua/PositionList.aspx?CN=-2"
+        login:    UUB_Provider@1.ua
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    uub_Provider1:
+        broker:   uub
+        homepage: "https://prozorro.uub.com.ua/Registration.aspx?CN=-3"
+        default_page: "https://prozorro.uub.com.ua/PositionList.aspx?CN=-3"
+        login:    UUB_Provider1@1.ua
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    uub_Viewer:
+        broker:   uub
+        homepage: "https://prozorro.uub.com.ua/Registration.aspx?CN=-4"
+        default_page: "https://prozorro.uub.com.ua/PositionList.aspx?CN=-4"
+        login:    UUB_Viewer@1.ua
+        browser:  firefox
+        position: [0, 0]
+        size:     [1366, 800]
+    aps_Owner:
+        broker:   APStender
+        homepage: "https://test.aps-market.com/tender"
+        login:    AS22@i.ua
+        password: 1q2w3e
+        browser:  ff
+        position: [0, 0]
+        size:     [1400, 900]
+    aps_Provider:
+        broker:   APStender
+        homepage: "https://test.aps-market.com/tender"
+        login:    emms@meta.ua
+        password: 1q2w3e
+        browser:  ff
+        position: [0, 0]
+        size:     [1400, 900]
+    aps_Provider1:
+        broker:   APStender
+        homepage: "https://test.aps-market.com/tender"
+        login:    emmo@meta.ua
+        password: 1q2w3e
+        browser:  ff
+        position: [0, 0]
+        size:     [1400, 900]
+    aps_Viewer:
+        broker:   APStender
+        homepage: "https://test.aps-market.com/tender"
+        browser:  ff
+        position: [0, 0]
+        size:     [1400, 900]
+    alltenders_Owner:
+        broker:   alltenders
+        homepage: 'https://prozorro.alltenders.com.ua/?mode=test&notification=off'
+        login:    TestOwner@i.ua
+        password: 111
+        browser:  chrome
+        position: [0, 0]
+        size:     [1210, 800]
+    alltenders_Provider:
+        broker:   alltenders
+        homepage: 'https://prozorro.alltenders.com.ua/?mode=test&notification=off'
+        login:    member_01@i.ua
+        password: 111
+        browser:  chrome
+        position: [0, 0]
+        size:     [1210, 800]
+    alltenders_Provider1:
+        broker:   alltenders
+        homepage: 'https://prozorro.alltenders.com.ua/?mode=test&notification=off'
+        login:    member_02@i.ua
+        password: 111
+        browser:  chrome
+        position: [0, 0]
+        size:     [1210, 800]
+    alltenders_Provider2:
+        broker:   alltenders
+        homepage: 'https://prozorro.alltenders.com.ua/?mode=test&notification=off'
+        login:    member03@i.ua
+        password: 111
+        browser:  chrome
+        position: [0, 0]
+        size:     [1210, 800]
+    alltenders_Viewer:
+        broker:   alltenders
+        homepage: "https://prozorro.alltenders.com.ua/?mode=test&notification=off"
+        browser:  chrome
+        position: [0, 0]
+        size:     [1210, 800]
+    kapitalist_Owner:
+        broker:   Kapitalist
+        homepage: "https://prozorro.kapital-ist.kiev.ua/"
+        login:    qa_test@binka.me
+        password: Password1-
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    kapitalist_Provider:
+        broker:   Kapitalist
+        homepage: "https://prozorro.kapital-ist.kiev.ua/"
+        login:    provider_user@binka.me
+        password: Password1-
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    kapitalist_Provider1:
+        broker:   Kapitalist
+        homepage: "https://prozorro.kapital-ist.kiev.ua/"
+        login:    provider1_user@binka.me
+        password: Password1-
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    kapitalist_Viewer:
+        broker:   Kapitalist
+        homepage: "https://prozorro.kapital-ist.kiev.ua/"
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    pzo_Owner:
+        broker:   pzo
+        homepage: "http://dev.pzo.com.ua/user/tenders"
+        login:    zamovnuk@rambler.ru
+        password: 'qwe123qwe'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 800]
+    pzo_Provider:
+        broker:   pzo
+        homepage: "http://dev.pzo.com.ua/user/bids"
+        login:    posta4alnuk@rambler.ru
+        password: 'qwe123qwe'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 800]
+    pzo_Provider1:
+        broker:   pzo
+        homepage: "http://dev.pzo.com.ua/user/bids"
+        login:    posta4alnuk1@test.ru
+        password: 'qwe123qwe'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 800]
+    pzo_Provider2:
+        broker:   pzo
+        homepage: "http://dev.pzo.com.ua/user/bids"
+        login:    posta4alnuk2@test.ru
+        password: 'qwe123qwe'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 800]
+    pzo_Viewer:
+        broker:   pzo
+        homepage: "http://dev.pzo.com.ua/user/tenders"
+        login:    posta4alnuk2@test.ru
+        password: 'qwe123qwe'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 800]
+    aladdin_Owner:
+        broker:   aladdin
+        homepage: "https://test-gov.ald.in.ua"
+        login:    aladdin.for.test+owner@gmail.com
+        password: 'zxcvbn00'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1100, 5000]
+    aladdin_Provider:
+        broker:   aladdin
+        homepage: "https://test-gov.ald.in.ua"
+        login:    senya22051989@gmail.com
+        password: '123456'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1100, 5000]
+    aladdin_Provider1:
+        broker:   aladdin
+        homepage: "https://test-gov.ald.in.ua"
+        login:    qa2@gmail.com
+        password: '158263'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1100, 5000]
+    aladdin_Viewer:
+        broker:   aladdin
+        homepage: "https://test-gov.ald.in.ua"
+        browser:  chrome
+        position: [0, 0]
+        size:     [1100, 5000]
+    izi_provider:
+        broker:   izi
+        browser:  chrome
+        size:     [1280, 1024]
+        login: "test@izi.trade"
+        password: "qwerty1!"
+    izi_provider1:
+        broker:   izi
+        browser:  chrome
+        size:     [1280, 1024]
+        login: "test1@izi.trade"
+        password: "qwerty1!"
+    izi_viewer:
+        broker:   izi
+        browser:  chrome
+        size:     [1280, 1024]
+        login: "test@izi.trade"
+        password: "qwerty1!"
+    ukrtender_Owner:
+        broker:   ukrtender
+        homepage: "http://test.ukrtender.com.ua"
+        login:    tender_owner
+        password: 88888888
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    ukrtender_Provider:
+        broker:   ukrtender
+        homepage: "http://test.ukrtender.com.ua"
+        login:    provider
+        password: 88888888
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    ukrtender_Provider1:
+        broker:   ukrtender
+        homepage: "http://test.ukrtender.com.ua"
+        login:    provider1
+        password: 88888888
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    ukrtender_Provider2:
+        broker:   ukrtender
+        homepage: "http://test.ukrtender.com.ua"
+        login:    provider2
+        password: 88888888
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    ukrtender_Viewer:
+        broker:   ukrtender
+        homepage: "http://test.ukrtender.com.ua"
+        browser:  chrome
+        position: [0, 0]
+        size:     [1366, 800]
+    playtender_Owner:
+        broker:   playtender
+        homepage: "http://test.playtender.com.ua/user/tenders"
+        login:    chuzhin@mail.ua
+        password: 'qwe123qwe'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 800]
+    playtender_Provider:
+        broker:   playtender
+        homepage: "http://test.playtender.com.ua/user/bids"
+        login:    mayanov@mail.ua
+        password: 'qwe123qwe'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 800]
+    playtender_Provider1:
+        broker:   playtender
+        homepage: "http://test.playtender.com.ua/user/bids"
+        login:    shmol@mail.ua
+        password: 'qwe123qwe'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 800]
+    playtender_Provider2:
+        broker:   playtender
+        homepage: "http://test.playtender.com.ua/user/bids"
+        login:    chumakin@mail.ua
+        password: 'qwe123qwe'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 800]
+    playtender_Viewer:
+        broker:   playtender
+        homepage: "http://test.playtender.com.ua/user/tenders"
+        login:    chumakin@mail.ua
+        password: 'qwe123qwe'
+        browser:  chrome
+        position: [0, 0]
+        size:     [1000, 800]
+    avi_Owner:
+        broker:   avi
+        homepage: "https://test.avi.net.ua/prozorro/tender"
+        login:    tenderOwner@yopmail.com
+        password: tenderOwner@yopmail.com
+        browser:  chrome
+        position: [0, 0]
+        size:     [1280, 1000]
+    avi_Provider1:
+        broker:   avi
+        homepage: "https://test.avi.net.ua/prozorro/tender"
+        login:    tenderProvider@yopmail.com
+        password: tenderProvider@yopmail.com
+        browser:  chrome
+        position: [0, 800]
+        size:     [1280, 1000]
+    avi_Provider2:
+        broker:   avi
+        homepage: "https://test.avi.net.ua/prozorro/tender"
+        login:    tenderProvider2@yopmail.com
+        password: tenderProvider2@yopmail.com
+        browser:  chrome
+        position: [800, 0]
+        size:     [1280, 1000]
+    avi_Provider3:
+        broker:   avi
+        homepage: "https://test.avi.net.ua/prozorro/tender"
+        login:    tenderProvider3@yopmail.com
+        password: tenderProvider3@yopmail.com
+        browser:  chrome
+        position: [800, 0]
+        size:     [1280, 1000]
+    avi_Viewer:
+        broker:   avi
+        homepage: "https://test.avi.net.ua/prozorro/tender"
+        browser:  chrome
+        position: [0, 500]
+        size:     [1280, 1000]
