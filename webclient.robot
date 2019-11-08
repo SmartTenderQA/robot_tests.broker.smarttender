@@ -108,7 +108,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле NBUdiscountRate
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="NBUDISCRAT"]//input
-	clear input by JS  ${locator}
+	clear input by Backspace  ${locator}
 	заповнити autocomplete field  ${locator}  ${text.__str__()}  check=${False}
 
 
@@ -189,7 +189,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="LOT_MINSTEP_PERCENT"]//input
 	${value}  evaluate  ${text} * 100
-	clear input by JS  ${locator}
+	clear input by Backspace  ${locator}
 	заповнити simple input  ${locator}  ${value.__str__()}  input_methon=Input Type Flex
 
 
@@ -360,12 +360,14 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для угоди value.amountNet
 	[Arguments]  ${fieldvalue}
 	${amount_input}  set variable  //div/*[text()='Сума без ПДВ']/following-sibling::table//input
+	clear input by Backspace  ${amount_input}
 	заповнити simple input  ${amount_input}  ${fieldvalue.__str__()}  check=${False}
 
 
 заповнити поле для угоди value.amount
 	[Arguments]  ${fieldvalue}
 	${amount_input}  set variable  //div/*[text()='Сума за договором, грн.:']/following-sibling::table//input
+	clear input by Backspace  ${amount_input}
 	заповнити simple input  ${amount_input}  ${fieldvalue.__str__()}  check=${False}
 
 
@@ -775,18 +777,17 @@ dialog box заголовок повинен містити
 
 заповнити simple input continue
     [Arguments]  ${locator}  ${input_text}  ${check}  ${input_methon}=input text
-	${text}  evaluate  """${input_text}""".decode('UTF-8')
-	clear input by JS  ${locator}
-#	sleep  1
-	run keyword  ${input_methon}  ${locator}  ${text}
-	press key  ${locator}  \\13
+	${text}  evaluate      """${input_text}""".decode('UTF-8')
+	click element             ${locator}
+	clear input by JS         ${locator}
+	run keyword               ${input_methon}  ${locator}  ${text}
+	press key                 ${locator}  \\13
 #	click screen header
 #	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
-	${get}  set variable  ${get.replace('\n', '')}
-	#  run keyword if  'AMOUNT' in '${locator}' or 'MINSTEP' in '${locator}'
-	should not be empty  ${get}
-	run keyword if  ${check}  should be equal as strings  "${get}"  "${text}"
+	${get}  set variable           ${get.replace('\n', '')}
+	should not be empty            ${get}
+	run keyword if                 ${check}  should be equal as strings  "${get}"  "${text}"
 
 
 заповнити autocomplete field
@@ -924,3 +925,13 @@ click screen header
     ${href}  evaluate  re.search("[^']+.(?P<href>.+)[']+", "${value}").group("href")  re
 	smart go to  ${href}
 	[Return]  ${href}
+
+
+clear input by Backspace
+    [Arguments]  ${input}
+    :FOR  ${i}  IN RANGE  256
+	\   press key  ${input}  \\08
+	\   ${get}  get element attribute  ${input}@value
+	\   ${get}  set variable  ${get.replace(' ', '')}
+	\   exit for loop if   "${get}" == "${EMPTY}" or "${get}" == "+"
+	[Return]  ${get}

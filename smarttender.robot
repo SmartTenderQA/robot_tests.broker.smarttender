@@ -2184,6 +2184,8 @@ get_item_deliveryAddress_value
 	webclient.натиснути додати документ
 	loading дочекатись закінчення загрузки сторінки
 	webclient.загрузити документ  ${filepath}
+	log to console  Завантажити документ в ло
+	debug
 	webclient.header натиснути на елемент за назвою  Зберегти
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
@@ -2636,6 +2638,8 @@ _перейти до сторінки вимоги_кваліфікація
     ${tab_status}  run keyword and return status  webclient.активувати вкладку  Звернення за умовами тендеру
 	run keyword if  "${tab_status}" == "False"    webclient.активувати вкладку  Оскарження умов тендеру
     webclient.header натиснути на елемент за назвою  Оновити
+    log to console  Відповісти на вимогу про виправлення визначення переможця
+    debug
 	${complaintID_search_field}  set variable  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[2]//td//input)[1]
     loading дочекатися відображення елемента на сторінці  ${complaintID_search_field}
     clear input by JS  ${complaintID_search_field}
@@ -2955,12 +2959,56 @@ _перейти до сторінки вимоги_кваліфікація
 Підтвердити підписання контракту
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
     [Documentation]  Перевести договір під номером contract_num до тендера tender_uaid в статус active.
-    log to console  Підтвердити підписання контракту
+    run keyword if
+    ...  "${mode}" == "reporting"  smarttender.Підтвердити підписання контракту reporting  ${username}  ${tender_uaid}  ${contract_num}
+    ...  ELSE                      smarttender.Підтвердити підписання контракту else       ${username}  ${tender_uaid}  ${contract_num}
+
+Підтвердити підписання контракту reporting
+    [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
+    #  Костиль - преоткрываем скрин
+    click element   ${screen_root_selector}//*[@alt="Close"]
+	loading дочекатись закінчення загрузки сторінки
+    header натиснути на елемент за назвою  Прикріпити договір
+    ########################################################
+    #  Заповнюємо поля договору
+	${id}  evaluate  str(uuid.uuid4())  uuid
+	заповнити поле для угоди id  ${id}
+	${date}  get current date  result_format=%d.%m.%Y
+	${date_to}  get current date
+	${date_to}  Add Time To Date  ${date_to}  30 days  result_format=%d.%m.%Y
+	заповнити поле для угоди date  ${date}
+	заповнити поле для угоди date from  ${date}
+	заповнити поле для угоди date to    ${date_to}
+	#  Додаємо документ
+	click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]
+	loading дочекатись закінчення загрузки сторінки
+	${list_of_file_args}  create_fake_doc
+	${file_path}  set variable  ${list_of_file_args[0]}
+	загрузити документ  ${file_path}
+	header натиснути на елемент за назвою  OK
+	webclient.screen заголовок повинен містити  Завантаження документації
+	click element   ${screen_root_selector}//*[@alt="Close"]
+	loading дочекатись закінчення загрузки сторінки
+
+	header натиснути на елемент за назвою  Підписати договір
+	dialog box заголовок повинен містити  Ви дійсно хочете підписати договір?
+	dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Накласти ЕЦП на договір?
+	dialog box натиснути кнопку  Ні
+	dialog box заголовок повинен містити  На рішення не накладено актуальний підпис ЕЦП.
+	dialog box натиснути кнопку  Так
+	dialog box натиснути кнопку  ОК  # <--- тут ОК кирилицей
+	loading дочекатись закінчення загрузки сторінки
+
+
+Підтвердити підписання контракту else
+    [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
+    log to console  Підтвердити підписання контракту else
     debug
     знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
-	header натиснути на елемент за назвою  Оновити
+	header натиснути на елемент за назвою  Перечитати
 	вибрати переможця за номером  ${contract_num}+1
     header натиснути на елемент за назвою  Прикріпити договір
     #  Заповнюємо поля договору
@@ -3005,6 +3053,8 @@ _перейти до сторінки вимоги_кваліфікація
 	loading дочекатись закінчення загрузки сторінки
 
 
+
+
 Перевести тендер на статус очікування обробки мостом
     [Arguments]  ${username}  ${tender_uaid}
     [Documentation]  Перевести тендер tender_uaid в статус active.stage2.waiting.
@@ -3040,9 +3090,7 @@ _перейти до сторінки вимоги_кваліфікація
 
 	${identifier.id}  set variable  ${supplier_data['data']['suppliers'][0]['identifier']['id']}
 	${identifier.legalName}  set variable  ${supplier_data['data']['suppliers'][0]['identifier']['legalName']}
-
 	${scale}  set variable  ${supplier_data['data']['suppliers'][0]['scale']}
-
 	${contactPoint.name}  set variable  ${supplier_data['data']['suppliers'][0]['contactPoint']['name']}
 	${contactPoint.telephone}  set variable  ${supplier_data['data']['suppliers'][0]['contactPoint']['telephone']}
 	${contactPoint.email}  set variable  ${supplier_data['data']['suppliers'][0]['contactPoint']['email']}
@@ -3062,17 +3110,16 @@ _перейти до сторінки вимоги_кваліфікація
 
 	заповнити simple input  //*[@data-name="OKPO"]//input  ${identifier.id}
 	заповнити simple input  //*[@data-name="NORG_DOC"]//input  ${identifier.legalName}
-
 	заповнити autocomplete field  //*[@data-name="IDSCALE"]//input  ${scale_dict['${scale}']}
-
 	заповнити simple input  //*[@data-name="CONTACTPERSON"]//input  ${contactPoint.name}
+    заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}  check=${False}
+    clear input by Backspace  //*[@data-name="TEL"]//input
 	заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}  check=${False}
-	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}  #check=${False}
+	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}    check=${False}
 	заповнити simple input  //*[@data-name="URL"]//input  ${contactPoint.url}
 	заповнити simple input  //*[@data-name="PIND"]//input  ${address.postalCode}
 	заповнити simple input  //*[@data-name="APOTR"]//input  ${address.streetAddress}
 	заповнити autocomplete field  //*[@data-name="CITY_KOD"]//input  ${address.locality}  check=${False}
-
 	заповнити simple input  //*[@data-name="AMOUNT"]//input  ${value.amount}  check=${False}
 	операція над чекбоксом  ${value.valueAddedTaxIncluded}  //*[@data-name="WITHVAT"]//input
 
@@ -3649,6 +3696,14 @@ smarttender.сторінка_детальної_інформації отрим�
     ${field_value_in_smart_format}  get text  xpath=${selector}
     ${field_value}  convert date  ${field_value_in_smart_format}  date_format=%d.%m.%Y  result_format=%Y-%m-%dT00:00:00${time_zone}
     [Return]  ${field_value}
+
+
+сторінка_детальної_інформації отримати qualifications
+    [Arguments]  ${field_name}
+    log to console  сторінка_детальної_інформації отримати qualifications
+    debug
+    [Return]  ${field_value}
+
 
 
 _дочекатися відображення посилання на договір
