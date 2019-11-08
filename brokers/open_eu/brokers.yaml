@@ -302,6 +302,10 @@ SmartTender:
         openeu:
             tender:  [30, 75]
             accelerator: 1440
+        open_esco:
+            accelerator: 1440
+            enquiry: [0, 15]
+            tender:  [0, 50]
         open_competitive_dialogue:
             accelerator: 1440
             tender:  [20, 50]
