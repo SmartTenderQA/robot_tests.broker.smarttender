@@ -809,8 +809,8 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	...  dialog box заголовок повинен містити  Увага! Бюджет перевищує 133 000 євро. Вам потрібно обрати тип процедури «Відкриті торги з публікаціє...
 	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
 	...  dialog box натиснути кнопку  Так
-	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
-	dialog box натиснути кнопку  Ні
+	run keyword and ignore error  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	run keyword and ignore error  dialog box натиснути кнопку  Ні
 
 
 Оголосити закупівлю open_esco multilot
@@ -2503,6 +2503,15 @@ get_item_deliveryAddress_value
 	вимога_натиснути Скасувати вимогу  ${cancellationReason}
 
 
+Створити скаргу про виправлення визначення переможця
+    [Documentation]  Створює скаргу у статусі "pending"
+    ...      Можна створити скаргу як з документацією, так і без неї
+    [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${award_index}  ${document}=${None}
+    log to console  Створити скаргу про виправлення визначення переможця
+    ${complaintID}  Створити вимогу про виправлення визначення переможця  ${username}  ${tender_uaid}  ${claim}  ${award_index}  ${document}=${None}
+    [Return]  ${complaintID}
+
+
 Отримати інформацію із скарги
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${field_name}  ${award_index}=${None}
     [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID
@@ -2901,20 +2910,13 @@ _перейти до сторінки вимоги_кваліфікація
     [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінює поле fieldname угоди тендера tender_uaid на fieldvalue
     run keyword if  '${fieldname}' == 'value.amountNet'  run keywords
-    ...  log to console  Редагувати угоду       AND
-    ...  debug  AND
     ...  знайти тендер у webclient  ${tender_uaid}  AND
 	...  активувати вкладку  Пропозиції  AND
 	...  grid вибрати рядок за номером  ${contract_index}+1  AND
-	...  header натиснути на елемент за назвою  Надіслати вперед  AND
+	#...  header натиснути на елемент за назвою  Надіслати вперед  AND
     ...  header натиснути на елемент за назвою  Прикріпити договір
-    run keyword  редагувати поле угоди ${fieldname}  ${fieldvalue}
+    run keyword  заповнити поле для угоди ${fieldname}  ${fieldvalue}
 
-
-редагувати поле угоди value.amount
-    [Arguments]  ${fieldvalue}
-    log to console  редагувати поле угоди value.amount
-    debug
 
 
 Встановити дату підписання угоди
@@ -2942,6 +2944,7 @@ _перейти до сторінки вимоги_кваліфікація
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
     [Documentation]  Перевести договір під номером contract_num до тендера tender_uaid в статус active.
     log to console  Підтвердити підписання контракту
+    debug
     знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
@@ -3052,7 +3055,7 @@ _перейти до сторінки вимоги_кваліфікація
 
 	заповнити simple input  //*[@data-name="CONTACTPERSON"]//input  ${contactPoint.name}
 	заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}  check=${False}
-	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}  check=${False}
+	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}  #check=${False}
 	заповнити simple input  //*[@data-name="URL"]//input  ${contactPoint.url}
 	заповнити simple input  //*[@data-name="PIND"]//input  ${address.postalCode}
 	заповнити simple input  //*[@data-name="APOTR"]//input  ${address.streetAddress}
@@ -4324,6 +4327,8 @@ _розгорнути лот по id
 
 вимоги_кваліфікація перейти на сторінку по індексу
     [Arguments]  ${award_index}
+    ${current_location}  get_location
+    return from keyword if  "AppealNew" in "${current_location}"
     ${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${award_index}+1]@href
     go to  ${href}
     loading дочекатись закінчення загрузки сторінки
