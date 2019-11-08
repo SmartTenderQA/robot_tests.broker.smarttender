@@ -43,14 +43,14 @@ Default:
             tender:  [0, 30]
         open_competitive_dialogue:
             accelerator: 1440
-            tender:  [0, 45]
+            tender:  [30, 70]
         open_esco:
              accelerator: 1440
              enquiry: [0, 15]
              tender:  [0, 30]
         open_framework:
              accelerator: 1440
-             tender:  [0, 30]
+             tender:  [30, 70]
         framework_selection:
              accelerator: 360
     # Synchronization delay, in seconds
@@ -299,6 +299,12 @@ SmartTender:
         openeu:
             tender:  [30, 75]
             accelerator: 1440
+        open_competitive_dialogue:
+            accelerator: 1440
+            tender:  [20, 50]
+        open_framework:
+            accelerator: 1440
+            tender:  [30, 70]
     keywords_file: smarttender
     roles:
         provider:       SmartTender_Provider1
