@@ -296,6 +296,9 @@ SmartTender:
         openua:
             accelerator: 1440
             tender:  [30, 70]
+        openua_defense:
+            accelerator: 1440
+            tender:  [30, 70]
         openeu:
             tender:  [30, 75]
             accelerator: 1440
