@@ -295,9 +295,9 @@ SmartTender:
             accelerator: 1440
         openua:
             accelerator: 1440
-            tender:  [0, 65]
+            tender:  [30, 70]
         openeu:
-            tender:  [0, 75]
+            tender:  [30, 75]
             accelerator: 1440
     keywords_file: smarttender
     roles:

@@ -372,7 +372,8 @@ def replace_procuringEntity(tender_data):
         "contactPoint": {
             "telephone": "044 585 90 77",
             "name": u"Иванов Иван Иванович",
-            "email": "ppr.bv.owner@gmail.com"
+            "email": "ppr.bv.owner@gmail.com",
+            "url": "ppr.bv.owner@gmail.com"
         },
         "identifier": {
             "scheme": "UA-EDR",
