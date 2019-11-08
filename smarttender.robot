@@ -2507,19 +2507,17 @@ get_item_deliveryAddress_value
     [Documentation]  Створює скаргу у статусі "pending"
     ...      Можна створити скаргу як з документацією, так і без неї
     [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${award_index}  ${document}=${None}
-    log to console  Створити скаргу про виправлення визначення переможця
-    debug
-#    ${title}  set variable  ${claim['data']['title']}
-#    ${description}  set variable  ${claim['data']['description']}
-#    вимоги_кваліфікація перейти на сторінку по індексу  ${award_index}
-#    вимога_натиснути кнопку Подати скаргу до "АМКУ"
-#	вимога_заповнити тему  ${title}
-#	вимога_заповнити текст запитання  ${description}
-#	run keyword if  "${document}" != "${None}"  вимога_завантажити документ  ${document}
-#	wait until keyword succeeds  1m  1  вимога_натиснути кнопку "Подати"
-#	${complaintID}  вимоги_кваліфікація отримати complaintID по ${title}
-#	go to  ${tender_detail_page}
-#	loading дочекатись закінчення загрузки сторінки
+    ${title}  set variable  ${claim['data']['title']}
+    ${description}  set variable  ${claim['data']['description']}
+    вимоги_кваліфікація перейти на сторінку по індексу  ${award_index}
+    вимога_натиснути кнопку Подати скаргу до "АМКУ"
+	вимога_заповнити тему  ${title}
+	вимога_заповнити текст запитання  ${description}
+	run keyword if  "${document}" != "${None}"  вимога_завантажити документ  ${document}
+	wait until keyword succeeds  1m  1  вимога_натиснути кнопку "Подати"
+	${complaintID}  вимоги_кваліфікація отримати complaintID по ${title}
+	go to  ${tender_detail_page}
+	loading дочекатись закінчення загрузки сторінки
     [Return]  ${complaintID}
 
 
@@ -4208,7 +4206,7 @@ _розгорнути лот по id
 
 вимога_натиснути кнопку Подати вимогу "Замовнику"
     ${complaint button}    Set Variable  //*[@class="complaint-list"]//*[@data-qa="submit-claim"]
-    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//button[contains(@class,"btn-success")]
+    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//*[@data-qa="new-complaint"]//button[contains(@class,"btn-success")]
     loading дочекатися відображення елемента на сторінці  ${complaint button}
     Click Element  ${complaint button}
     Wait Until Element Is Visible  ${complaint send btn}
@@ -4216,7 +4214,7 @@ _розгорнути лот по id
 
 вимога_натиснути кнопку Подати скаргу до "АМКУ"
     ${complaint button}    Set Variable  //*[@class="complaint-list"]//*[@data-qa="submit-complaint"]
-    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//button[contains(@class,"btn-success")]
+    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//*[@data-qa="new-complaint"]//button[contains(@class,"btn-success")]
     loading дочекатися відображення елемента на сторінці  ${complaint button}
     Click Element  ${complaint button}
     Wait Until Element Is Visible  ${complaint send btn}
