@@ -127,7 +127,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 
 заповнити поле agreementDuration
 	[Arguments]  ${agreementDuration}
-	${reg}  evaluate  re.search(r'P(?P<year>\\d)Y(?P<month>\\d)M(?P<day>\\d)DT.*', '${agreementDuration}')  re
+	${reg}  evaluate  re.search(r'P(?P<year>\\d)Y(?P<month>\\d)M(?P<day>\\d)', '${agreementDuration}')  re
 	${year}  evaluate  ${reg.group('year')}
 	${month}  evaluate  ${reg.group('month')}
 	${day}  evaluate  ${reg.group('day')}
