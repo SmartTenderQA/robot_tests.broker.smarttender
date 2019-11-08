@@ -2503,6 +2503,15 @@ get_item_deliveryAddress_value
 	вимога_натиснути Скасувати вимогу  ${cancellationReason}
 
 
+Створити скаргу про виправлення визначення переможця
+    [Documentation]  Створює скаргу у статусі "pending"
+    ...      Можна створити скаргу як з документацією, так і без неї
+    [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${award_index}  ${document}=${None}
+    log to console  Створити скаргу про виправлення визначення переможця
+    ${complaintID}  Створити вимогу про виправлення визначення переможця  ${username}  ${tender_uaid}  ${claim}  ${award_index}  ${document}=${None}
+    [Return]  ${complaintID}
+
+
 Отримати інформацію із скарги
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${field_name}  ${award_index}=${None}
     [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID
