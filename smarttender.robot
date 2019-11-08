@@ -2508,7 +2508,18 @@ get_item_deliveryAddress_value
     ...      Можна створити скаргу як з документацією, так і без неї
     [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${award_index}  ${document}=${None}
     log to console  Створити скаргу про виправлення визначення переможця
-    ${complaintID}  Створити вимогу про виправлення визначення переможця  ${username}  ${tender_uaid}  ${claim}  ${award_index}  ${document}=${None}
+    debug
+#    ${title}  set variable  ${claim['data']['title']}
+#    ${description}  set variable  ${claim['data']['description']}
+#    вимоги_кваліфікація перейти на сторінку по індексу  ${award_index}
+#    вимога_натиснути кнопку Подати скаргу до "АМКУ"
+#	вимога_заповнити тему  ${title}
+#	вимога_заповнити текст запитання  ${description}
+#	run keyword if  "${document}" != "${None}"  вимога_завантажити документ  ${document}
+#	wait until keyword succeeds  1m  1  вимога_натиснути кнопку "Подати"
+#	${complaintID}  вимоги_кваліфікація отримати complaintID по ${title}
+#	go to  ${tender_detail_page}
+#	loading дочекатись закінчення загрузки сторінки
     [Return]  ${complaintID}
 
 
@@ -2711,10 +2722,10 @@ _перейти до сторінки вимоги_кваліфікація
     ${lots_ids}  Set Variable If  "${lots_ids}" is "${None}"  ${list_with_empty_value}  ${lots_ids}
 
     smarttender.пропозиція_перевірити кнопку подачі пропозиції
-    :FOR  ${lot}  IN  @{lots_ids}
     # ${count_lot} костиль для отриманяя правильного ['value']['amount'] для потрібного лоту
     # буде працювати тільки якщо relatedLot в lotValues буду співпадати з послідовністю в ${lots_ids}
-    \  set test variable  ${count_lot}  0
+    set test variable  ${count_lot}  0
+    :FOR  ${lot}  IN  @{lots_ids}
     \  smarttender.пропозиція_заповнити поле з ціною  ${lot}  ${bid}
 
     run keyword if  "${features_names}" != "${None}"
@@ -3955,6 +3966,14 @@ _Дочекатись синхронізації
     ...  fill bid field with max available price
     [Arguments]  ${lot_id}  ${bid}
 
+    comment  Розгорнути лот якщо id існує
+    run keyword if  "${lot_id}" != "${Empty}"  _розгорнути лот по id  ${lot_id}
+
+    comment  Якщо ESCO пропозиція_заповнити поле з ціною для ESCO та виходимо з кейворда пропозиція_заповнити поле з ціною
+    run keyword if  "${mode}" == "open_esco"  run keywords
+    ...  пропозиція_заповнити поле з ціною для ESCO  ${lot_id}  ${bid}  AND
+    ...  return from keyword
+
     comment  Отримуємо значення ціни пропозиції
     ${is_multiple}  set variable  ${bid['data'].get('lotValues')}
     ${float}  set variable if  """${is_multiple}""" == "${None}"
@@ -3963,12 +3982,42 @@ _Дочекатись синхронізації
     ${amount}  evaluate  str(${float})
     ${count_lot}  evaluate  ${count_lot} + 1
 
-    comment  Розгорнути лот якщо id існує
-    run keyword if  "${lot_id}" != "${Empty}"  _розгорнути лот по id  ${lot_id}
-
     comment  Ввести ціну пропозиції
     ${input}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
     input text  ${input}  ${amount}
+
+
+пропозиція_заповнити поле з ціною для ESCO
+    [Arguments]  ${lot_id}  ${bid}
+    ${lot_selector}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]
+
+    comment  вибрати ручний розподіл скорочення витрат
+    ${element}  set variable  ${lot_selector}//label[contains(@class, 'radio')][2]
+    click element  ${element}
+
+    comment  натиснути розгорнути
+    ${element}  set variable  ${lot_selector}//*[@class="collapse-box-toogle-inner"]//*[contains(@class, 'down')]
+    click element  ${element}
+    loading дочекатися зникнення елемента зі сторінки  ${element}
+
+    comment  заповнити срок дії договору років
+    input text  xpath=(${lot_selector}//input)[1]  ${bid['data']['lotValues'][0]['value']['contractDuration']['years']}
+
+    comment  заповнити срок ді' договору днів
+    input text  xpath=(${lot_selector}//input)[2]  ${bid['data']['lotValues'][0]['value']['contractDuration']['days']}
+
+    comment  заповнити фіксований відсоток щорічних платежів
+    ${yearlyPaymentsPercentage}  evaluate  str(${bid['data']['lotValues'][0]['value']['yearlyPaymentsPercentage']}*100)
+    input text  xpath=(${lot_selector}//input)[3]  ${yearlyPaymentsPercentage}
+
+    comment  заповнити поля скорочення витрат
+    ${index}  set variable  1
+    :FOR  ${annualCostsReduction}  IN  @{bid['data']['lotValues'][0]['value']['annualCostsReduction']}
+    \  ${value}  evaluate  str(${annualCostsReduction})
+    \  ${input}  set variable  xpath=(${lot_selector}//div[contains(@class, "col")]/input)[${index}+1]
+    \  loading дочекатися відображення елемента на сторінці  ${input}
+    \  input text  ${input}  ${value}
+    \  ${index}  evaluate  ${index} + 1
 
 
 _вибрати нецінові показники на сторінці детальної інформації тендера
@@ -4035,9 +4084,10 @@ _розгорнути лот по id
 пропозиція_закрити вікно з ЕЦП
     loading дочекатись закінчення загрузки сторінки
     ${selector}  set variable  //*[@data-qa="modal-eds"]//*[@class="ivu-modal-close"]
-    loading дочекатися відображення елемента на сторінці  ${selector}  60
-    click element  ${selector}
-    loading дочекатися зникнення елемента зі сторінки  ${selector}
+    run keyword and ignore error  run keywords
+    ...  loading дочекатися відображення елемента на сторінці  ${selector}  60  AND
+    ...  click element  ${selector}  AND
+    ...  loading дочекатися зникнення елемента зі сторінки  ${selector}
 
 
 пропозиція_отримати інформацію по полю ${field}
@@ -4158,6 +4208,14 @@ _розгорнути лот по id
 
 вимога_натиснути кнопку Подати вимогу "Замовнику"
     ${complaint button}    Set Variable  //*[@class="complaint-list"]//*[@data-qa="submit-claim"]
+    ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//button[contains(@class,"btn-success")]
+    loading дочекатися відображення елемента на сторінці  ${complaint button}
+    Click Element  ${complaint button}
+    Wait Until Element Is Visible  ${complaint send btn}
+
+
+вимога_натиснути кнопку Подати скаргу до "АМКУ"
+    ${complaint button}    Set Variable  //*[@class="complaint-list"]//*[@data-qa="submit-complaint"]
     ${complaint send btn}  Set Variable  //*[@class="complaint-list"]//button[contains(@class,"btn-success")]
     loading дочекатися відображення елемента на сторінці  ${complaint button}
     Click Element  ${complaint button}
