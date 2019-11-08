@@ -3407,7 +3407,10 @@ _план_сторінка_детальної_інформації отрима�
 
 сторінка_детальної_інформації отримати awards[${award_index}].complaintPeriod.endDate
 	Синхронізувати тендер
-	${href}  smarttender._отримати посилання на сторінку оскарження  ${award_index}
+	${href}  run keyword if  "${mode}" == "openua_defense"
+		...  _отримати посилання на сторінку оскарження openua_defense
+	...  ELSE
+		...  smarttender._отримати посилання на сторінку оскарження  ${award_index}
 	go to  ${href}
 	loading дочекатись закінчення загрузки сторінки
 	${selector}  set variable  //*[@data-qa="period"]/p
@@ -3424,6 +3427,11 @@ _отримати посилання на сторінку оскарження
 	${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${award_index}+1]@href
 	return from keyword if  ${href.__len__()} != 0  ${href}
 	${href}  get element attribute  xpath=(//*[@data-qa="complaint-button"])[${award_index}]@href
+	[Return]  ${href}
+
+
+_отримати посилання на сторінку оскарження openua_defense
+	${href}  get element attribute  xpath=//*[@data-qa="complaint-button" and @class="complaint-button"]@href
 	[Return]  ${href}
 
 
