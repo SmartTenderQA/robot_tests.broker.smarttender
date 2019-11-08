@@ -688,6 +688,8 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
     loading дочекатись закінчення загрузки сторінки
+    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box натиснути кнопку  Ні
 
 
 Оголосити закупівлю negotiation
@@ -746,6 +748,8 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
     loading дочекатись закінчення загрузки сторінки
+    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box натиснути кнопку  Ні
 
 
 
@@ -2962,10 +2966,13 @@ _перейти до сторінки вимоги_кваліфікація
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
     [Documentation]  Перевести договір під номером contract_num до тендера tender_uaid в статус active.
     run keyword if
-    ...  "${mode}" == "reporting"  smarttender.Підтвердити підписання контракту reporting  ${username}  ${tender_uaid}  ${contract_num}
-    ...  ELSE                      smarttender.Підтвердити підписання контракту else       ${username}  ${tender_uaid}  ${contract_num}
+    ...  "${mode}" == "reporting"  smarttender.Підтвердити підписання контракту continue  ${username}  ${tender_uaid}  ${contract_num}
+    ...  ELSE  run keywords
+    ...  repeat keyword  2 times   sleep 4m     AND
+    ...                            smarttender.Підтвердити підписання контракту continue  ${username}  ${tender_uaid}  ${contract_num}
 
-Підтвердити підписання контракту reporting
+
+Підтвердити підписання контракту continue
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
     #  Костиль - преоткрываем скрин
     click element   ${screen_root_selector}//*[@alt="Close"]
@@ -3001,60 +3008,6 @@ _перейти до сторінки вимоги_кваліфікація
 	dialog box натиснути кнопку  Так
 	dialog box натиснути кнопку  ОК  # <--- тут ОК кирилицей
 	loading дочекатись закінчення загрузки сторінки
-
-
-Підтвердити підписання контракту else
-    [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
-    log to console  Підтвердити підписання контракту else
-    debug
-    знайти тендер у webclient  ${tender_uaid}
-	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
-	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
-	header натиснути на елемент за назвою  Перечитати
-	вибрати переможця за номером  ${contract_num}+1
-    header натиснути на елемент за назвою  Прикріпити договір
-    #  Заповнюємо поля договору
-	${id}  evaluate  str(uuid.uuid4())  uuid
-	заповнити поле для угоди id  ${id}
-	${date}  get current date  result_format=%d.%m.%Y
-	заповнити поле для угоди date  ${date}
-    #   Визначаємо суму без ПДВ залежно від чек-боксу (тендер з ПДВ чи без)
-    ${amount_input}  set variable  xpath=(//*[contains(text(),"Сума за договором")]//following-sibling::*[@data-type]//*[self::textarea or self::input])[1]
-    ${amount}  get element attribute  ${amount_input}@value
-    ${amount}            evaluate  '${amount}'.replace(' ', '')
-    ${amount minus 20%}  evaluate  "%.2f" % (${amount} / 1.2)
-    ${checkbox}         set variable  //*[@data-type="CheckBox" and contains(., "з ПДВ")]
-	${checkbox status}  get element attribute  ${checkbox}//span@class
-	${amount without tax}  set variable if
-	...  "Unchecked" in "${checkbox status}"  ${amount}
-	...  "Checked" in "${checkbox status}"    ${amount minus 20%}
-	${amount_tax_input}  set variable  xpath=(//*[contains(text(),"Сума без ПДВ")]//following-sibling::*[@data-type]//*[self::textarea or self::input])[1]
-	заповнити simple input  ${amount_tax_input}  ${amount without tax}  check=${False}
-	#  Додаємо документ
-	click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]
-	loading дочекатись закінчення загрузки сторінки
-	${list_of_file_args}  create_fake_doc
-	${file_path}  set variable  ${list_of_file_args[0]}
-	загрузити документ  ${file_path}
-
-	header натиснути на елемент за назвою  OK
-	webclient.screen заголовок повинен містити  Завантаження документації
-	click element   ${screen_root_selector}//*[@alt="Close"]
-	loading дочекатись закінчення загрузки сторінки
-
-	header натиснути на елемент за назвою  Підписати договір
-	dialog box заголовок повинен містити  Ви дійсно хочете підписати договір?
-	dialog box натиснути кнопку  Так
-	dialog box заголовок повинен містити  Накласти ЕЦП на договір?
-	dialog box натиснути кнопку  Ні
-	dialog box заголовок повинен містити  На рішення не накладено актуальний підпис ЕЦП.
-	dialog box натиснути кнопку  Так
-	dialog box заголовок повинен містити  Договір підписанний
-	dialog box натиснути кнопку  Так
-	click element  //*[@id="cpIMMessageBox" and contains(., "Договір підписаний")]//*[text()="ОК"]
-	loading дочекатись закінчення загрузки сторінки
-
-
 
 
 Перевести тендер на статус очікування обробки мостом
@@ -3103,6 +3056,9 @@ _перейти до сторінки вимоги_кваліфікація
 	${value.amount}  set variable  ${supplier_data['data']['value']['amount']}
 	${value.valueAddedTaxIncluded}  set variable  ${supplier_data['data']['value']['valueAddedTaxIncluded']}
 
+	${qualified}  set variable  ${supplier_data['data']['qualified']}
+	${qualified_checkbox}  set variable if  ${qualified}  //*[@data-name="qualified"]//input  //*[@data-name="nonQualified"]//input
+    ${qualified_decision}  set variable if  ${qualified}  Визнати учасника переможцем         Визначити учасником переговорів
 	&{scale_dict}  create dictionary
 	...  micro=Суб'єкт мікропідприємництва
 	...  sme=Суб'єкт малого підприємництва
@@ -3122,19 +3078,33 @@ _перейти до сторінки вимоги_кваліфікація
 	заповнити simple input  //*[@data-name="PIND"]//input  ${address.postalCode}
 	заповнити simple input  //*[@data-name="APOTR"]//input  ${address.streetAddress}
 	заповнити autocomplete field  //*[@data-name="CITY_KOD"]//input  ${address.locality}  check=${False}
-	заповнити simple input  //*[@data-name="AMOUNT"]//input  ${value.amount}  check=${False}
+	clear input by Backspace  //*[@data-name="AMOUNT"]//input
+	заповнити simple input    //*[@data-name="AMOUNT"]//input  ${value.amount}  check=${False}
 	операція над чекбоксом  ${value.valueAddedTaxIncluded}  //*[@data-name="WITHVAT"]//input
 
+    log to console  Створити постачальника, додати документацію і підтверди
+
 	webclient.header натиснути на елемент за назвою  OK
-	dialog box заголовок повинен містити  Увага!
-	dialog box натиснути кнопку  Так
 
-	click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]
-	loading дочекатись закінчення загрузки сторінки
-	загрузити документ  ${document}
+	run keyword if  "${mode}" == "negotiation"  run keywords
+	...  click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]     AND
+	...  loading дочекатись закінчення загрузки сторінки                        AND
+	...  загрузити документ  ${document}                                        AND
+    ...  заповнити simple input  //*[@data-name="decision"]//textarea  Кваліфікація. Визнати учасника переможцем  AND
+    ...  операція над чекбоксом  ${True}  ${qualified_checkbox}                 AND
+    ...  click element  //*[@data-name="chooseDecision"]                        AND
+    ...  wait until keyword succeeds  10  1  click element  //span[text()="${qualified_decision}"]
 
-	заповнити simple input  //*[@data-name="decision"]//textarea  Кваліфікація. Визнати учасника переможцем
-	webclient.header натиснути на елемент за назвою  Визнати учасника переможцем
+    ...  ELSE  run keywords
+
+	...  dialog box заголовок повинен містити  Увага!       AND
+	...  dialog box натиснути кнопку  Так                   AND
+	...  click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]     AND
+	...  loading дочекатись закінчення загрузки сторінки                        AND
+	...  загрузити документ  ${document}                                        AND
+	...  заповнити simple input  //*[@data-name="decision"]//textarea  Кваліфікація. Визнати учасника переможцем  AND
+	...  webclient.header натиснути на елемент за назвою  Визнати учасника переможцем
+
 	dialog box заголовок повинен містити  Увага!
 	dialog box натиснути кнопку  Так
 	dialog box заголовок повинен містити  Накласти ЕЦП на рішення по пропозиції?
