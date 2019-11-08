@@ -2105,7 +2105,7 @@ get_item_deliveryAddress_value
     ...  '${field_name}' == 'minimalStep.amount'                    (//*[@data-qa="budget-min-step"]//span)[4]
     ...  '${field_name}' == 'minimalStep.currency'                  (//*[@data-qa="budget-min-step"]//span)[last()]
     ...  '${field_name}' == 'minimalStep.valueAddedTaxIncluded'     //*[@data-qa="budget-vat-title"]
-    ${field_value}  get text  ${field_selector}
+    ${field_value}  get text  xpath=${field_selector}
     ${converted_field_value}  convert_page_values  ${field_name}  ${field_value}
     [Return]  ${converted_field_value}
 
@@ -2527,8 +2527,11 @@ get_item_deliveryAddress_value
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${field_name}  ${award_index}=${None}
     [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID
 	# Только в єтом тест-кейсе нужно подождать синхронизацию
-	run keyword if  "${TEST_NAME}" == "Відображення кінцевих статусів двох останніх вимог"
-		...  smarttender.Синхронізувати тендер
+	${test_list}  create list
+    ...  Відображення кінцевих статусів двох останніх вимог
+    ...  Відображення статусу 'ignored' вимоги про виправлення визначення переможця
+    run keyword if  "${TEST_NAME}" in @{test_list}
+        ...  smarttender.Синхронізувати тендер
 	#  Залежно від того це звичайна скарга чи award скарга відкриваємо потрібну сторінку
 	${is_award_complaint}  run keyword and return status  log  ${submissionMethodDetails}
 	run keyword if  ${is_award_complaint}
@@ -3418,7 +3421,10 @@ _план_сторінка_детальної_інформації отрима�
 
 сторінка_детальної_інформації отримати awards[${award_index}].complaintPeriod.endDate
 	Синхронізувати тендер
-	${href}  smarttender._отримати посилання на сторінку оскарження  ${award_index}
+	${href}  run keyword if  "${mode}" == "openua_defense"
+		...  _отримати посилання на сторінку оскарження openua_defense
+	...  ELSE
+		...  smarttender._отримати посилання на сторінку оскарження  ${award_index}
 	go to  ${href}
 	loading дочекатись закінчення загрузки сторінки
 	${selector}  set variable  //*[@data-qa="period"]/p
@@ -3438,6 +3444,11 @@ _отримати посилання на сторінку оскарження
 	[Return]  ${href}
 
 
+_отримати посилання на сторінку оскарження openua_defense
+	${href}  get element attribute  xpath=//*[@data-qa="complaint-button" and @class="complaint-button"]@href
+	[Return]  ${href}
+
+
 сторінка_детальної_інформації отримати maxAwardsCount
 	[Arguments]  ${field_name}
     ${selector}  set variable  //*[@data-qa="max-winner-count"]//*[@data-qa="value"]
@@ -3451,7 +3462,7 @@ _отримати посилання на сторінку оскарження
     ${selector}  set variable  //*[@data-qa="agreement-duration"]/div[@class="second ivu-col ivu-col-span-xs-24 ivu-col-span-sm-15"]
 	${value}  get text  ${selector}
 	${reg}  evaluate  re.search(u'(?P<years>[0-9]+).+(?P<months>[0-9]+).+(?P<days>[0-9]+)', u"""${value}""")  re
-	${field_value}  set variable  P${reg.group('years')}Y${reg.group('months')}M${reg.group('days')}DT0H0M0S
+	${field_value}  set variable  P${reg.group('years')}Y${reg.group('months')}M${reg.group('days')}D
 	[Return]  ${field_value}
 
 
@@ -3582,7 +3593,7 @@ _отримати посилання на сторінку оскарження
 
 
 сторінка_детальної_інформації отримати contracts[${contract_index}].status
-	${have_contract}  run keyword and return status  wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	${have_contract}  run keyword and return status  wait until keyword succeeds  15m  1s  smarttender._дочекатися відображення посилання на договір
 	return from keyword if  ${have_contract} == ${False}  pending
 	###########################################
 	open button  //*[@data-qa="contract"]/a

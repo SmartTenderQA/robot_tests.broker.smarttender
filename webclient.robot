@@ -43,13 +43,13 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле value.amount
 	[Arguments]  ${amount}
 	${input}  set variable  //*[@data-name="INITAMOUNT"]//input
-	заповнити simple input  ${input}  ${amount}  check=${False}
+	заповнити autocomplete field  ${input}  ${amount}  check=${False}
 
 
 заповнити поле minimalStep.amount
 	[Arguments]  ${amount}
 	${input}  set variable  //*[@data-name="MINSTEP"]//input
-	заповнити simple input  ${input}  ${amount}  check=${False}
+	заповнити autocomplete field  ${input}  ${amount}  check=${False}
 
 
 заповнити поле value.valueAddedTaxIncluded
@@ -109,7 +109,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="NBUDISCRAT"]//input
 	clear input by JS  ${locator}
-	заповнити simple input  ${locator}  ${text.__str__()}  check=${False}  input_methon=Input Type Flex
+	заповнити autocomplete field  ${locator}  ${text.__str__()}  check=${False}
 
 
 заповнити поле fundingKind
@@ -127,7 +127,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 
 заповнити поле agreementDuration
 	[Arguments]  ${agreementDuration}
-	${reg}  evaluate  re.search(r'P(?P<year>\\d)Y(?P<month>\\d)M(?P<day>\\d)DT.*', '${agreementDuration}')  re
+	${reg}  evaluate  re.search(r'P(?P<year>\\d)Y(?P<month>\\d)M(?P<day>\\d)', '${agreementDuration}')  re
 	${year}  evaluate  ${reg.group('year')}
 	${month}  evaluate  ${reg.group('month')}
 	${day}  evaluate  ${reg.group('day')}
@@ -371,14 +371,26 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 
 заповнити поле для угоди id
 	[Arguments]  ${fieldvalue}
-	${amount_input}  set variable  //div/*[text()='Номер договору']/following-sibling::table//input
-	заповнити simple input  ${amount_input}  ${fieldvalue}  check=${False}
+	${input}  set variable  //div/*[text()='Номер договору']/following-sibling::table//input
+	заповнити simple input  ${input}  ${fieldvalue}  check=${False}
 
 
 заповнити поле для угоди date
 	[Arguments]  ${fieldvalue}
-	${amount_input}  set variable  //div/*[text()='Дата підписання']/following-sibling::table//input
-	заповнити поле з датою  ${amount_input}  ${fieldvalue}
+	${date_input}  set variable  //div/*[text()='Дата підписання']/following-sibling::table//input
+	заповнити поле з датою  ${date_input}  ${fieldvalue}
+
+
+заповнити поле для угоди date from
+	[Arguments]  ${fieldvalue}
+	${date_input}  set variable  //div/*[text()='Дата дії з']/following-sibling::table//input
+	заповнити поле з датою  ${date_input}  ${fieldvalue}
+
+
+заповнити поле для угоди date to
+	[Arguments]  ${fieldvalue}
+	${date_input}  set variable  //div/*[text()='по']/following-sibling::table//input
+	заповнити поле з датою  ${date_input}  ${fieldvalue}
 
 
 ############################################################
@@ -655,10 +667,8 @@ grid вибрати рядок за номером
 
 вибрати переможця за номером
     [Arguments]  ${award_num}
-    log to console  вибрати переможця за номером
-    debug
     ${winners}  set variable
-    ...  //*[@data-placeid="BIDS"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//*[@data-placeid="BIDS"]//div[text()="Постачальник"]/ancestor::td[1]/preceding-sibling::*)][text()]
+    ...  //*[@data-placeid="BIDS"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//*[@data-placeid="BIDS"]//div[contains(text(),"Поста")]/ancestor::td[1]/preceding-sibling::*)][text()]
     Wait Until Keyword Succeeds  10  2  Click Element  xpath=(${winners})[${award_num}]
 
 
@@ -806,7 +816,7 @@ dialog box заголовок повинен містити
 	${class}  get element attribute  ${locator}/../..@class
 	run keyword if  'Unchecked' in '${class}' and ${bool} or 'Checked' in '${class}' and '${bool}' == '${False}'
 	...  click element  ${locator}/../..
-	sleep  1
+	loading дочекатись закінчення загрузки сторінки
 	${class}  get element attribute  ${locator}/../..@class
 	run keyword if  ${bool}  should contain  ${class}  Checked
 	...  ELSE                should contain  ${class}  Unchecked
