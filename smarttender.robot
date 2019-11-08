@@ -2743,6 +2743,12 @@ _перейти до сторінки вимоги_кваліфікація
 Отримати інформацію із пропозиції
     [Arguments]  ${username}  ${tender_uaid}  ${field}
     [Documentation]  Отримати значення поля field пропозиції користувача username для тендера tender_uaid.
+    comment  пейти на сторінку біда за неохідністю
+    ${current_location}  get location
+    ${tender_bid_page}  set variable  ${tender_detail_page.replace("publichni-zakupivli-prozorro", "bid/edit")}
+    run keyword if  "${tender_detail_page}" != "${tender_bid_page}"  run keywords
+    ...  go to  ${tender_bid_page}  AND  loading дочекатись закінчення загрузки сторінки
+    #############################################################################################
 	${bid_field}  run keyword  smarttender.пропозиція_отримати інформацію по полю ${field}
     [Return]  ${bid_field}
 
@@ -4144,12 +4150,6 @@ _розгорнути лот по id
 
 
 пропозиція_отримати інформацію по полю ${field}
-    comment  пейти на сторінку біда за неохідністю
-    ${current_location}  get location
-    ${tender_bid_page}  set variable  ${tender_detail_page.replace("publichni-zakupivli-prozorro", "bid/edit")}
-    run keyword if  "${tender_detail_page}" != "${tender_bid_page}"  run keywords
-    ...  go to  ${tender_bid_page}  AND  loading дочекатись закінчення загрузки сторінки
-    #############################################################################################
     ${status}  ${lot_number}  run keyword and ignore error  evaluate  re.search(r'\\d', "${field}").group()  re
     ${lot_number}  set variable if  "${status}" == "FAIL"  ${Empty}  ${lot_number}
     ${selector}  set variable  //*[contains(@id, "lotAmount${lot_number}")]//input
