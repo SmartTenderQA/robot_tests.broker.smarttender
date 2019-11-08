@@ -3437,7 +3437,7 @@ _отримати посилання на сторінку оскарження
     ${selector}  set variable  //*[@data-qa="agreement-duration"]/div[@class="second ivu-col ivu-col-span-xs-24 ivu-col-span-sm-15"]
 	${value}  get text  ${selector}
 	${reg}  evaluate  re.search(u'(?P<years>[0-9]+).+(?P<months>[0-9]+).+(?P<days>[0-9]+)', u"""${value}""")  re
-	${field_value}  set variable  P${reg.group('years')}Y${reg.group('months')}M${reg.group('days')}DT0H0M0S
+	${field_value}  set variable  P${reg.group('years')}Y${reg.group('months')}M${reg.group('days')}D
 	[Return]  ${field_value}
 
 

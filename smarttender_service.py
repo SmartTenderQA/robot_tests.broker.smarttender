@@ -482,7 +482,7 @@ def replace_agreementDuration(tender_data):
         if "agreementDuration" in tender_data.data.keys():
             agreementDuration = tender_data.data.agreementDuration
             # Убираем часы, минуты и секунды с периода
-            tender_data.data.agreementDuration = agreementDuration.split("T")[0] + "T0H0M0S"
+            tender_data.data.agreementDuration = agreementDuration.split("T")[0]
             return tender_data
     except:
         print("popali v except")
