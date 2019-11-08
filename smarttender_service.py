@@ -177,6 +177,8 @@ def convert_page_values(field, value):
             ret = True
         else:
             ret = False
+    elif 'minimalStepPercentage' in field:
+            ret = float(value)
     else:
         ret = value
     return ret
@@ -483,7 +485,7 @@ def replace_agreementDuration(tender_data):
             agreementDuration = tender_data.data.agreementDuration
             # Убираем часы, минуты и секунды с периода
             tender_data.data.agreementDuration = agreementDuration.split("T")[0]
-            return tender_data
+        return tender_data
     except:
         print("popali v except")
         return tender_data
@@ -505,12 +507,16 @@ def sync_tender_by_cdb_id(cdb_id):
 
 
 def clear_additional_classifications(tender_data):
-    if 'additionalClassifications' in tender_data['data'].keys():
-        del tender_data['data']['additionalClassifications']
-    for item in tender_data['data']['items']:
-        if 'additionalClassifications' in item.keys():
-            del item['additionalClassifications']
-    return tender_data
+    try:
+        if 'additionalClassifications' in tender_data['data'].keys():
+            del tender_data['data']['additionalClassifications']
+        for item in tender_data['data']['items']:
+            if 'additionalClassifications' in item.keys():
+                del item['additionalClassifications']
+        return tender_data
+    except:
+        print("popali v except")
+        return tender_data
 
 
 def convert_float_to_string(number, s=2):

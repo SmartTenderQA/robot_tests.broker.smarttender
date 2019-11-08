@@ -2105,7 +2105,7 @@ get_item_deliveryAddress_value
     ...  '${field_name}' == 'minimalStep.amount'                    (//*[@data-qa="budget-min-step"]//span)[4]
     ...  '${field_name}' == 'minimalStep.currency'                  (//*[@data-qa="budget-min-step"]//span)[last()]
     ...  '${field_name}' == 'minimalStep.valueAddedTaxIncluded'     //*[@data-qa="budget-vat-title"]
-    ${field_value}  get text  ${field_selector}
+    ${field_value}  get text  xpath=${field_selector}
     ${converted_field_value}  convert_page_values  ${field_name}  ${field_value}
     [Return]  ${converted_field_value}
 
@@ -3571,7 +3571,7 @@ _отримати посилання на сторінку оскарження
 
 
 сторінка_детальної_інформації отримати contracts[${contract_index}].status
-	${have_contract}  run keyword and return status  wait until keyword succeeds  5m  1s  smarttender._дочекатися відображення посилання на договір
+	${have_contract}  run keyword and return status  wait until keyword succeeds  15m  1s  smarttender._дочекатися відображення посилання на договір
 	return from keyword if  ${have_contract} == ${False}  pending
 	###########################################
 	open button  //*[@data-qa="contract"]/a
