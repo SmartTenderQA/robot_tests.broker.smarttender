@@ -816,7 +816,7 @@ dialog box заголовок повинен містити
 	${class}  get element attribute  ${locator}/../..@class
 	run keyword if  'Unchecked' in '${class}' and ${bool} or 'Checked' in '${class}' and '${bool}' == '${False}'
 	...  click element  ${locator}/../..
-	sleep  1
+	loading дочекатись закінчення загрузки сторінки
 	${class}  get element attribute  ${locator}/../..@class
 	run keyword if  ${bool}  should contain  ${class}  Checked
 	...  ELSE                should contain  ${class}  Unchecked
