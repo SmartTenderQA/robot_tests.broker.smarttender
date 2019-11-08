@@ -109,7 +109,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="NBUDISCRAT"]//input
 	clear input by JS  ${locator}
-	заповнити simple input  ${locator}  ${text}  check=${False}  input_methon=Input Type Flex
+	заповнити simple input  ${locator}  ${text.__str__()}  check=${False}  input_methon=Input Type Flex
 
 
 заповнити поле fundingKind
@@ -190,7 +190,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 	${locator}  set variable  //*[@data-name="LOT_MINSTEP_PERCENT"]//input
 	${value}  evaluate  ${text} * 100
 	clear input by JS  ${locator}
-	заповнити simple input  ${locator}  ${value}  input_methon=Input Type Flex
+	заповнити simple input  ${locator}  ${value.__str__()}  input_methon=Input Type Flex
 
 
 заповнити поле для lot yearlyPaymentsPercentageRange
@@ -198,7 +198,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 	${locator}  set variable  //*[@data-name="LOT_PERCENT_REDUCTION"]//input
 	${value}  evaluate  ${text} * 100
 	clear input by JS  ${locator}
-	заповнити simple input  ${locator}  ${value}  input_methon=Input Type Flex
+	заповнити simple input  ${locator}  ${value.__str__()}  input_methon=Input Type Flex
 
 
 ##################################################
@@ -220,7 +220,7 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 	[Arguments]  ${quantity}
 	${locator}  set variable  //*[@data-name="QUANTITY"]//input
 	clear input by JS  ${locator}
-	заповнити autocomplete field  ${locator}  ${quantity}  check=${False}  input_methon=Input Type Flex
+	заповнити autocomplete field  ${locator}  ${quantity}  input_methon=Input Type Flex
 
 
 заповнити поле для item unit.name
@@ -360,13 +360,13 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 заповнити поле для угоди value.amountNet
 	[Arguments]  ${fieldvalue}
 	${amount_input}  set variable  //div/*[text()='Сума без ПДВ']/following-sibling::table//input
-	заповнити simple input  ${amount_input}  '${fieldvalue}'  check=${False}
+	заповнити simple input  ${amount_input}  ${fieldvalue.__str__()}  check=${False}
 
 
 заповнити поле для угоди value.amount
 	[Arguments]  ${fieldvalue}
 	${amount_input}  set variable  //div/*[text()='Сума за договором, грн.:']/following-sibling::table//input
-	заповнити simple input  ${amount_input}  '${fieldvalue}'  check=${False}
+	заповнити simple input  ${amount_input}  ${fieldvalue.__str__()}  check=${False}
 
 
 заповнити поле для угоди id
@@ -655,6 +655,8 @@ grid вибрати рядок за номером
 
 вибрати переможця за номером
     [Arguments]  ${award_num}
+    log to console  вибрати переможця за номером
+    debug
     ${winners}  set variable
     ...  //*[@data-placeid="BIDS"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//*[@data-placeid="BIDS"]//div[text()="Постачальник"]/ancestor::td[1]/preceding-sibling::*)][text()]
     Wait Until Keyword Succeeds  10  2  Click Element  xpath=(${winners})[${award_num}]
