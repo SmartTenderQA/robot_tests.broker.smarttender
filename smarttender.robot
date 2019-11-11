@@ -2984,7 +2984,7 @@ _перейти до сторінки вимоги_кваліфікація
     run keyword if
     ...  "${mode}" == "reporting"  smarttender.Підтвердити підписання контракту continue  ${username}  ${tender_uaid}  ${contract_num}
     ...  ELSE  run keywords
-    ...  repeat keyword  2 times   sleep 4m     AND
+    ...  repeat keyword  2 times   sleep  4m     AND
     ...                            smarttender.Підтвердити підписання контракту continue  ${username}  ${tender_uaid}  ${contract_num}
 
 
