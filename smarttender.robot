@@ -128,14 +128,26 @@ ${hub_url}                              http://192.168.4.113:4444/wd/hub
 	...  Це ключове слово викликається в циклі для кожної ролі, яка бере участь в поточному сценарії.
 	...  З ключового слова потрібно повернути адаптовані дані tender_data.
 	...  Різниця між початковими даними і кінцевими буде виведена в консоль під час запуску тесту.
-    ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_unit_name  ${tender_data}  ELSE  set variable  ${tender_data}
-    ${tender_data}  run keyword if  "${role_name}" == "viewer"  replace_delivery_address_for_viewer  ${tender_data}  ELSE  replace_delivery_address  ${tender_data}
-    ${tender_data}  run keyword if  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
-    ${tender_data}  run keyword if  "${role_name}" == "viewer"  replacee_procuringEntity  ${tender_data}  ELSE  set variable  ${tender_data}
-    ${tender_data}  replace_funders  ${tender_data}
-    ${tender_data}  run keyword if  "${MODE}" == "open_esco"  replace_minimalStepPercentage  ${tender_data}  ELSE  set variable  ${tender_data}
+    ${tender_data}  run keyword if
+    ...  ("${role_name}" == "tender_owner") and ("${MODE}" != "open_esco")  replace_unit_name  ${tender_data}
+    ...  ELSE                                                               set variable       ${tender_data}
+    ${tender_data}  run keyword if
+    ...  "${role_name}" == "viewer"  replace_delivery_address_for_viewer  ${tender_data}
+    ...  ELSE                        replace_delivery_address             ${tender_data}
+    ${tender_data}  run keyword if
+    ...  "${role_name}" == "tender_owner"  replace_procuringEntity  ${tender_data}
+    ...  ELSE                              set variable             ${tender_data}
+    ${tender_data}  run keyword if
+    ...  "${role_name}" == "viewer"  replacee_procuringEntity  ${tender_data}
+    ...  ELSE                        set variable              ${tender_data}
+    ${tender_data}  run keyword if
+    ...  "${MODE}" == "open_esco"  replace_minimalStepPercentage  ${tender_data}
+    ...  ELSE                      set variable                   ${tender_data}
+    ${tender_data}  run keyword if
+    ...  "${MODE}" == "open_framework"  replace_agreementDuration  ${tender_data}
+    ...  ELSE                           set variable                ${tender_data}
 	${tender_data}  clear_additional_classifications  ${tender_data}
-	${tender_data}  run keyword if  "${MODE}" == "open_framework"  replace_agreementDuration  ${tender_data}  ELSE  set variable  ${tender_data}
+	${tender_data}  replace_funders                   ${tender_data}
 	log  ${tender_data}
 	log to console  ${tender_data}
 	[Return]  ${tender_data}
