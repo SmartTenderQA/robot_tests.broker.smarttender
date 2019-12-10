@@ -24,7 +24,7 @@ ${circle loading}                   //*[@class='loading_container']//*[@class='s
 ${skeleton loading}                 //*[contains(@class,'skeleton-wrapper')]
 ${sales spin}                       //*[@class='ivu-spin']
 ${docs spin}                        //div[contains(@style, "loading")]
-${loading bar}                      //div[@class="ivu-loading-bar"]   # полоса вверху страницы http://joxi.ru/Dr8xjNeT47v7Dr
+${loading bar}                      //div[@class="ivu-loading-bar"]
 ${sale web loading}                 //*[contains(@class,'disabled-block')]
 ${povidomlennya loading}            //*[@class="loading-bar"]
 ${cpv}                              //*[@id="j2_loading"]
@@ -80,7 +80,8 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	[Arguments]   ${username}
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
 	${capabilities}  evaluate  dict({'browserName': 'chrome', 'version': '', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': ['--window-size=1920,1080']}, 'sessionTimeout': '120m', 'browserVersion': 'Last', 'name': '${MODE} - ${role} - ${SUITE NAME}'})
-	Run Keyword If  (${hub.__len__()} == 0) or ("${hub}" == "none")
+	# Для відкривання старта браузера локально або в ремоуті
+	Run Keyword If  ${hub.__len__()} != 0
 			...  Create Webdriver  Chrome  alias=${username}
 	...  ELSE
 			...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${capabilities}
@@ -565,7 +566,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
     webclient.додати бланк  GRID_ITEMS
-    #  Очищаем грид с номеклатурами, для заполнения новыми данными из tender_data
+    #  Костыль, потому что не удаляется последняя номеклатура
     grid вибрати рядок за номером  1
     webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
     ##########################################################
@@ -625,7 +626,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети
     webclient.додати бланк  GRID_ITEMS_HIERARCHY
-    #  Очищаем грид с номеклатурами, для заполнения новыми данными из tender_data
+    #  Костыль, потому что не удаляется последняя номеклатура
     grid вибрати рядок за номером  1
     webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
     ##########################################################
@@ -689,7 +690,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
     webclient.додати бланк  GRID_ITEMS
-    #  Очищаем грид с номеклатурами, для заполнения новыми данными из tender_data
+    #  Костыль, потому что не удаляется последняя номеклатура
     grid вибрати рядок за номером  1
     webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
     ##########################################################
@@ -2114,7 +2115,8 @@ get_item_deliveryAddress_value
 	click element  ${lot_row_locator}
 	wait until page contains element  ${lot_row_locator}[contains(@class,"rowselected")]  5
 	#  Змінити поле лоту
-	#  зберігаємо значення поля minimalStep на випадок повторного вводу
+	#  Костиль. Чомусь після вводу value.amount, поле minimalStep очищається,
+	#  тому зберігаємо значення поля minimalStep для повторного вводу
 	${minimalStep_locator}  set variable  //*[@data-name="LOT_MINSTEP"]//input
 	${minimalStep}  get element attribute  ${minimalStep_locator}@value
 	#####################################################################
@@ -2511,13 +2513,13 @@ get_item_deliveryAddress_value
 Отримати інформацію із скарги
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${field_name}  ${award_index}=${None}
     [Documentation]  Отримати значення поля field_name скарги/вимоги complaintID
-	# Только в єтом тест-кейсе нужно подождать синхронизацию
+	# Не у всіх тесткейсах потрібно ждати синхронізацію
 	${test_list}  create list
     ...  Відображення кінцевих статусів двох останніх вимог
     ...  Відображення статусу 'ignored' вимоги про виправлення визначення переможця
     run keyword if  "${TEST_NAME}" in @{test_list}
         ...  smarttender.Синхронізувати тендер
-	#  Залежно від того це звичайна скарга чи award скарга відкриваємо потрібну сторінку
+	#  Залежно від того це звичайна скарга чи скарга на award відкриваємо потрібну сторінку
 	${is_award_complaint}  run keyword and return status  log  ${submissionMethodDetails}
 	run keyword if  ${is_award_complaint}
 			...  smarttender._перейти до сторінки вимоги_кваліфікація  ${award_index}
@@ -2536,7 +2538,7 @@ _розгорнути блок скарги
 	${selector_down_visible}  run keyword and return status  element should be visible  xpath=${complaint_block_locator}${selector_down_locator}
 	return from keyword if  ${selector_down_visible} == ${False}
 	Click Element  xpath=${complaint_block_locator}${selector_down_locator}
-    # Для проверки
+    # Перевіряємо, що блок розгорнувся
     smarttender._розгорнути блок скарги  ${complaintID}
 
 
@@ -2554,7 +2556,7 @@ _перейти до сторінки вимоги_кваліфікація
 Отримати інформацію із документа до скарги
 	[Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${document_id}  ${field_name}
 	log to console  Отримати інформацію із документа до скарги
-	#  Залежно від того це звичайна скарга чи award скарга відкриваємо потрібну сторінку
+	#  Залежно від того це звичайна скарга чи скарга до award відкриваємо потрібну сторінку
 	${is_award_complaint}  run keyword and return status  log  ${submissionMethodDetails}
 	run keyword if  ${is_award_complaint}
 			...  smarttender._перейти до сторінки вимоги_кваліфікація  0
@@ -2959,7 +2961,7 @@ _перейти до сторінки вимоги_кваліфікація
 
 Підтвердити підписання контракту continue
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
-    #  преоткрываем скрин
+    #  Відкриваємо модалку
     click element   ${screen_root_selector}//*[@alt="Close"]
 	loading дочекатись закінчення загрузки сторінки
     header натиснути на елемент за назвою  Прикріпити договір
@@ -3109,7 +3111,7 @@ _перейти до сторінки вимоги_кваліфікація
 	${plan_strat}            convert date  	${tenderPeriod_startDate_not_formated}  result_format=%Y-%m  date_format=%Y-%m-%dT%H:%M:%S+02:00
 	${budget_description}  					set variable  					${tender_data['budget']['description']}
 	${budget_amount}  						convert_float_to_string         ${tender_data['budget']['amount']}
-	${budget_id}  							set variable  					${tender_data['classification']['id']}  	####  ?????
+	${budget_id}  							set variable  					${tender_data['classification']['id']}
 	${additionalClassifications_status}  	${additionalClassifications}  	run keyword and ignore error  set variable  ${tender_data['additionalClassifications']}
     plan edit обрати "Тип процедури закупівлі"                                  ${procurementMethodType}
 	plan edit заповнити "Рік"                                                   ${tender_start}
@@ -3180,7 +3182,7 @@ _перейти до сторінки вимоги_кваліфікація
 	${tm}  set variable if  'tender_owner' in '${username.lower()}'  2  1
     go to  https://test.smarttender.biz/plans/?q&tm=${tm}&p=1&af&at
     loading дочекатись закінчення загрузки сторінки
-    # ждем пока план отобразиться у нас на площадке
+    # Зачекати поки план засинхронізується
 	wait until keyword succeeds  5m  5s  smarttender._дочекатися синхронізації плану  ${planID}
 
 
