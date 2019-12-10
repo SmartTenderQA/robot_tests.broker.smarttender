@@ -58,7 +58,7 @@ ${amount_root}                      //*[@data-qa="plan-detail-Amount"]
 ${currency_root}                    //*[@data-qa="plan-detail-CurrencyId"]
 ${plan_start_root}                  //*[@data-qa="plan-detail-TenderStartDate"]
 ${bayer_root}                       //*[@data-qa="purchaser-PurchaserOrganizationId"]
-${cpv_input}                        //*[@class="ivu-tabs ivu-tabs-card"]//input
+${cpv_input}                        //*[@class="search-section"]//input
 ${breakdown_root}                   //*[@data-qa="financing-card-Title"]
 ${breakdownAmount_root}             //*[@data-qa="financing-card-Amount"]
 ${breakdownDecription_input}        //*[@data-qa="financing-card-Description"]//textarea
@@ -172,7 +172,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	screen натиснути кнопку  однолотову
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети
-    webclient.додати бланк  GRID_ITEMS_HIERARCHY
+    webclient.додати бланк  GRID_ITEMS
 	# ОСНОВНІ ПОЛЯ
 	${enquiryPeriod.endDate}  set variable  ${tender_data['enquiryPeriod']['endDate']}
 	${tenderPeriod.startDate}  set variable  ${tender_data['tenderPeriod']['startDate']}
@@ -2961,7 +2961,7 @@ _перейти до сторінки вимоги_кваліфікація
 
 Підтвердити підписання контракту continue
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
-    #  Відкриваємомодалку
+    #  Відкриваємо модалку
     click element   ${screen_root_selector}//*[@alt="Close"]
 	loading дочекатись закінчення загрузки сторінки
     header натиснути на елемент за назвою  Прикріпити договір
@@ -4523,10 +4523,12 @@ plan edit обрати "Код ДК021"
     button class=button click by text  ДК021
     loading дочекатися відображення елемента на сторінці  ${cpv_input}
     input text  ${cpv_input}  ${code}
-    ${cpv_item}  set variable  //a[contains(text(),"${code}")]
+    click element  ${cpv_input}/following-sibling::div
+    ${cpv_item}  set variable  //*[contains(text(),"${code}")]/ancestor::div[@class="row-wrap"][1]//*[@class="item-checkbox"]
     loading дочекатися відображення елемента на сторінці  ${cpv_item}
     click element  ${cpv_item}
-    button type=button click by text  Обрати  root_xpath=//a[contains(text(),"${code}")]/ancestor::div[@class="ivu-tabs-tabpane"]
+    element should contain  //div[@class="tag"]  ${code}
+    button type=button click by text  Зберегти  root_xpath=//*[contains(text(),"${code}")]/ancestor::div[@class="ivu-modal-body"]
     sleep  1
     page should contain  ${code}
 
@@ -4646,10 +4648,10 @@ eds накласти ецп
     [Arguments]  ${pressEDSbtn}=${True}  ${index}=1
     run keyword if  ${pressEDSbtn}  no operation
     comment  Завантажити ключ ЕЦП
-    choose file  xpath=(//*[@data-qa="modal-eds"]//input[@type='file'])[${index}]  ${EXECDIR}${/}src${/}robot_tests.broker.smarttender${/}test.dat
+    choose file  xpath=(//*[@data-qa="modal-eds"]//input[@type='file'])[${index}]  ${EXECDIR}${/}src${/}robot_tests.broker.smarttender${/}key.dat
 
     comment  пароль для ключа
-	Input Password  xpath=(//*[@data-qa="modal-eds"]//*[@data-qa="eds-password"]//input)[${index}]  29121963
+	Input Password  xpath=(//*[@data-qa="modal-eds"]//*[@data-qa="eds-password"]//input)[${index}]  AIRman82692  #29121963
 
     click element  xpath=(//*[@data-qa="eds-submit-sign"])[1]
     loading дочекатися зникнення елемента зі сторінки  (//*[@data-qa="eds-submit-sign"])[${index}]  200
