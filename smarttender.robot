@@ -565,7 +565,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
     webclient.додати бланк  GRID_ITEMS
-    #  Костыль, потому что не удаляется последняя номеклатура
+    #  Очищаем грид с номеклатурами, для заполнения новыми данными из tender_data
     grid вибрати рядок за номером  1
     webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
     ##########################################################
@@ -625,7 +625,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети
     webclient.додати бланк  GRID_ITEMS_HIERARCHY
-    #  Костыль, потому что не удаляется последняя номеклатура
+    #  Очищаем грид с номеклатурами, для заполнения новыми данными из tender_data
     grid вибрати рядок за номером  1
     webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
     ##########################################################
@@ -689,7 +689,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	screen заголовок повинен містити     Додавання. Тендери
     webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
     webclient.додати бланк  GRID_ITEMS
-    #  Костыль, потому что не удаляется последняя номеклатура
+    #  Очищаем грид с номеклатурами, для заполнения новыми данными из tender_data
     grid вибрати рядок за номером  1
     webclient.видалити всі лоти та предмети  screen=GRID_ITEMS
     ##########################################################
@@ -2114,8 +2114,7 @@ get_item_deliveryAddress_value
 	click element  ${lot_row_locator}
 	wait until page contains element  ${lot_row_locator}[contains(@class,"rowselected")]  5
 	#  Змінити поле лоту
-	#  Костиль. Чомусь після вводу value.amount, поле minimalStep очищається,
-	#  тому зберігаємо значення поля minimalStep для повторного вводу
+	#  зберігаємо значення поля minimalStep на випадок повторного вводу
 	${minimalStep_locator}  set variable  //*[@data-name="LOT_MINSTEP"]//input
 	${minimalStep}  get element attribute  ${minimalStep_locator}@value
 	#####################################################################
@@ -2960,7 +2959,7 @@ _перейти до сторінки вимоги_кваліфікація
 
 Підтвердити підписання контракту continue
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
-    #  Костиль - преоткрываем скрин
+    #  преоткрываем скрин
     click element   ${screen_root_selector}//*[@alt="Close"]
 	loading дочекатись закінчення загрузки сторінки
     header натиснути на елемент за назвою  Прикріпити договір
