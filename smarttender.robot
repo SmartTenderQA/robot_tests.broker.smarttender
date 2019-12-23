@@ -1247,10 +1247,13 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 Отримати інформацію із тендера
     [Arguments]  ${username}  ${tender_uaid}  ${field_name}
     [Documentation]  Отримати значення поля field_name для тендера tender_uaid.
+    comment  Перевіряємо чи в tender_uaid часом не прилетів ід плану, якщо так - тянемо інфу х плану і виходимо з кейворда
+    ${plan_id_status}  set variable if  "UA-P" in "${tender_uaid}"  ${True}  ${Fasle}
+    ${field_value}  run keyword if  ${plan_id_status}  smarttender.Отримати інформацію із плану  ${username}  ${tender_uaid}  ${field_name}
+    return from keyword if  ${plan_id_status}  ${field_value}
     comment  Повертаємося на сторінку детальної інформації по тендеру якщо ми не на ній
     ${current_location}  get location
-    run keyword if  "${tender_detail_page}" != "${current_location}"  run keywords
-    ...  go to  ${tender_detail_page}  AND  loading дочекатись закінчення загрузки сторінки
+    run keyword if  "${tender_detail_page}" != "${current_location}"  smart go to  ${tender_detail_page}
     #####################################
     smarttender.сторінка_детальної_інформації активувати вкладку  Тендер
     ${field_name_splited}  set variable  ${field_name.split('[')[0]}
@@ -3103,6 +3106,7 @@ _перейти до сторінки вимоги_кваліфікація
     [Documentation]  Створити план з початковими даними tender_data. Повернути uaid створеного плану.
 	${tender_data}  get from dictionary  ${tender_data}  data
     smart go to  https://test.smarttender.biz/plan/add/test/
+    loading дочекатися відображення елемента на сторінці  //h1[.="Створення плану закупівлі"]
 
 	${procurementMethodType_en}  			set variable  					${tender_data['tender']['procurementMethodType']}
 	${procurementMethodType}  				get_en_procurement_method_type  ${procurementMethodType_en}
@@ -3195,6 +3199,10 @@ _дочекатися синхронізації плану
 Отримати інформацію із плану
     [Arguments]  ${username}  ${plan_uaid}  ${field_name}
     [Documentation]  Отримати значення поля field_name для плану plan_uaid.
+    comment  Повертаємося на сторінку детальної інформації по плану якщо ми не на ній
+    ${current_location}  get location
+    run keyword if  "${plan_detail_page}" != "${current_location}"  smart go to  ${plan_detail_page}
+    #####################################
 	${field_name_splited}  set variable  ${field_name.split('[')[0]}
     ${field_value}  run keyword  smarttender.план_сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
     [Return]  ${field_value}
@@ -3241,13 +3249,15 @@ _дочекатися синхронізації плану
 	${plan_number}  set variable  1
 	${link}  get element attribute  xpath=(//*[@id="plan"])[${plan_number}]//*[@data-qa="plan-title"]@href
 	log  plan_link: ${link}  WARN
-	go to  ${link}
+	set global variable  ${plan_detail_page}  ${link}
+	smart go to  ${link}
 
 
 план_сторінка_детальної_інформації отримати status
     [Arguments]  ${field_name}
     ${selector}  set variable  xpath=//*[@data-qa="plan-status"]
 	${field_value}  get text  ${selector}
+	${field_value}  convert_plan_status  ${field_value}
 	[Return]  ${field_value}
 
 
@@ -4641,7 +4651,7 @@ plan edit Опублікувати план
     button type=button click by text  Опублікувати план
     eds накласти ецп  pressEDSbtn=${False}  index=1
     ${plan_status}  план_сторінка_детальної_інформації отримати status  status
-    should be equal as strings  ${plan_status}  Запланований
+    should be equal as strings  ${plan_status}  scheduled
 
 
 eds накласти ецп
@@ -4694,7 +4704,7 @@ selectInputNew open dropdown by click
 selectInputNew select item by name
     [Arguments]  ${text}  ${root}=${EMPTY}  ${check}=${True}
     ${selector}  set variable  xpath=${root}${selectOptions_item}\[contains(text(),"${text}")]
-    sleep  1
+    loading дочекатися відображення елемента на сторінці  ${selector}
     click element  ${selector}
 	sleep  1
 	return from keyword if  ${check} != ${True}
