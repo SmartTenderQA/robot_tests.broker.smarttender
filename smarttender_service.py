@@ -363,6 +363,20 @@ def convert_status(value):
     return result
 
 
+def convert_plan_status(value):
+    map = {
+        u'Запланований': u'scheduled',
+        u'Чернетка': u'draft',
+        u'Оголошено тендер': u'complete',
+
+    }
+    if value in map:
+        result = map[value]
+    else:
+        result = value
+    return result
+
+
 def download_file_to_my_path(url, path):
     r = requests.get(url)
     with open(path, 'wb') as f:
