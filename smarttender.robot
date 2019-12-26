@@ -3183,9 +3183,9 @@ _перейти до сторінки вимоги_кваліфікація
 
 перейти до сторінки планів
 	[Arguments]  ${username}  ${planID}
-	${tm}  set variable if  'tender_owner' in '${username.lower()}'  2  1
-    go to  https://test.smarttender.biz/plans/?q&tm=${tm}&p=1&af&at
-    loading дочекатись закінчення загрузки сторінки
+	#${tm}  set variable if  'tender_owner' in '${username.lower()}'  2  1
+	${tm}  set variable  2
+    smart go to  https://test.smarttender.biz/plans/?q&tm=${tm}&p=1&af&at
     # Зачекати поки план засинхронізується
 	wait until keyword succeeds  5m  5s  smarttender._дочекатися синхронізації плану  ${planID}
 
@@ -4617,7 +4617,8 @@ plan edit вказати "Дата поставки по"
 
 plan edit вказати "Назва номенклатури"
     [Arguments]  ${value}  ${index}=1
-    input text  xpath=(${plan_item_title_input})[${index}]  ${value}
+    scroll page to element xpath  xpath=(${plan_item_title_input})[${index}]
+    input text                    xpath=(${plan_item_title_input})[${index}]  ${value}
 
 
 plan edit заповнити "Од. вим."
