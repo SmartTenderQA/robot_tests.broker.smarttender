@@ -605,7 +605,7 @@ check for open screen
 знайти план у webclient
 	[Arguments]  ${tender_uaid}
 	${location}  get location
-	${grid_search_field}  set variable  xpath=((//*[@data-type="GridView"])[1]//td//input)[1]
+	${grid_search_field}  set variable  xpath=((//*[@data-type="GridView"])[1]//td//input)[3]
 	run keyword if  '/webclient/' not in '${location}'  run keywords
 	...  go to  http://test.smarttender.biz/webclient/?testmode=1&proj=it_uk&tz=3  AND
 	...  loading дочекатись закінчення загрузки сторінки
