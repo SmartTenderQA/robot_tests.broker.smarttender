@@ -142,7 +142,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 
 
 Створити тендер
-	[Arguments]   ${username}  ${tender_data}
+	[Arguments]   ${username}  ${tender_data}  ${plan_uaid}
 	[Documentation]   Створити тендер з початковими даними tender_data. Повернути uaid створеного тендера.
 	${tender_data}  get from dictionary  ${tender_data}  data
 	set global variable  ${tender_data}
@@ -1120,7 +1120,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 
 отримати дані тендеру з cdb по id
     [Arguments]  ${id}
-	${data}  evaluate  requests.get("https://lb-api-sandbox.prozorro.gov.ua/api/2.4/tenders/${id}")   requests
+	${data}  evaluate  requests.get("https://lb-api-staging.prozorro.gov.ua/api/2.4/tenders/${id}")   requests
 	${data}  Set Variable  ${data.json()}
 	${cdb_data}  Set Variable  ${data['data']}
 	[Return]  ${cdb_data}
@@ -1248,7 +1248,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
     [Arguments]  ${username}  ${tender_uaid}  ${field_name}
     [Documentation]  Отримати значення поля field_name для тендера tender_uaid.
     comment  Перевіряємо чи в tender_uaid часом не прилетів ід плану, якщо так - тянемо інфу х плану і виходимо з кейворда
-    ${plan_id_status}  set variable if  "UA-P" in "${tender_uaid}"  ${True}  ${Fasle}
+    ${plan_id_status}  set variable if  "UA-P" in "${tender_uaid}"  ${True}
     ${field_value}  run keyword if  ${plan_id_status}  smarttender.Отримати інформацію із плану  ${username}  ${tender_uaid}  ${field_name}
     return from keyword if  ${plan_id_status}  ${field_value}
     comment  Повертаємося на сторінку детальної інформації по тендеру якщо ми не на ній
@@ -3212,17 +3212,13 @@ _дочекатися синхронізації плану
 Видалити предмет закупівлі плану
     [Arguments]  ${username}  ${tender_uaid}  ${item_id}  ${lot_id}=${Empty}
     [Documentation]  Видалити з плану tender_uaid предмет з item_id в описі (предмет може бути прив'язаним до лоту з lot_id в описі, якщо lot_id != Empty).
-	log to console  Видалити предмет закупівлі плану
-	header натиснути на елемент за назвою  Коригувати план закупівель
-	header натиснути на елемент за назвою  Коригувати
-	click element  //*[contains(text(), "${item_id}")]
-	header натиснути на елемент за назвою  Видалити
-	header натиснути на елемент за назвою  Зберегти
-	dialog box заголовок повинен містити  Накласти ЕЦП на план?
-	dialog box натиснути кнопку  Ні
-	screen заголовок повинен містити  Текстовий документ
-	click element   ${screen_root_selector}//*[@alt="Close"]
-	loading дочекатись закінчення загрузки сторінки
+	button type=button click by text  Коригувати план
+	${count}  get Matching Xpath Count  xpath=(${plan_item_title_input})
+	:FOR  ${i}  IN RANGE  1  ${count}+1
+    \  ${value}  get element attribute  xpath=(${plan_item_title_input})[${i}]@value
+    \  ${index}  set variable if  "${item_id}" in """${value}"""  ${i}
+    button class=button click by text  Видалити  count=${index}  root_xpath=//div[@class="nomenclatures-section"]
+    plan edit натиснути Зберегти
 
 
 Оновити сторінку з планом
@@ -3403,7 +3399,7 @@ _дочекатися синхронізації плану
 _план_сторінка_детальної_інформації отримати selector для items
 	[Arguments]  ${item_number_in_cdb}
 	${plan_cdb_id}  get text  //*[@data-qa="plan-id-cdb"]
-	${cdb_data}  evaluate  requests.get("https://lb-api-sandbox.prozorro.gov.ua/api/2.5/plans/${plan_cdb_id}").json()  requests
+	${cdb_data}  evaluate  requests.get("https://lb-api-staging.prozorro.gov.ua/api/2.5/plans/${plan_cdb_id}").json()  requests
 	${cdb_item_description}  set variable  ${cdb_data['data']['items'][${item_number_in_cdb}]['description']}
 	${item_selector}  set variable  xpath=//*[@data-qa="value-list"][contains(., "${cdb_item_description}")]
 	[Return]  ${item_selector}
