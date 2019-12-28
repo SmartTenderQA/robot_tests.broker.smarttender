@@ -359,7 +359,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
 	loading дочекатись закінчення загрузки сторінки
-	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?
 	dialog box натиснути кнопку  Ні
 	webclient.пошук тендера по title  ${tender_data['title']}
 
@@ -424,7 +424,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
     webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
     loading дочекатись закінчення загрузки сторінки
-    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?
 	dialog box натиснути кнопку  Ні
 	webclient.пошук тендера по title  ${tender_data['title']}
 
@@ -488,7 +488,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
     webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
     loading дочекатись закінчення загрузки сторінки
-    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?
 	dialog box натиснути кнопку  Ні
 	webclient.пошук тендера по title  ${tender_data['title']}
 
@@ -553,7 +553,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
     click element   ${screen_root_selector}//*[@alt="Close"]
     loading дочекатись закінчення загрузки сторінки
 
-    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?
 	dialog box натиснути кнопку  Ні
 
 
@@ -607,7 +607,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
 	loading дочекатись закінчення загрузки сторінки
-	dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?
 	dialog box натиснути кнопку  Ні
 
 
@@ -671,7 +671,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
     loading дочекатись закінчення загрузки сторінки
-    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?
 	dialog box натиснути кнопку  Ні
 
 
@@ -731,7 +731,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	webclient.screen заголовок повинен містити  Завантаження документації
     click element   ${screen_root_selector}//*[@alt="Close"]
     loading дочекатись закінчення загрузки сторінки
-    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+    wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?
 	dialog box натиснути кнопку  Ні
 
 
@@ -796,7 +796,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	...  dialog box заголовок повинен містити  Увага! Бюджет перевищує 133 000 євро. Вам потрібно обрати тип процедури «Відкриті торги з публікаціє...
 	run keyword if  '${status}' == 'PASS'  run keyword and ignore error
 	...  dialog box натиснути кнопку  Так
-	run keyword and ignore error  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+	run keyword and ignore error  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?
 	run keyword and ignore error  dialog box натиснути кнопку  Ні
 
 
@@ -865,7 +865,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
     loading дочекатись закінчення загрузки сторінки
     # Тут опционально появляется вопрос о ЕЦП
     ${status}  ${ret}  run keyword and ignore error
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?
     run keyword if  '${status}' == 'PASS'  run keyword and ignore error
 	...  dialog box натиснути кнопку  Ні
 	webclient.пошук тендера по title  ${tender_data['title']}
@@ -934,7 +934,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
     click element   ${screen_root_selector}//*[@alt="Close"]
     loading дочекатись закінчення загрузки сторінки
     ${status}  ${ret}  run keyword and ignore error
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?
     run keyword if  '${status}' == 'PASS'  run keyword and ignore error
 	...  dialog box натиснути кнопку  Ні
 	webclient.пошук тендера по title  ${tender_data['title']}
@@ -1827,7 +1827,7 @@ _перейти до лоту якщо це потрібно
     ${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 
 	
@@ -2036,7 +2036,7 @@ get_item_deliveryAddress_value
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 
 
@@ -2066,7 +2066,7 @@ get_item_deliveryAddress_value
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  wait until keyword succeeds  20  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  wait until keyword succeeds  20  1  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 
 	
@@ -2132,7 +2132,7 @@ get_item_deliveryAddress_value
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 
 	
@@ -2155,7 +2155,7 @@ get_item_deliveryAddress_value
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 
 	
@@ -2179,7 +2179,7 @@ get_item_deliveryAddress_value
 	webclient.header натиснути на елемент за назвою  Зберегти
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
-    run keyword and ignore error  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?
+    run keyword and ignore error  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?
 	run keyword and ignore error  dialog box натиснути кнопку  Ні
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
@@ -2199,7 +2199,7 @@ get_item_deliveryAddress_value
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 
 
@@ -2266,7 +2266,7 @@ get_item_deliveryAddress_value
     ${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 
 	
@@ -2284,7 +2284,7 @@ get_item_deliveryAddress_value
     ${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 
 
@@ -2301,7 +2301,7 @@ get_item_deliveryAddress_value
     ${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 	
 	
@@ -2330,7 +2330,7 @@ get_item_deliveryAddress_value
     ${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 
 	
@@ -2676,7 +2676,7 @@ _перейти до сторінки вимоги_кваліфікація
 	${is_visible}  run keyword and return status  dialog box заголовок повинен містити  "Вид предмету закупівлі" не відповідає вказаному коду CPV
 	run keyword if  ${is_visible}  dialog box натиснути кнопку  Так
 	run keyword if  'below' not in '${mode}'  run keywords
-    ...  dialog box заголовок повинен містити  Накласти ЕЦП на тендер?  AND
+    ...  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на тендер?  AND
 	...  dialog box натиснути кнопку  Ні
 	webclient.screen заголовок повинен містити  Завантаження документації
 	click element   ${screen_root_selector}//*[@alt="Close"]
@@ -3849,6 +3849,7 @@ cтатус тендера повинен бути
     ...  ELSE  set variable  //*[@id="tenders"]//*[@class="head"][${tender_number}]//*[@href]@href
 
 	#  Зберігаємо лінк на сторінку детальної тендеру
+	loading дочекатися відображення елемента на сторінці  ${selector}
 	${link}  get element attribute  ${selector}
 	set global variable  ${tender_detail_page}  ${link}
 	log  tender_link: ${link}  WARN
@@ -4001,13 +4002,13 @@ _Дочекатись синхронізації
     ${count_lot}  evaluate  ${count_lot} + 1
 
     comment  Ввести ціну пропозиції
-    ${input}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
+    ${input}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
     input text  ${input}  ${amount}
 
 
 пропозиція_заповнити поле з ціною для ESCO
     [Arguments]  ${lot_id}  ${bid}
-    ${lot_selector}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]
+    ${lot_selector}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]
 
     comment  вибрати ручний розподіл скорочення витрат
     ${element}  set variable  ${lot_selector}//label[contains(@class, 'radio')][2]
@@ -4064,7 +4065,7 @@ _вибрати неціновий показник на сторінці дет
 
 _розгорнути лот по id
     [Arguments]  ${lot_id}
-    ${button}  set variable  //*[contains(@class, "ivu-card")][contains(., "${lot_id}")]//*[@type="button" and contains(., "Прийняти участь")][not(@disabled="disabled")]
+    ${button}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]//*[@type="button" and contains(., "Прийняти участь")][not(@disabled="disabled")]
     wait until keyword succeeds  20  1  run keywords
     ...  click element  ${button}  AND
     ...  loading дочекатися зникнення елемента зі сторінки  ${button}
@@ -4077,15 +4078,15 @@ _розгорнути лот по id
 
 
 пропозиція_відмітити чекбокси при наявності
-    ${checkbox1}   set variable         //*[@id="SelfEligible"]//input
-    ${checkbox2}   set variable         //*[@id="SelfQualified"]//input
+    ${checkbox1}   set variable         //*[@id="SelfEligible"]//input/..
+    ${checkbox2}   set variable         //*[@id="SelfQualified"]//input/..
     run keyword and ignore error  run keywords
     ...  Click Element  ${checkbox1}            AND
 	...  Click Element  ${checkbox2}
 
 
 пропозиція_подати пропозицію
-    ${send offer button}   set variable  css=button#submitBidPlease
+    ${send offer button}   set variable  xpath=//button[contains(@id,"submitBidPlease")]
     Click Element  ${send offer button}
     sleep  2
     loading дочекатись закінчення загрузки сторінки
