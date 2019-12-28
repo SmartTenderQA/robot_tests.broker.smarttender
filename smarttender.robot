@@ -4518,6 +4518,7 @@ plan edit обрати "Замовник"
     [Arguments]  ${value}=${NONE}  ${index}=${NONE}
     [Documentation]  По умолчанию выбираем из списка по имени, но можем и по индексу,
     ...  передав например аргумент select_by=1
+    scroll page to element xpath  xpath=${bayer_root}
     selectInputNew open dropdown by click         root=${bayer_root}
     run keyword if  ${index} != ${NONE}
     ...  selectInputNew select item by index  ${index}  root=${bayer_root}
