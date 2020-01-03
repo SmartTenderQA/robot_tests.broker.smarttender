@@ -3218,6 +3218,7 @@ _дочекатися синхронізації плану
 	:FOR  ${i}  IN RANGE  1  ${count}+1
     \  ${value}  get element attribute  xpath=(${plan_item_title_input})[${i}]@value
     \  ${index}  set variable if  "${item_id}" in """${value}"""  ${i}
+    \  exit for loop if           "${item_id}" in """${value}"""
     button class=button click by text  Видалити  count=${index}  root_xpath=//div[@class="nomenclatures-section"]
     plan edit натиснути Зберегти
 
