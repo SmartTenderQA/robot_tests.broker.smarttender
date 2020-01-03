@@ -1,5 +1,7 @@
 *** Settings ***
 Library  	DateTime
+Library  	smarttender_service.py
+Variables	smarttender_service.py
 
 
 *** Variables ***
@@ -224,9 +226,16 @@ ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//t
 
 
 заповнити поле для item unit.name
-	[Arguments]  ${unit.name}
+	[Arguments]  ${value}
 	${locator}  set variable  //*[@data-name="EDI"]//input
-	заповнити autocomplete field  ${locator}  ${unit.name}  action_after_input=press enter
+	${unit_name}  replace_unit_name_dict  ${value}
+    ${unit_name}  set variable if
+    ...  "${unit_name}" == "Штука"  штуки
+    ...  "${unit_name}" == "набір"  набор
+    ...  "${unit_name}" == "упаковка"  упаков
+    ...  "${unit_name}" == "Упаковка"  упаков
+    ...  ${unit_name}
+	заповнити autocomplete field  ${locator}  ${unit_name}  action_after_input=press enter
 
 
 заповнити поле для item classification.id
@@ -595,6 +604,21 @@ check for open screen
 	...  go to  http://test.smarttender.biz/webclient/?testmode=1&proj=it_uk&tz=3  AND
 	...  loading дочекатись закінчення загрузки сторінки        AND
 	...  webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)  AND
+	...  webclient.header натиснути на елемент за назвою  Очистити    AND
+	...  webclient.header натиснути на елемент за назвою  OK          AND
+	...  loading дочекатися відображення елемента на сторінці  ${grid_search_field}   AND
+	...  заповнити simple input  ${grid_search_field}  ${tender_uaid}   AND
+	...  loading дочекатись закінчення загрузки сторінки
+
+
+знайти звіт про укладений договір у webclient
+    [Arguments]  ${tender_uaid}
+	${location}  get location
+	${grid_search_field}  set variable  xpath=((//*[@data-type="GridView"])[1]//td//input)[4]
+	run keyword if  '/webclient/' not in '${location}'  run keywords
+	...  go to  http://test.smarttender.biz/webclient/?testmode=1&proj=it_uk&tz=3  AND
+	...  loading дочекатись закінчення загрузки сторінки        AND
+	...  webclient.робочий стіл натиснути на елемент за назвою  Звіт про укладений договір(тестові)  AND
 	...  webclient.header натиснути на елемент за назвою  Очистити    AND
 	...  webclient.header натиснути на елемент за назвою  OK          AND
 	...  loading дочекатися відображення елемента на сторінці  ${grid_search_field}   AND

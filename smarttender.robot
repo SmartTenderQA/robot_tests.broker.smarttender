@@ -2922,14 +2922,14 @@ _перейти до сторінки вимоги_кваліфікація
     [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінює поле fieldname угоди тендера tender_uaid на fieldvalue
     run keyword if  '${fieldname}' == 'value.amountNet'  run keywords
-    ...  знайти тендер у webclient  ${tender_uaid}  AND
-	...  активувати вкладку  Пропозиції  AND
+    ...  знайти звіт про укладений договір у webclient  ${tender_uaid}  AND
+	...  активувати вкладку  Пропозиції  index=2  AND
 	...  grid вибрати рядок за номером  ${contract_index}+1  AND
 	#...  header натиснути на елемент за назвою  Надіслати вперед  AND
     ...  header натиснути на елемент за назвою  Прикріпити договір
-    run keyword  заповнити поле для угоди ${fieldname}  ${fieldvalue}
-
-
+    run keyword  webclient.заповнити поле для угоди ${fieldname}  ${fieldvalue}
+    run keyword if  '${fieldname}' == 'value.amountNet'  set global variable  ${contract value.amountNet}  ${fieldvalue}
+    run keyword if  '${fieldname}' == 'value.amount'     set global variable  ${contract value.amount}     ${fieldvalue}
 
 Встановити дату підписання угоди
     [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${fieldvalue}
@@ -2978,6 +2978,8 @@ _перейти до сторінки вимоги_кваліфікація
 	заповнити поле для угоди date  ${date}
 	заповнити поле для угоди date from  ${date}
 	заповнити поле для угоди date to    ${date_to}
+	заповнити поле для угоди value.amountNet  ${contract value.amountNet}
+    заповнити поле для угоди value.amount     ${contract value.amount}
 	#  Додаємо документ
 	click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]
 	loading дочекатись закінчення загрузки сторінки
@@ -2992,10 +2994,10 @@ _перейти до сторінки вимоги_кваліфікація
 	header натиснути на елемент за назвою  Підписати договір
 	dialog box заголовок повинен містити  Ви дійсно хочете підписати договір?
 	dialog box натиснути кнопку  Так
-	#dialog box заголовок повинен містити  Накласти ЕЦП на договір?
-	#dialog box натиснути кнопку  Ні
-	#dialog box заголовок повинен містити  На рішення не накладено актуальний підпис ЕЦП.
-	#dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на договір?
+	dialog box натиснути кнопку  Ні
+	dialog box заголовок повинен містити  На рішення не накладено актуальний підпис
+	dialog box натиснути кнопку  Так
 	dialog box заголовок повинен містити  Договір підписаний
 	dialog box натиснути кнопку  ОК  # <--- тут ОК кирилицей
 	loading дочекатись закінчення загрузки сторінки
@@ -4623,8 +4625,10 @@ plan edit заповнити "Од. вим."
     [Arguments]  ${value}  ${index}=1
     ${unit_name}  replace_unit_name_dict  ${value}
     ${unit_name}  set variable if
-    ...  "${value}" == "Штука"  штуки
-    ...  "${value}" == "набір"  набор
+    ...  "${unit_name}" == "Штука"  штуки
+    ...  "${unit_name}" == "набір"  набор
+    ...  "${unit_name}" == "упаковка"  упаков
+    ...  "${unit_name}" == "Упаковка"  упаков
     ...  ${unit_name}
     selectInputNew open dropdown by click         root=(${plan_item_unit_name_root})[${index}]
     click element  xpath=(${plan_item_unit_name_root})[${index}]//i[contains(@class, "smt-icon-search")]
