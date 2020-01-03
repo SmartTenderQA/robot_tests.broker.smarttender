@@ -2992,10 +2992,11 @@ _перейти до сторінки вимоги_кваліфікація
 	header натиснути на елемент за назвою  Підписати договір
 	dialog box заголовок повинен містити  Ви дійсно хочете підписати договір?
 	dialog box натиснути кнопку  Так
-	dialog box заголовок повинен містити  Накласти ЕЦП на договір?
-	dialog box натиснути кнопку  Ні
-	dialog box заголовок повинен містити  На рішення не накладено актуальний підпис ЕЦП.
-	dialog box натиснути кнопку  Так
+	#dialog box заголовок повинен містити  Накласти ЕЦП на договір?
+	#dialog box натиснути кнопку  Ні
+	#dialog box заголовок повинен містити  На рішення не накладено актуальний підпис ЕЦП.
+	#dialog box натиснути кнопку  Так
+	dialog box заголовок повинен містити  Договір підписаний
 	dialog box натиснути кнопку  ОК  # <--- тут ОК кирилицей
 	loading дочекатись закінчення загрузки сторінки
 
@@ -3097,7 +3098,7 @@ _перейти до сторінки вимоги_кваліфікація
 
 	wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Увага!
 	dialog box натиснути кнопку  Так
-	dialog box заголовок повинен містити  Накласти ЕЦП на рішення по пропозиції?
+	dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на рішення по пропозиції?
 	dialog box натиснути кнопку  Ні
 
 
@@ -3849,12 +3850,10 @@ cтатус тендера повинен бути
     ...  ELSE  set variable  //*[@id="tenders"]//*[@class="head"][${tender_number}]//*[@href]@href
 
 	#  Зберігаємо лінк на сторінку детальної тендеру
-	loading дочекатися відображення елемента на сторінці  ${selector}
 	${link}  get element attribute  ${selector}
 	set global variable  ${tender_detail_page}  ${link}
 	log  tender_link: ${link}  WARN
-	go to  ${link}
-	loading дочекатись закінчення загрузки сторінки
+	smart go to  ${link}
 	log location
 
 	#  Зберігаємо id в ЦБД
@@ -3970,7 +3969,7 @@ _Дочекатись синхронізації
 #                           ПОДАТИ ПРОПОЗИЦІЮ                                  #
 ################################################################################
 пропозиція_перевірити кнопку подачі пропозиції
-    ${button}  Set Variable  xpath=//*[@class='show-control button-lot']|//*[@data-qa="bid-button"]
+    ${button}  Set Variable  xpath=//*[@data-qa="action-participation-buttons"]//a[@role="button"]|//a[@data-qa="bid-button"]
     loading дочекатися відображення елемента на сторінці  ${button}
     smarttender.Open button  ${button}
     Location Should Contain  /edit/
@@ -4622,6 +4621,10 @@ plan edit вказати "Назва номенклатури"
 plan edit заповнити "Од. вим."
     [Arguments]  ${value}  ${index}=1
     ${unit_name}  replace_unit_name_dict  ${value}
+    ${unit_name}  set variable if
+    ...  "${value}" == "Штука"  штуки
+    ...  "${value}" == "набір"  набор
+    ...  ${unit_name}
     selectInputNew open dropdown by click         root=(${plan_item_unit_name_root})[${index}]
     click element  xpath=(${plan_item_unit_name_root})[${index}]//i[contains(@class, "smt-icon-search")]
     sleep  1
@@ -4660,7 +4663,7 @@ eds накласти ецп
     choose file  xpath=(//*[@data-qa="modal-eds"]//input[@type='file'])[${index}]  ${EXECDIR}${/}src${/}robot_tests.broker.smarttender${/}key.dat
 
     comment  пароль для ключа
-	Input Password  xpath=(//*[@data-qa="modal-eds"]//*[@data-qa="eds-password"]//input)[${index}]  AIRman82692  #29121963
+	wait until keyword succeeds  30  3  Input Password  xpath=(//*[@data-qa="modal-eds"]//*[@data-qa="eds-password"]//input)[${index}]  AIRman82692  #29121963
 
     click element  xpath=(//*[@data-qa="eds-submit-sign"])[1]
     loading дочекатися зникнення елемента зі сторінки  (//*[@data-qa="eds-submit-sign"])[${index}]  200
