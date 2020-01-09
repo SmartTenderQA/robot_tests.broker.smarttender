@@ -3850,7 +3850,7 @@ cтатус тендера повинен бути
 	${tender_number}  set variable  ${1}
 	${selector}  run keyword if  '${mode}' == 'reporting' or '${mode}' == 'negotiation'
 	...  set variable  xpath=//*[@data-qa="tender-${tender_number-1}"]//a
-    ...  ELSE  set variable  //*[@id="tenders"]//*[@class="head"][${tender_number}]//*[@href]
+    ...  ELSE  set variable  xpath=(//*[@id="tenders"]//*[@class="head"])[${tender_number}]//a[@class="linkSubjTrading"]
 
 	#  Зберігаємо лінк на сторінку детальної тендеру
 	loading дочекатися відображення елемента на сторінці  ${selector}  20
