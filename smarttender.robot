@@ -4053,7 +4053,7 @@ _вибрати нецінові показники на сторінці дет
 _вибрати неціновий показник на сторінці детальної інформації тендера
     [Arguments]  ${name}  ${value}
     ${drop_down}  set variable  //*[@class="ivu-select-dropdown"]/..
-    ${feature_locator}  set variable  //*[@class="features"]/div[contains(., "${name}")]
+    ${feature_locator}  set variable  //*[contains(@class, "feature")]/div[contains(., "${name}")]
     click element  ${feature_locator}${drop_down}
     ${feature_value}  evaluate  str(${value}*100).replace('.', ',')
     ${li_element}  set variable  ${feature_locator}${drop_down}//li[contains(., '(${feature_value}')]
