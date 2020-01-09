@@ -17,6 +17,7 @@ ${active_view}						//*[contains(@class, "active-dxtc-frame")]
 ${plan_cursor_row}               	//*[@data-name="GRIDTABLE"]//tr[contains(@class,"Row")]
 ${plan_block}                    	//div[@data-name="GRIDTABLE"]
 ${lot_row}                          //*[@data-name="GRID_PAYMENT_TERMS_LOTS"]//tr[contains(@class,"Row")]
+${sign btn}                         //*[@id="eds_placeholder"]//*[contains(@class,"btn")][text()="Підписати"]
 
 
 *** Keywords ***
@@ -662,6 +663,13 @@ check for active tab
 	[Return]  (${screen}${tab}${grid})\[${grid_number}]
 
 
+Підписати ЕЦП(webclient)
+    loading дочекатися відображення елемента на сторінці  ${sign btn}
+    Вибрати ключ ЕЦП
+	Ввести пароль від ключа
+	Натиснути кнопку "Підписати"
+
+
 ############################################################################################
 ############################################################################################
 #####################################KEYWORDS###############################################
@@ -797,6 +805,7 @@ dialog box заголовок повинен містити
 заповнити simple input
 	[Arguments]  ${locator}  ${input_text}  ${check}=${True}  ${input_methon}=input text
 	wait until keyword succeeds  10x  1s  заповнити simple input continue  ${locator}  ${input_text}  ${check}  ${input_methon}
+	loading дочекатись закінчення загрузки сторінки
 
 
 заповнити simple input continue
@@ -959,3 +968,19 @@ clear input by Backspace
 	\   ${get}  set variable  ${get.replace(' ', '')}
 	\   exit for loop if   "${get}" == "${EMPTY}" or "${get}" == "+"
 	[Return]  ${get}
+
+
+Вибрати ключ ЕЦП
+    ${upload}  set variable  xpath=(//*[@id="eds_placeholder"]//input[@class="upload"])[1]
+    Choose File  ${upload}  ${EXECDIR}${/}src${/}robot_tests.broker.smarttender${/}key.dat
+
+
+Ввести пароль від ключа
+    ${pass input}  set variable  //*[@id="eds_placeholder"]//input[@name="password"]
+    ${eds_passwod}  set variable  AIRman82692
+    Input Password  ${pass input}  ${eds_passwod}
+
+
+Натиснути кнопку "Підписати"
+	Click Element  ${sign btn}
+    loading дочекатись закінчення загрузки сторінки
