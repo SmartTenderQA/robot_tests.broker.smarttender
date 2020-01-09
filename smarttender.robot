@@ -3180,8 +3180,7 @@ _перейти до сторінки вимоги_кваліфікація
 
 перейти до сторінки планів
 	[Arguments]  ${username}  ${planID}
-	${tm}  set variable if  'tender_owner' in '${username.lower()}'  2  1
-    go to  https://test.smarttender.biz/plans/?q&tm=${tm}&p=1&af&at
+    go to  https://test.smarttender.biz/plans/?q&tm=2&p=1&af&at
     loading дочекатись закінчення загрузки сторінки
     # Зачекати поки план засинхронізується
 	wait until keyword succeeds  5m  5s  smarttender._дочекатися синхронізації плану  ${planID}
@@ -3840,11 +3839,12 @@ cтатус тендера повинен бути
     [Arguments]  ${mode}
 	${tender_number}  set variable  ${1}
 	${selector}  run keyword if  '${mode}' == 'reporting' or '${mode}' == 'negotiation'
-	...  set variable  xpath=//*[@data-qa="tender-${tender_number-1}"]//a@href
-    ...  ELSE  set variable  //*[@id="tenders"]//*[@class="head"][${tender_number}]//*[@href]@href
+	...  set variable  xpath=//*[@data-qa="tender-${tender_number-1}"]//a
+    ...  ELSE  set variable  //*[@id="tenders"]//*[@class="head"][${tender_number}]//*[@href]
 
 	#  Зберігаємо лінк на сторінку детальної тендеру
-	${link}  get element attribute  ${selector}
+	loading дочекатися відображення елемента на сторінці  ${selector}  20
+	${link}  get element attribute  ${selector}@href
 	set global variable  ${tender_detail_page}  ${link}
 	log  tender_link: ${link}  WARN
 	go to  ${link}
