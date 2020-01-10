@@ -3990,6 +3990,9 @@ _Дочекатись синхронізації
     comment  Розгорнути лот якщо id існує
     run keyword if  "${lot_id}" != "${Empty}"  _розгорнути лот по id  ${lot_id}
 
+    ${list for exit}  create list  open_competitive_dialogue
+    return from keyword if  "${mode}" in @{list for exit}
+
     comment  Якщо ESCO пропозиція_заповнити поле з ціною для ESCO та виходимо з кейворда пропозиція_заповнити поле з ціною
     run keyword if  "${mode}" == "open_esco"  run keywords
     ...  пропозиція_заповнити поле з ціною для ESCO  ${lot_id}  ${bid}  AND
