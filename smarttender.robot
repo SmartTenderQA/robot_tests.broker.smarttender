@@ -1214,8 +1214,9 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 Пошук тендера по ідентифікатору
 	[Arguments]   ${username}  ${tender_uaid}  ${second_stage_data}=${None}
 	[Documentation]   Знайти тендер з uaid рівним tender_uaid.
+	${tender_second_stage}  evaluate  "${tender_uaid[-2]}" == "."
 	${tender_detail_page_exist}  run keyword and return status  variable should exist  ${tender_detail_page}
-	return from keyword if  ${tender_detail_page_exist}
+	return from keyword if  ${tender_detail_page_exist} and not ${tender_second_stage}
 	smarttender.перейти до тестових торгів
 	smarttender.сторінка_торгів ввести текст в поле пошуку  ${tender_uaid}
 	smarttender.сторінка_торгів виконати пошук
