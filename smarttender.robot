@@ -3843,13 +3843,16 @@ cтатус тендера повинен бути
 сторінка_торгів перейти за першим результатом пошуку
     [Arguments]  ${mode}
 	${tender_number}  set variable  ${1}
-	${selector}  run keyword if  '${mode}' == 'reporting' or '${mode}' == 'negotiation'
-	...  set variable  xpath=//*[@data-qa="tender-${tender_number-1}"]//a
-    ...  ELSE  set variable  xpath=(//*[@id="tenders"]//*[@class="head"])[${tender_number}]//a[@class="linkSubjTrading"]
-
+	${selector}  set variable if
+		...  '${mode}' == 'reporting' or '${mode}' == 'negotiation'  //*[@data-qa="tender-${tender_number-1}"]//a
+		...  //*[@class="head"]//a[@class="linkSubjTrading"]
+	#  Тільки для сторінки test-tenders
+	run keyword if  '${mode}' != 'reporting' or '${mode}' != 'negotiation'
+		...  run keywords
+			...  reload page  AND
+			...  loading дочекатись закінчення загрузки сторінки
 	#  Зберігаємо лінк на сторінку детальної тендеру
-	loading дочекатися відображення елемента на сторінці  ${selector}  20
-	${link}  get element attribute  ${selector}@href
+	${link}  get element attribute  xpath=${selector}@href
 	set global variable  ${tender_detail_page}  ${link}
 	log  tender_link: ${link}  WARN
 	smart go to  ${link}
@@ -4053,7 +4056,7 @@ _вибрати нецінові показники на сторінці дет
 _вибрати неціновий показник на сторінці детальної інформації тендера
     [Arguments]  ${name}  ${value}
     ${drop_down}  set variable  //*[@class="ivu-select-dropdown"]/..
-    ${feature_locator}  set variable  //*[@class="features"]/div[contains(., "${name}")]
+    ${feature_locator}  set variable  //*[contains(@class, "feature")]/div[contains(., "${name}")]
     click element  ${feature_locator}${drop_down}
     ${feature_value}  evaluate  str(${value}*100).replace('.', ',')
     ${li_element}  set variable  ${feature_locator}${drop_down}//li[contains(., '(${feature_value}')]
