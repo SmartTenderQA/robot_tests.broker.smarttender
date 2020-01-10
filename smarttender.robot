@@ -1216,10 +1216,10 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	[Documentation]   Знайти тендер з uaid рівним tender_uaid.
 	${tender_detail_page_exist}  run keyword and return status  variable should exist  ${tender_detail_page}
 	return from keyword if  ${tender_detail_page_exist}
-	smarttender.перейти до тестових торгів  ${mode}
-	smarttender.сторінка_торгів ввести текст в поле пошуку  ${tender_uaid}  ${mode}
-	smarttender.сторінка_торгів виконати пошук  ${mode}
-	smarttender.сторінка_торгів перейти за першим результатом пошуку  ${mode}
+	smarttender.перейти до тестових торгів
+	smarttender.сторінка_торгів ввести текст в поле пошуку  ${tender_uaid}
+	smarttender.сторінка_торгів виконати пошук
+	smarttender.сторінка_торгів перейти за першим результатом пошуку
 	${taken_tender_uaid}  smarttender.сторінка_детальної_інформації отримати tender_uaid
 	should be equal as strings  ${taken_tender_uaid}  ${tender_uaid}
 	set global variable  ${tender_uaid}
@@ -3823,43 +3823,28 @@ cтатус тендера повинен бути
 
 
 перейти до тестових торгів
-    [Arguments]  ${mode}
-    ${url}  run keyword if
-        ...  '${mode}' == 'reporting'  set variable  https://test.smarttender.biz/participation/tenders/?trs=3&tm=2&p=1&ps=1&s=2&bt=6&cg
-        ...  ELSE IF  '${mode}' == 'negotiation'  set variable  https://test.smarttender.biz/participation/tenders/?trs=3&tm=1&p=1&ps=1&s=2&ast=1
-        ...  ELSE  set variable  https://test.smarttender.biz/test-tenders/
+    ${url}  set variable  https://test.smarttender.biz/participation/tenders/?trs=3
     smart go to  ${url}
 
 
 сторінка_торгів ввести текст в поле пошуку
-	[Arguments]  ${text}  ${mode}
-	${selector}  run keyword if  '${mode}' == 'reporting' or '${mode}' == 'negotiation'
-	...  set variable  //*[@data-qa="search-block-input"]
-    ...  ELSE  set variable  //input[@name="filter"]
+	[Arguments]  ${text}
+	${selector}  set variable  //*[@data-qa="search-block-input"]
+	loading дочекатися відображення елемента на сторінці  ${selector}  20s
     input text  ${selector}  ${text}
 
 
 сторінка_торгів виконати пошук
-    [Arguments]  ${mode}
-	${selector}  run keyword if  '${mode}' == 'reporting' or '${mode}' == 'negotiation'
-	...  set variable  //*[@data-qa="search-block-button"]
-    ...  ELSE  set variable  //div[text()='Пошук']/..
+	${selector}  set variable  //*[@data-qa="search-block-button"]
     loading дочекатись закінчення загрузки сторінки
+    loading дочекатися відображення елемента на сторінці  ${selector}  20s
 	click element  ${selector}
 	loading дочекатись закінчення загрузки сторінки
 
 
 сторінка_торгів перейти за першим результатом пошуку
-    [Arguments]  ${mode}
-	${tender_number}  set variable  ${1}
-	${selector}  set variable if
-		...  '${mode}' == 'reporting' or '${mode}' == 'negotiation'  //*[@data-qa="tender-${tender_number-1}"]//a
-		...  //*[@class="head"]//a[@class="linkSubjTrading"]
-	#  Тільки для сторінки test-tenders
-	run keyword if  '${mode}' != 'reporting' or '${mode}' != 'negotiation'
-		...  run keywords
-			...  reload page  AND
-			...  loading дочекатись закінчення загрузки сторінки
+	${selector}  set variable  //*[@data-qa="tender-0"]//a[@data-qa="prozopro-trade-detail-url"]
+	loading дочекатися відображення елемента на сторінці  ${selector}  20s
 	#  Зберігаємо лінк на сторінку детальної тендеру
 	${link}  get element attribute  xpath=${selector}@href
 	set global variable  ${tender_detail_page}  ${link}
