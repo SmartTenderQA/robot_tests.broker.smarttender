@@ -293,6 +293,7 @@ ${sign btn}                         //*[@id="eds_placeholder"]//*[contains(@clas
 	${locator}  set variable  //*[@data-name="DDATETO"]//input
 	${formated_date}  convert date  ${deliveryDate.endDate}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S${time_zone}
 	заповнити поле з датою  ${locator}  ${formated_date}
+	press key  ${locator}  \\09
 
 
 ##################################################
@@ -600,16 +601,28 @@ check for open screen
 знайти тендер у webclient
 	[Arguments]  ${tender_uaid}
 	${location}  get location
-	${grid_search_field}  set variable  xpath=((//*[@data-type="GridView"])[1]//td//input)[4]
-	run keyword if  '/webclient/' not in '${location}'  run keywords
-	...  go to  http://test.smarttender.biz/webclient/?testmode=1&proj=it_uk&tz=3  AND
-	...  loading дочекатись закінчення загрузки сторінки        AND
-	...  webclient.робочий стіл натиснути на елемент за назвою  Публічні закупівлі (тестові)  AND
-	...  webclient.header натиснути на елемент за назвою  Очистити    AND
-	...  webclient.header натиснути на елемент за назвою  OK          AND
-	...  loading дочекатися відображення елемента на сторінці  ${grid_search_field}   AND
-	...  заповнити simple input  ${grid_search_field}  ${tender_uaid}   AND
-	...  loading дочекатись закінчення загрузки сторінки
+	${grid_search_field}  set variable  xpath=((//tr[@class=' has-system-column'])[1]/td[count(//div[contains(text(), 'Номер тендеру')]/ancestor::td[@draggable]/preceding-sibling::*)+1]//input)[1]
+	run keyword if  '/webclient/' not in '${location}'
+	...  webclient.перейти до списку тендерів за типом процедури  ${mode}
+	loading дочекатися відображення елемента на сторінці  ${grid_search_field}
+	заповнити simple input  ${grid_search_field}  ${tender_uaid}
+	loading дочекатись закінчення загрузки сторінки
+
+
+перейти до списку тендерів за типом процедури
+    [Arguments]  ${mode}
+    ${label_name}  set variable if
+    ...  "open_framework" in "${mode}"          Рамкові угоди(тестові)
+    ...  "framework_selection" in "${mode}"     Рамкові угоди 2 етап(тестові)
+    ...  "reporting" in "${mode}"               Звіт про укладений договір(тестові)
+    ...  "negotiation" in "${mode}"             Переговорная процедура(тестовые)
+    ...  "dialogue" in "${mode}"                Конкурентний діалог(тестові)
+    ...  "open_esco" in "${mode}"               Открытые закупки энергосервиса (ESCO) (тестовые)
+    ...                                         Публічні закупівлі (тестові)
+	smart go to  http://test.smarttender.biz/webclient/?testmode=1&proj=it_uk&tz=3
+	webclient.робочий стіл натиснути на елемент за назвою  ${label_name}
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
 
 
 знайти звіт про укладений договір у webclient
