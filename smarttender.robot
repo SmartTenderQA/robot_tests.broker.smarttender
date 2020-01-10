@@ -118,7 +118,6 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
     ...  "${MODE}" == "open_framework"  replace_agreementDuration  ${tender_data}
     ...  ELSE                           set variable                ${tender_data}
 	${tender_data}  clear_additional_classifications  ${tender_data}
-	${tender_data}  replace_funders                   ${tender_data}
 	log  ${tender_data}
 	log to console  ${tender_data}
 	[Return]  ${tender_data}
@@ -1624,51 +1623,53 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 
 сторінка_детальної_інформації отримати funders
     [Arguments]  ${field_name}
-    log to console  ${field_name}
 	${field_value}  run keyword  сторінка_детальної_інформації отримати funders ${field_name}
     [Return]  ${field_value}
 
 
 сторінка_детальної_інформації отримати funders funders[${funder_index}].name
+    ${translation_funder_dict}  create dictionary
+    ...  Міжнародний банк реконструкції та розвитку (МБРР)=Світовий Банк
+    ...  Глобальний Фонд для боротьби зі СНІДом, туберкульозом і малярією=Глобальний фонд
 	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
 	${locator}  set variable  xpath=${funder_block_locator}//*[contains(@class, "ivu-poptip-rel")]
 	${field_value}  get text  ${locator}
-	[Return]  ${field_value}
+	${ret}  get from dictionary  ${translation_funder_dict}  ${field_value}
+	[Return]  ${ret}
 
 
 сторінка_детальної_інформації отримати funders funders[${funder_index}].address.countryName
-	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
-	log to console  .address.countryName
-	debug
-	[Return]  Пока отображается только улица а не .address.countryName
+    ${translation_funder_dict}  create dictionary
+    ...  США=USA
+    ...  Швейцарія=Switzerland
+	${postal_code}  ${country_name}  ${region}  ${locality}  ${street_address}  _отримати дані адреси донора
+	${ret}  get from dictionary  ${translation_funder_dict}  ${country_name}
+	[Return]  ${ret}
 
 
 сторінка_детальної_інформації отримати funders funders[${funder_index}].address.locality
-	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
-	log to console  .address.locality
-	debug
-	[Return]  Пока отображается только улица а не .address.locality
+    ${translation_funder_dict}  create dictionary
+    ...  м. Женева=Geneva
+    ...  Вашингтон=Washington
+	${postal_code}  ${country_name}  ${region}  ${locality}  ${street_address}  _отримати дані адреси донора
+	${ret}  get from dictionary  ${translation_funder_dict}  ${locality}
+	[Return]  ${ret}
+
 
 
 сторінка_детальної_інформації отримати funders funders[${funder_index}].address.postalCode
-	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
-	log to console  .address.postalCode
-	debug
-	[Return]  Пока отображается только улица а не .address.postalCode
+	${postal_code}  ${country_name}  ${region}  ${locality}  ${street_address}  _отримати дані адреси донора
+	[Return]  ${postal_code}
 
 
 сторінка_детальної_інформації отримати funders funders[${funder_index}].address.region
-	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
-	log to console  .address.region
-	debug
-	[Return]  Пока отображается только улица а не .address.region
+    ${postal_code}  ${country_name}  ${region}  ${locality}  ${street_address}  _отримати дані адреси донора
+	[Return]  ${region}
 
 
 сторінка_детальної_інформації отримати funders funders[${funder_index}].address.streetAddress
-	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
-	log to console  .address.streetAddress
-	debug
-	[Return]  Пока отображается только улица а не .address.streetAddress
+    ${postal_code}  ${country_name}  ${region}  ${locality}  ${street_address}  _отримати дані адреси донора
+	[Return]  ${streetAddress}
 
 
 сторінка_детальної_інформації отримати funders funders[${funder_index}].contactPoint.url
@@ -1698,6 +1699,14 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	${locator}  set variable  xpath=${funder_block_locator}//*[contains(@class, "ivu-poptip-rel")]
 	${field_value}  get text  ${locator}
 	[Return]  ${field_value}
+
+
+_отримати дані адреси донора
+    ${funder_block_locator}  set variable  (//*[@data-qa="donor"])[0+1]
+	${locator}  set variable  xpath=${funder_block_locator}//*[@class="ivu-poptip-body-content"]//b[text()="Адреса:"]/following-sibling::*
+	${field_value}  get element attribute  ${locator}@innerText
+	${postal_code}  ${country_name}  ${region}  ${locality}  ${street_address}  split_funder_adress  ${field_value}
+	[Return]  ${postal_code}  ${country_name}  ${region}  ${locality}  ${street_address}
 
 
 сторінка_детальної_інформації отримати auctionPeriod.startDate

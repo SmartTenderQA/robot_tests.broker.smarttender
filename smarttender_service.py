@@ -417,23 +417,6 @@ def replacee_procuringEntity(tender_data):
         return tender_data
 
 
-def replace_funders(tender_data):
-    try:
-        tmp = tender_data[:]
-        tmp.data.funders[0].address = {
-            "postalCode": "12345",
-            "countryName": u"Україна",
-            "streetAddress": u"вулиця Тестова 123",
-            "region": u"Київська обл.",
-            "locality": u"Київ"
-        }
-        tmp.data.funders[0].name = tmp.data.funders[0].identifier.legalName
-        return tmp
-    except:
-        print("popali v except")
-        return tender_data
-
-
 def replace_unit_name(tender_data):
     list_of_keys = list(unitname_dict_smartweb.keys())
 
@@ -553,3 +536,13 @@ def convert_negotiation_cause_from_smart_format(cause):
         u"п. 7, ч. 2, cт. 35. Закупівля юридичних послуг, пов’язаних із захистом прав та інтересів України, у тому числі з метою захисту національної безпеки і оборони, під час врегулювання спорів, розгляду в закордонних юрисдикційних органах справ за участю іноземного суб’єкта та України, на підставі рішення Кабінету Міністрів України або введених в дію відповідно до закону рішень Ради національної безпеки і оборони України": "stateLegalServices",
     }
     return key_values_map[cause]
+
+
+def split_funder_adress(value):
+    obj = re.search(u"(?P<postalCode>\d+), (?P<countryName>\S*), (?P<region>\S*), (?P<locality>[\S. ]?\S+), (?P<streetAddress>.*)", value)
+    postal_code = obj.group('postalCode')
+    country_name = obj.group('countryName')
+    region = obj.group('region')
+    locality = obj.group('locality')
+    street_address = obj.group('streetAddress')
+    return postal_code, country_name, region, locality, street_address
