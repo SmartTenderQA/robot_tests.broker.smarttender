@@ -1761,8 +1761,7 @@ _отримати дані адреси донора
     [Arguments]  ${field_name}=None
 	${selector}  set variable  xpath=//*[@data-qa="nbu-discount-rate"]//*[@data-qa="value"]
 	${value_in_smart_format}  get text  ${selector}
-	${field_value_in_smart_format}  set variable  ${value_in_smart_format.replace("%", "").replace(",", ".")}
-    ${field_value}  evaluate  float(${field_value_in_smart_format.replace("%", "").replace(",", ".")}) / 100
+    ${field_value}  evaluate  float("${value_in_smart_format}".strip("%").replace(",", ".")) / 100
 	[Return]  ${field_value}
 
 
@@ -2933,8 +2932,8 @@ _перейти до сторінки вимоги_кваліфікація
     [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінює поле fieldname угоди тендера tender_uaid на fieldvalue
     run keyword if  '${fieldname}' == 'value.amountNet'  run keywords
-    ...  знайти звіт про укладений договір у webclient  ${tender_uaid}  AND
-	...  активувати вкладку  Пропозиції  index=2  AND
+    ...  знайти тендер у webclient  ${tender_uaid}  AND
+	...  активувати вкладку  Пропозиції  AND
 	...  grid вибрати рядок за номером  ${contract_index}+1  AND
 	#...  header натиснути на елемент за назвою  Надіслати вперед  AND
     ...  header натиснути на елемент за назвою  Прикріпити договір
@@ -3004,9 +3003,11 @@ _перейти до сторінки вимоги_кваліфікація
 	header натиснути на елемент за назвою  Підписати договір
 	dialog box заголовок повинен містити  Ви дійсно хочете підписати договір?
 	dialog box натиснути кнопку  Так
-	dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на договір?
-	dialog box натиснути кнопку  Так
-	Підписати ЕЦП(webclient)
+	${need_eds_status}  run keyword and return status  dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на договір?
+	run keyword if  ${need_eds_status}  run keywords
+	...  dialog box натиснути кнопку  Так
+	...  AND
+	...  Підписати ЕЦП(webclient)
 
 
 Перевести тендер на статус очікування обробки мостом

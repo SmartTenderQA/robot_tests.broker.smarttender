@@ -539,7 +539,7 @@ def convert_negotiation_cause_from_smart_format(cause):
 
 
 def split_funder_adress(value):
-    obj = re.search(u"(?P<postalCode>\d+), (?P<countryName>\S*), (?P<region>\S*), (?P<locality>[\S. ]?\S+), (?P<streetAddress>.*)", value)
+    obj = re.search(u"(?P<postalCode>\d+), (?P<countryName>\S*), (?P<region>\S*), (?P<locality>[^,]*), (?P<streetAddress>.*)", value)
     postal_code = obj.group('postalCode')
     country_name = obj.group('countryName')
     region = obj.group('region')
