@@ -352,7 +352,8 @@ def convert_status(value):
         u'Кваліфікація': u'active.qualification',
         u'Пропозиції розглянуті': u'active.awarded',
         u'Завершено': u'complete',
-        u'Закупівля не відбулась': u'unsuccessful'
+        u'Закупівля не відбулась': u'unsuccessful',
+        u'Прекваліфікація (період оскарження)': u'active.pre-qualification.stand-still'
     }
     if value in map:
         result = map[value]

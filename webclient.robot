@@ -89,7 +89,16 @@ ${sign btn}                         //*[@id="eds_placeholder"]//*[contains(@clas
 заповнити поле cause
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="KREASON"]//input
-	заповнити simple input  ${locator}  п. 1, ч. 2, cт. 35  input_methon=input text
+	${cause_variants}  create dictionary
+	...  artContestIP=п. 1, ч. 2, cт. 35
+	...  noCompetition=п. 2, ч. 2, cт. 35
+	...  quick=п. 3, ч. 2, cт. 35
+	...  twiceUnsuccessful=п. 4, ч. 2, cт. 35
+	...  additionalPurchase=п. 5, ч. 2, cт. 35
+	...  additionalConstruction=п. 6, ч. 2, cт. 35
+	...  stateLegalServices=п. 7, ч. 2, cт. 35
+    ${cause}  get from dictionary  ${cause_variants}  ${text}
+	заповнити simple input  ${locator}  ${cause}  input_methon=input text
 
 
 заповнити поле cause_description
@@ -233,7 +242,6 @@ ${sign btn}                         //*[@id="eds_placeholder"]//*[contains(@clas
 	${unit_name}  replace_unit_name_dict  ${value}
     ${unit_name}  set variable if
     ...  "${unit_name}" == "Штука"  штуки
-    ...  "${unit_name}" == "набір"  набор
     ...  "${unit_name}" == "упаковка"  упаков
     ...  "${unit_name}" == "Упаковка"  упаков
     ...  ${unit_name}
@@ -667,6 +675,19 @@ check for active tab
     Вибрати ключ ЕЦП
 	Ввести пароль від ключа
 	Натиснути кнопку "Підписати"
+	run keyword and ignore error  click element   ${screen_root_selector}//*[@alt="Close"]
+	loading дочекатись закінчення загрузки сторінки
+
+
+Відкрити вікно прикріплення договору
+    ${status}  run keyword and return status  screen заголовок повинен містити  Вкладення договірних документів
+    run keyword if  not ${status}  run keywords
+    ...  знайти тендер у webclient  ${tender_uaid}  AND
+	...  активувати вкладку  Пропозиції  index=1  AND
+	...  grid вибрати рядок за номером  ${contract_index}+1  AND
+    ...  header натиснути на елемент за назвою  Прикріпити договір
+    ...  ELSE
+    ...  log  Екран вже відкритий
 
 
 ############################################################################################
@@ -795,6 +816,7 @@ dialog box заголовок повинен містити
 	click element  ${locator}//td[3]
 	press key  ${locator}//td[2]//input  \\127
 	input text  ${locator}//td[2]//input  ${text}
+	loading дочекатись закінчення загрузки сторінки
 	click screen header
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}//td[2]//input@value
@@ -815,7 +837,7 @@ dialog box заголовок повинен містити
 	run keyword               ${input_methon}  ${locator}  ${text}
 	press key                 ${locator}  \\13
 #	click screen header
-#	loading дочекатись закінчення загрузки сторінки
+	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
 	${get}  set variable           ${get.replace('\n', '')}
 	should not be empty            ${get}
@@ -837,7 +859,7 @@ dialog box заголовок повинен містити
 	run keyword  ${input_methon}  ${locator}  ${text}
 	run keyword if  '${action_after_input}' == 'click screen header'  run keywords  loading дочекатись закінчення загрузки сторінки  AND  click screen header  ELSE
 	...  press key  //body  \\13
-	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=2s
+	${dropdown_status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${dropdown_list}${item_in_dropdown_list}  timeout=10s
 	run keyword if  ${dropdown_status}  click element  ${dropdown_list}${item_in_dropdown_list}
 	loading дочекатись закінчення загрузки сторінки
 	${get}  get element attribute  ${locator}@value
@@ -891,6 +913,8 @@ click screen header
 
 видалити всі лоти та предмети
     [Arguments]  ${screen}=GRID_ITEMS_HIERARCHY  ${index}=1
+    [Documentation]  Кейворд врет, если ${screen} не совпадает с значением по умолчанию удаляет только одну номенклатуру
+    ...  Не правим, что бы не сломать зависимости
     ${count}  Get Matching Xpath Count  //*[@data-name="${screen}"]//tr[contains(@class,"Row")]
     ${del_btn}  set variable  xpath=//*[@data-name="${screen}"]//*[@title="Видалити"][${index}]
 	return from keyword if  ${count} == 0
