@@ -681,10 +681,11 @@ check for active tab
 
 Відкрити вікно прикріплення договору
     [Arguments]  ${contract_num}
+    ${tab_name}  set variable if  '${NUMBER_OF_LOTS}' != '0'  Предложения (м)  Пропозиції
     ${status}  run keyword and return status  screen заголовок повинен містити  Вкладення договірних документів
     run keyword if  not ${status}  run keywords
     ...  знайти тендер у webclient  ${tender_uaid}  AND
-	...  активувати вкладку  Пропозиції  index=1  AND
+	...  активувати вкладку  ${tab_name}  index=1  AND
 	...  grid вибрати рядок за номером  ${contract_num}+1  AND
     ...  header натиснути на елемент за назвою  Прикріпити договір
     ...  ELSE
