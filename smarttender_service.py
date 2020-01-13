@@ -435,13 +435,18 @@ def replace_unit_name_dict(key):
     else:
         return key
 
+
 def replace_funders(tender_data):
-    for funder in tender_data['data'].get('funders'):
-        if funder['name'] == u"Світовий Банк":
-            funder['name'] = u"Міжнародний банк реконструкції та розвитку (МБРР)"
-        if funder['name'] == u"Глобальний фонд":
-            funder['name'] = u"Глобальний Фонд для боротьби зі СНІДом, туберкульозом і малярією"
-    return tender_data
+    try:
+        for funder in tender_data['data'].get('funders'):
+            if funder['name'] == u"Світовий Банк":
+                funder['name'] = u"Міжнародний банк реконструкції та розвитку (МБРР)"
+            if funder['name'] == u"Глобальний фонд":
+                funder['name'] = u"Глобальний Фонд для боротьби зі СНІДом, туберкульозом і малярією"
+    except:
+        print('Нету funders')
+    finally:
+        return tender_data
 
 
 def replace_delivery_address(tender_data):
