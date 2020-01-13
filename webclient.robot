@@ -608,10 +608,10 @@ check for open screen
 
 
 знайти тендер у webclient
-	[Arguments]  ${tender_uaid}
+	[Arguments]  ${tender_uaid}  ${force_go_to}=${False}
 	${location}  get location
 	${grid_search_field}  set variable  xpath=((//tr[@class=' has-system-column'])[1]/td[count(//div[contains(text(), 'Номер тендеру')]/ancestor::td[@draggable]/preceding-sibling::*)+1]//input)[1]
-	run keyword if  '/webclient/' not in '${location}'
+	run keyword if  '/webclient/' not in '${location}' or ${force_go_to}
 	...  webclient.перейти до списку тендерів за типом процедури  ${mode}
 	loading дочекатися відображення елемента на сторінці  ${grid_search_field}
 	заповнити simple input  ${grid_search_field}  ${tender_uaid}
@@ -680,11 +680,12 @@ check for active tab
 
 
 Відкрити вікно прикріплення договору
+    [Arguments]  ${contract_num}
     ${status}  run keyword and return status  screen заголовок повинен містити  Вкладення договірних документів
     run keyword if  not ${status}  run keywords
     ...  знайти тендер у webclient  ${tender_uaid}  AND
 	...  активувати вкладку  Пропозиції  index=1  AND
-	...  grid вибрати рядок за номером  ${contract_index}+1  AND
+	...  grid вибрати рядок за номером  ${contract_num}+1  AND
     ...  header натиснути на елемент за назвою  Прикріпити договір
     ...  ELSE
     ...  log  Екран вже відкритий
