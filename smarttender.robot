@@ -70,7 +70,7 @@ ${deliveryDate_root}                //*[@data-qa="nomenclature-delivery-date-to"
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
-${hub}          локально
+${hub}
 ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 
 
@@ -81,7 +81,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	[Documentation]   Відкрити браузер, створити об’єкт api wrapper, тощо
 	${capabilities}  evaluate  dict({'browserName': 'chrome', 'version': '', 'platform': 'ANY', 'goog:chromeOptions': {'extensions': [], 'args': ['--window-size=1920,1080']}, 'sessionTimeout': '120m', 'browserVersion': 'Last', 'name': '${MODE} - ${role} - ${SUITE NAME}'})
 	# Для відкривання старта браузера локально або в ремоуті
-	Run Keyword If  ${hub.__len__()} != 0
+	Run Keyword If  (${hub.__len__()} != 0) or ("Complaints" in "${suite name}") or ("framework" in "${mode}")
 			...  Create Webdriver  Chrome  alias=${username}
 	...  ELSE
 			...  Create Webdriver  Remote  alias=${username}  command_executor=${hub_url}  desired_capabilities=${capabilities}
