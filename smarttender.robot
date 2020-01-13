@@ -117,6 +117,9 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
     ${tender_data}  run keyword if
     ...  "${MODE}" == "open_framework"  replace_agreementDuration  ${tender_data}
     ...  ELSE                           set variable                ${tender_data}
+    ${tender_data}  run keyword if
+    ...  "${role_name}" == "tender_owner"  replace_funders  ${tender_data}
+    ...  ELSE                           set variable        ${tender_data}
 	${tender_data}  clear_additional_classifications  ${tender_data}
 	log  ${tender_data}
 	log to console  ${tender_data}
@@ -1578,7 +1581,17 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 
 сторінка_детальної_інформації отримати minimalStep.amount
     [Arguments]  ${field_name}=None
+    comment  Бюджет для второго єтапа рамок появляется не сразу, выводится текст "Інформація поки що відсутня"
+    ...  когда появляется никто не знает.
+    ${field_value}  wait until keyword succeeds  10m  1s
+    ...  сторінка_детальної_інформації отримати minimalStep.amount try  ${field_name}
+
+
+сторінка_детальної_інформації отримати minimalStep.amount try
+    [Arguments]  ${field_name}
+    reload page
 	${selector}  set variable  xpath=//*[@data-qa="budget-min-step"]//span[4]
+	loading дочекатися відображення елемента на сторінці  ${selector}
 	${field_value}  get text  ${selector}
 	${field_value}  convert_page_values  ${field_name}  ${field_value}
 	[Return]  ${field_value}
@@ -1639,7 +1652,9 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	${funder_block_locator}  set variable  (//*[@data-qa="donor"])[${funder_index}+1]
 	${locator}  set variable  xpath=${funder_block_locator}//*[contains(@class, "ivu-poptip-rel")]
 	${field_value}  get text  ${locator}
-	${ret}  get from dictionary  ${translation_funder_dict}  ${field_value}
+	${ret}  run keyword if  "${ROLE}" != "tender_owner"
+	...  get from dictionary  ${translation_funder_dict}  ${field_value}  ELSE
+	...  set variable  ${field_value}
 	[Return]  ${ret}
 
 
@@ -3114,8 +3129,6 @@ _закарити сповіщення про кваліфікацію за не
 	заповнити autocomplete field  //*[@data-name="IDSCALE"]//input  ${scale_dict['${scale}']}
 	заповнити simple input  //*[@data-name="CONTACTPERSON"]//input  ${contactPoint.name}
     заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}${space}${space}${space}
-    clear input by Backspace  //*[@data-name="TEL"]//input
-	заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}  check=${False}
 	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}    check=${False}
 	заповнити simple input  //*[@data-name="URL"]//input  ${contactPoint.url}
 	заповнити simple input  //*[@data-name="PIND"]//input  ${address.postalCode}
@@ -4196,7 +4209,7 @@ _розгорнути лот по id
     ...  qualification_documents=Документи, що підтверджують кваліфікацію
     ${doc_name}  set variable  ${dict_types['${doc_type}']}
     ${last_doc_type}  set variable  (//*[@data-qa="document-type-btn"])[last()]
-    ${item_in_list}  set variable  (//*[@id="documentType"][contains(., "${doc_name}")])[last()]
+    ${item_in_list}  set variable  (//*[@data-qa="document-type-item"][contains(., "${doc_name}")])[last()]
 
     loading дочекатися відображення елемента на сторінці  xpath=${last_doc_type}
     click element  xpath=${last_doc_type}
