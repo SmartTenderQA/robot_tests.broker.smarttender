@@ -671,12 +671,23 @@ check for active tab
 
 
 Підписати ЕЦП(webclient)
-    loading дочекатися відображення елемента на сторінці  ${sign btn}
+    ${is_visible}  _отримати статус відображення вікна ЕЦП(webclient)
+    return from keyword if  not ${is_visible}
     Вибрати ключ ЕЦП
-	Ввести пароль від ключа
+    Ввести пароль від ключа
 	Натиснути кнопку "Підписати"
 	run keyword and ignore error  click element   ${screen_root_selector}//*[@alt="Close"]
 	loading дочекатись закінчення загрузки сторінки
+
+
+_отримати статус відображення вікна ЕЦП(webclient)
+    [Documentation]  Вікно з ЕЦП може не з'явитися в деяких процедурах бо ЕЦП не обов'язкове,
+    ...  а також при повторному підписанні ЕЦП накладаеться автоматом, тому закриваємо повідомлення про загрузку файла після підписання
+    ${is_visible}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${sign btn}
+    capture page screenshot
+    run keyword and ignore error  click element   ${screen_root_selector}//*[@alt="Close"]
+    loading дочекатись закінчення загрузки сторінки
+    [Return]  ${is_visible}
 
 
 Відкрити вікно прикріплення договору
@@ -686,7 +697,7 @@ check for active tab
     run keyword if  not ${status}  run keywords
     ...  знайти тендер у webclient  ${tender_uaid}  AND
 	...  активувати вкладку  ${tab_name}  index=1  AND
-	...  grid вибрати рядок за номером  ${contract_num}+1  AND
+	...  webclient.вибрати переможця за номером  ${contract_num}+1  AND
     ...  header натиснути на елемент за назвою  Прикріпити договір
     ...  ELSE
     ...  log  Екран вже відкритий
@@ -1009,3 +1020,13 @@ clear input by Backspace
 Натиснути кнопку "Підписати"
 	Click Element  ${sign btn}
     loading дочекатись закінчення загрузки сторінки
+
+
+Кваліфікація. Відмітити чек-бокси для переможця за необхідністю
+    [Documentation]  что бы не угадовать в каких процедурах есть чек-боксы, кликаем если они видимы
+    ${checkbox_1}  set variable  xpath=//label[contains(text(),"Відповідає кваліфікаційним критеріям")]
+	${checkbox_2}  set variable  xpath=//label[contains(text(),"Відсутні підстави для відмови")]
+	${is_visible}  run keyword and return status  loading дочекатися відображення елемента на сторінці   ${checkbox_1}  1
+	run keyword if  ${is_visible}  click element  ${checkbox_1}
+	${is_visible}  run keyword and return status  loading дочекатися відображення елемента на сторінці   ${checkbox_2}  1
+	run keyword if  ${is_visible}  click element  ${checkbox_2}
