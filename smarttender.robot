@@ -2801,7 +2801,8 @@ _перейти до сторінки вимоги_кваліфікація
     [Documentation]  Отримати значення поля field пропозиції користувача username для тендера tender_uaid.
     comment  пейти на сторінку біда за неохідністю
     ${current_location}  get location
-    run keyword if  "bid/edit" in "${current_location}"  run keywords
+    ${tender_bid_page}  set variable  ${tender_detail_page.replace("publichni-zakupivli-prozorro", "bid/edit")}
+    run keyword if  "${current_location}" != "${tender_bid_page}"  run keywords
     ...  go to  ${tender_bid_page}  AND  loading дочекатись закінчення загрузки сторінки
     #############################################################################################
 	${bid_field}  run keyword  smarttender.пропозиція_отримати інформацію по полю ${field}
@@ -2849,10 +2850,12 @@ _перейти до сторінки вимоги_кваліфікація
 
 Змінити документацію в ставці
     [Arguments]  ${username}  ${tender_uaid}  ${doc_data}  ${doc_id}
-    [Documentation]  Змінити тип документа з doc_id в заголовку в пропозиції користувача username для тендера tender_uaid. Дані про новий тип документа знаходяться в doc_data.  
-	log to console  Змінити документацію в ставці
-#	smarttender.пропозиція_перевірити кнопку подачі пропозиції
-	# /todo  доработать после исправлений Клюквина
+    [Documentation]  Змінити тип документа з doc_id в заголовку в пропозиції користувача username для тендера tender_uaid. Дані про новий тип документа знаходяться в doc_data.
+	${confidentiality_status}  run keyword and return status  Dictionary Should Contain key  ${doc_data['data']}  confidentiality
+
+	run keyword if  ${confidentiality_status}  пропозиція_змінити кофіденційність файлу  ${doc_data}  ${doc_id}
+    smarttender.пропозиція_подати пропозицію
+	smarttender.пропозиція_закрити вікно з ЕЦП
 
 
 Скасувати цінову пропозицію
@@ -3333,7 +3336,6 @@ _дочекатися синхронізації плану
 	${field_name_splited}  set variable  ${field_name.split('[')[0]}
     ${field_value}  run keyword  smarttender.план_сторінка_детальної_інформації отримати ${field_name_splited}  ${field_name}
     [Return]  ${field_value}
-
 
 
 Видалити предмет закупівлі плану
@@ -4297,6 +4299,34 @@ _розгорнути лот по id
     loading дочекатися відображення елемента на сторінці  xpath=${item_in_list}
     wait until keyword succeeds  10  1  click element  xpath=${item_in_list}
     loading дочекатися зникнення елемента зі сторінки  ${item_in_list}
+
+
+пропозиція_змінити кофіденційність файлу
+    [Arguments]   ${doc_data}  ${doc_id}
+	пропозиція_встановити тип кофіденційності на  true  ${doc_id}
+    пропозиція_ввести текст причини конфіденційності документу  ${doc_data}  ${doc_id}
+
+
+пропозиція_встановити тип кофіденційності на
+    [Documentation]   ${new_status} может быть 'false' или 'true'
+    [Arguments]  ${new_status}  ${doc_id}
+    ${selector}  set variable  xpath=(//*[@class="file-container"])[1][contains(., "${doc_id}")]//*[@type="hidden"]
+    ${current_status}  get element attribute  ${selector}@value
+    run keyword if  "${current_status}" != "${new_status}"  run keywords
+    ...  click element  ${selector}                 AND
+    ...  sleep  1                                   AND
+    ...  пропозиція_встановити тип кофіденційності  ${new_status}  ${doc_id}
+
+
+пропозиція_ввести текст причини конфіденційності документу
+    [Arguments]  ${doc_data}  ${doc_id}
+    ${selector}  set variable  xpath=(//*[@class="file-container"])[1][contains(., "${doc_id}")]//*[@placeholder="Введіть причину"]
+    ${text_to_enter}  set variable  ${doc_data['data']['confidentialityRationale']}
+    input text  ${selector}  ${doc_data['data']['confidentialityRationale']}
+    sleep  .5
+    ${entered_text}  get element attribute  ${selector}@value
+    ${status}  run keyword and return status  should be byte string  ${entered_text}  ${text_to_enter}
+    run keyword if  not ${status}  пропозиція_ввести текст причини конфіденційності документу  ${doc_data}  ${doc_id}
 
 
 ################################################################################
