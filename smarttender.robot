@@ -4320,22 +4320,22 @@ _розгорнути лот по id
 пропозиція_встановити тип кофіденційності на
     [Documentation]   ${new_status} может быть 'false' или 'true'
     [Arguments]  ${new_status}  ${doc_id}
-    ${selector}  set variable  xpath=(//*[@class="file-container"])[1][contains(., "${doc_id}")]//*[@type="hidden"]
+    ${selector}  set variable  xpath=(//*[@class="file-container"])[1]//*[@class="file ivu-row"][contains(., "${doc_id}")]//*[@type="hidden"]
     ${current_status}  get element attribute  ${selector}@value
     run keyword if  "${current_status}" != "${new_status}"  run keywords
-    ...  click element  ${selector}                 AND
+    ...  click element  ${selector}/..              AND
     ...  sleep  1                                   AND
     ...  пропозиція_встановити тип кофіденційності  ${new_status}  ${doc_id}
 
 
 пропозиція_ввести текст причини конфіденційності документу
     [Arguments]  ${doc_data}  ${doc_id}
-    ${selector}  set variable  xpath=(//*[@class="file-container"])[1][contains(., "${doc_id}")]//*[@placeholder="Введіть причину"]
+    ${selector}  set variable  xpath=(//*[@class="file-container"])[1]//*[@class="file ivu-row"][contains(., "${doc_id}")]//*[@placeholder="Введіть причину"]
     ${text_to_enter}  set variable  ${doc_data['data']['confidentialityRationale']}
     input text  ${selector}  ${doc_data['data']['confidentialityRationale']}
     sleep  .5
     ${entered_text}  get element attribute  ${selector}@value
-    ${status}  run keyword and return status  should be byte string  ${entered_text}  ${text_to_enter}
+    ${status}  run keyword and return status  should be equal as strings  ${entered_text}  ${text_to_enter}
     run keyword if  not ${status}  пропозиція_ввести текст причини конфіденційності документу  ${doc_data}  ${doc_id}
 
 
