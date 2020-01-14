@@ -1233,6 +1233,17 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	set global variable  ${tender_uaid}
 
 
+Пошук угоди по ідентифікатору
+	[Arguments]  ${username}  ${agreement_uaid}
+	${agreement_detail_page_exist}  run keyword and return status  variable should exist  ${agreement_detail_page}
+	return from keyword if  ${agreement_detail_page_exist}
+	smarttender.перейти до тестових рамок
+	smarttender.сторінка_торгів ввести текст в поле пошуку  ${agreement_uaid}
+	smarttender.сторінка_торгів виконати пошук
+	smarttender.сторінка_рамок перейти за першим результатом пошуку
+	set global variable  ${agreement_uaid}
+
+
 Оновити сторінку з тендером
 	[Arguments]   ${username}  ${tender_uaid}
     [Documentation]   Оновити сторінку з тендером для отримання потенційно оновлених даних.
@@ -1249,6 +1260,15 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	...  loading дочекатись закінчення загрузки сторінки
 
 
+###############################################
+###############################################
+Отримати інформацію із угоди
+	[Arguments]  ${username}  ${agreement_uaid}  ${field_name}
+	${field_value}  run keyword  smarttender.сторінка_детальної_інформації_угоди отримати ${field_name}
+	[Return]  ${field_value}
+
+сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].rationaleType
+	no operation
 ###############################################
 ###############################################
 Отримати інформацію із тендера
@@ -3550,6 +3570,12 @@ _план_сторінка_детальної_інформації отрима�
 	[Return]  ${field_value}
 
 
+сторінка_детальної_інформації отримати agreements[${agreement_index}].agreementID
+	${field_locator}  set variable  //*[@data-qa="agreement-cdb-number"]//*[@data-qa="value"]
+	${field_value}  get text  ${field_locator}
+	[Return]  ${field_value}
+
+
 сторінка_детальної_інформації отримати awards
 	[Arguments]  ${field_name}
 	# розгорунти блок, якщо потрібно
@@ -3981,6 +4007,11 @@ cтатус тендера повинен бути
     smart go to  ${url}
 
 
+перейти до тестових рамок
+    ${url}  set variable  https://test.smarttender.biz/agreements?tm=2
+    smart go to  ${url}
+
+
 сторінка_торгів ввести текст в поле пошуку
 	[Arguments]  ${text}
 	${selector}  set variable  //*[@data-qa="search-block-input"]
@@ -4010,6 +4041,22 @@ cтатус тендера повинен бути
 	${tender_cdb_id}  get text  //*[@data-qa="prozorro-id"]//*[@data-qa="value"]
     set global variable  ${tender_cdb_id}
 	log  tender_cdb_id: ${tender_cdb_id}  WARN
+
+
+сторінка_рамок перейти за першим результатом пошуку
+	${selector}  set variable  xpath=(//*[@data-qa="agreement-detail-url"])[1]
+	loading дочекатися відображення елемента на сторінці  ${selector}  20s
+	#  Зберігаємо лінк на сторінку детальної тендеру
+	${link}  get element attribute  ${selector}@href
+	set global variable  ${agreement_detail_page}  ${link}
+	log  agreement_link: ${link}  WARN
+	smart go to  ${link}
+	log location
+
+	#  Зберігаємо id в ЦБД
+	${agreement_cdb_id}  get text  //*[@data-qa="agreement-idcdb"]
+    set global variable  ${agreement_cdb_id}
+	log  agreement_cdb_id: ${agreement_cdb_id}  WARN
 
 
 loading дочекатись закінчення загрузки сторінки
