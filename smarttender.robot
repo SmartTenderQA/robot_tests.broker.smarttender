@@ -1233,6 +1233,17 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	set global variable  ${tender_uaid}
 
 
+Пошук угоди по ідентифікатору
+	[Arguments]  ${username}  ${agreement_uaid}
+	${agreement_detail_page_exist}  run keyword and return status  variable should exist  ${agreement_detail_page}
+	return from keyword if  ${agreement_detail_page_exist}
+	smarttender.перейти до тестових рамок
+	smarttender.сторінка_торгів ввести текст в поле пошуку  ${agreement_uaid}
+	smarttender.сторінка_торгів виконати пошук
+	smarttender.сторінка_рамок перейти за першим результатом пошуку
+	set global variable  ${agreement_uaid}
+
+
 Оновити сторінку з тендером
 	[Arguments]   ${username}  ${tender_uaid}
     [Documentation]   Оновити сторінку з тендером для отримання потенційно оновлених даних.
@@ -1249,6 +1260,15 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	...  loading дочекатись закінчення загрузки сторінки
 
 
+###############################################
+###############################################
+Отримати інформацію із угоди
+	[Arguments]  ${username}  ${agreement_uaid}  ${field_name}
+	${field_value}  run keyword  smarttender.сторінка_детальної_інформації_угоди отримати ${field_name}
+	[Return]  ${field_value}
+
+сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].rationaleType
+	no operation
 ###############################################
 ###############################################
 Отримати інформацію із тендера
@@ -2691,9 +2711,8 @@ _перейти до сторінки вимоги_кваліфікація
     [Documentation]  Відповісти на вимогу complaintID про виправлення визначення переможця під номером award_index для тендера tender_uaid, використовуючи при цьому дані answer_data.
     webclient.знайти тендер у webclient  ${tender_uaid}
     #  знаходимо потрібну вимогу
-    ${tab_status}  run keyword and return status  webclient.активувати вкладку  Звернення за умовами тендеру
-	run keyword if  "${tab_status}" == "False"    webclient.активувати вкладку  Оскарження умов тендеру
-    webclient.header натиснути на елемент за назвою  Оновити
+	вибрати переможця за номером  ${award_index}+1
+    webclient.активувати вкладку  Звернення  index=2
     log to console  Відповісти на вимогу про виправлення визначення переможця
 	${complaintID_search_field}  set variable  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[2]//td//input)[1]
     loading дочекатися відображення елемента на сторінці  ${complaintID_search_field}
@@ -3550,6 +3569,12 @@ _план_сторінка_детальної_інформації отрима�
 	[Return]  ${field_value}
 
 
+сторінка_детальної_інформації отримати agreements[${agreement_index}].agreementID
+	${field_locator}  set variable  //*[@data-qa="agreement-cdb-number"]//*[@data-qa="value"]
+	${field_value}  get text  ${field_locator}
+	[Return]  ${field_value}
+
+
 сторінка_детальної_інформації отримати awards
 	[Arguments]  ${field_name}
 	# розгорунти блок, якщо потрібно
@@ -3981,6 +4006,11 @@ cтатус тендера повинен бути
     smart go to  ${url}
 
 
+перейти до тестових рамок
+    ${url}  set variable  https://test.smarttender.biz/agreements?tm=2
+    smart go to  ${url}
+
+
 сторінка_торгів ввести текст в поле пошуку
 	[Arguments]  ${text}
 	${selector}  set variable  //*[@data-qa="search-block-input"]
@@ -4010,6 +4040,22 @@ cтатус тендера повинен бути
 	${tender_cdb_id}  get text  //*[@data-qa="prozorro-id"]//*[@data-qa="value"]
     set global variable  ${tender_cdb_id}
 	log  tender_cdb_id: ${tender_cdb_id}  WARN
+
+
+сторінка_рамок перейти за першим результатом пошуку
+	${selector}  set variable  xpath=(//*[@data-qa="agreement-detail-url"])[1]
+	loading дочекатися відображення елемента на сторінці  ${selector}  20s
+	#  Зберігаємо лінк на сторінку детальної тендеру
+	${link}  get element attribute  ${selector}@href
+	set global variable  ${agreement_detail_page}  ${link}
+	log  agreement_link: ${link}  WARN
+	smart go to  ${link}
+	log location
+
+	#  Зберігаємо id в ЦБД
+	${agreement_cdb_id}  get text  //*[@data-qa="agreement-idcdb"]
+    set global variable  ${agreement_cdb_id}
+	log  agreement_cdb_id: ${agreement_cdb_id}  WARN
 
 
 loading дочекатись закінчення загрузки сторінки
@@ -4138,8 +4184,9 @@ _Дочекатись синхронізації
     comment  Розгорнути лот якщо id існує
     run keyword if  "${lot_id}" != "${Empty}"  _розгорнути лот по id  ${lot_id}
 
-    ${list for exit}  create list  open_competitive_dialogue
-    return from keyword if  "${mode}" in @{list for exit}
+    ${input}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
+    ${status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${input}/..
+    return from keyword if  not ${status}  Сума пропозиції не заповнюється
 
     comment  Якщо ESCO пропозиція_заповнити поле з ціною для ESCO та виходимо з кейворда пропозиція_заповнити поле з ціною
     run keyword if  "${mode}" == "open_esco"  run keywords
@@ -4155,7 +4202,6 @@ _Дочекатись синхронізації
     ${count_lot}  evaluate  ${count_lot} + 1
 
     comment  Ввести ціну пропозиції
-    ${input}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
     input text  ${input}  ${amount}
 
 
@@ -4310,22 +4356,22 @@ _розгорнути лот по id
 пропозиція_встановити тип кофіденційності на
     [Documentation]   ${new_status} может быть 'false' или 'true'
     [Arguments]  ${new_status}  ${doc_id}
-    ${selector}  set variable  xpath=(//*[@class="file-container"])[1][contains(., "${doc_id}")]//*[@type="hidden"]
+    ${selector}  set variable  xpath=(//*[@class="file-container"])[1]//*[@class="file ivu-row"][contains(., "${doc_id}")]//*[@type="hidden"]
     ${current_status}  get element attribute  ${selector}@value
     run keyword if  "${current_status}" != "${new_status}"  run keywords
-    ...  click element  ${selector}                 AND
+    ...  click element  ${selector}/..              AND
     ...  sleep  1                                   AND
     ...  пропозиція_встановити тип кофіденційності  ${new_status}  ${doc_id}
 
 
 пропозиція_ввести текст причини конфіденційності документу
     [Arguments]  ${doc_data}  ${doc_id}
-    ${selector}  set variable  xpath=(//*[@class="file-container"])[1][contains(., "${doc_id}")]//*[@placeholder="Введіть причину"]
+    ${selector}  set variable  xpath=(//*[@class="file-container"])[1]//*[@class="file ivu-row"][contains(., "${doc_id}")]//*[@placeholder="Введіть причину"]
     ${text_to_enter}  set variable  ${doc_data['data']['confidentialityRationale']}
     input text  ${selector}  ${doc_data['data']['confidentialityRationale']}
     sleep  .5
     ${entered_text}  get element attribute  ${selector}@value
-    ${status}  run keyword and return status  should be byte string  ${entered_text}  ${text_to_enter}
+    ${status}  run keyword and return status  should be equal as strings  ${entered_text}  ${text_to_enter}
     run keyword if  not ${status}  пропозиція_ввести текст причини конфіденційності документу  ${doc_data}  ${doc_id}
 
 
@@ -4846,6 +4892,49 @@ eds накласти ецп
     loading дочекатися зникнення елемента зі сторінки  (//*[@data-qa="eds-submit-sign"])[${index}]  200
 ############################################################
 ############################################################
+Встановити ціну за одиницю для контракту
+    [Arguments]  ${username}  ${tender_uaid}  ${award_data}
+    log to console  Встановити ціну за одиницю для контракту
+
+    comment  після негативного тесткейса залишилося вікно кваліфікації, закриваемо
+    run keyword and ignore error  click element   ${screen_root_selector}//*[@alt="Close"]
+
+    ${award_name}  set variable  ${award_data['data']['suppliers'][0]['name']}
+    ${unitPrices}  set variable  ${award_data['data']['unitPrices'][0]['value']['amount']}
+
+    вибрати переможця за ім'ям  ${award_name}
+    header натиснути на елемент за назвою  Заповнити ціни
+    Запонити поле з ціною за одиницю
+    header натиснути на елемент за назвою  OK
+
+
+Зареєструвати угоду
+    [Arguments]  ${username}  ${tender_uaid}  ${agreement_dates}
+    log to console  Зареєструвати угоду
+
+    ${startDate}  convert_date_from_smart_format  ${agreement_dates['startDate']}
+    ${startDate}  convert date  ${startDate}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S+02:00
+    ${endDate}  convert_date_from_smart_format  ${agreement_dates['endDate']}
+    ${endDate}  convert date  ${endDate}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S+02:00
+
+    знайти тендер у webclient  ${tender_uaid}
+    # Ждем окончания периода обжалования  5 мин == 5 дней
+    Sleep  5m
+    header натиснути на елемент за назвою  Коригувати рамкову угоду
+
+    ${id}  evaluate  random.randint(100000, 999999)  random
+    заповнити simple input  xpath=(//*[@data-type="TextBox"])[1]//input  ${id}
+    ${signDate}  Get Current Date  result_format=%d.%m.%Y
+    заповнити поле з датою  xpath=(//*[@data-type="DateEdit"])[1]//input  ${signDate}
+    заповнити поле з датою  xpath=(//*[@data-type="DateEdit"])[2]//input  ${startDate}
+    заповнити поле з датою  xpath=(//*[@data-type="DateEdit"])[3]//input  ${endDate}
+    header натиснути на елемент за назвою  OK
+    header натиснути на елемент за назвою  Заключить рамочное соглашение
+    dialog box заголовок повинен містити  Ви впевнені, що бажаєте перевести рамкову угоду
+	dialog box натиснути кнопку  Так
+    dialog box заголовок повинен містити  Накласти ЕЦП/КЕП
+	dialog box натиснути кнопку  Так
+	Підписати ЕЦП(webclient)
 
 
 

@@ -739,6 +739,13 @@ grid вибрати рядок за номером
     Wait Until Keyword Succeeds  10  2  Click Element  xpath=(${winners})[${award_num}]
 
 
+вибрати переможця за ім'ям
+    [Arguments]  ${award_name}
+     ${selector}  set variable
+     ...  //*[@data-placeid="BIDS"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//*[@data-placeid="BIDS"]//div[contains(text(),"Поста")]/ancestor::td[1]/preceding-sibling::*)][text()='${award_name}']
+    Wait Until Keyword Succeeds  10  2  Click Element  xpath=${selector}
+
+
 вибрати учасника за номером
     [Arguments]  ${qualification_num}
     ${participants}  set variable
@@ -1030,3 +1037,28 @@ clear input by Backspace
 	run keyword if  ${is_visible}  click element  ${checkbox_1}
 	${is_visible}  run keyword and return status  loading дочекатися відображення елемента на сторінці   ${checkbox_2}  1
 	run keyword if  ${is_visible}  click element  ${checkbox_2}
+
+
+Запонити поле з ціною за одиницю
+    [Arguments]  ${unitPrices}=${Empty}
+    ${price field}  Set Variable  xpath=//div[@id="pcModalMode_PW-1"]//tr[contains(@class,"Row")]//td[count(//*[@title="Ціна"]/ancestor::td[1]/preceding-sibling::td)+1]
+    ${price}  Визначити ціну за одиницю номенклатури
+    ${price}  set variable if  "${unitPrices}" != "${Empty}"  ${unitPrices}
+    ...                                                   ${price}
+    Click Element  ${price field}
+    Sleep  .5
+    Click Element  ${price field}
+    Sleep  .5
+    Input Text  ${price field}//input  ${price}
+    Sleep  .5
+
+
+Визначити ціну за одиницю номенклатури
+    ${quantity selector}  Set Variable  xpath=//div[@id="pcModalMode_PW-1"]//tr[contains(@class,"Row")]//td[count(//*[@title="Кількість"]/ancestor::td[1]/preceding-sibling::td)+1]
+    ${quantity}  Get Text  ${quantity selector}
+    ${proposal price selector}  Set Variable  //div[@id="pcModalMode_PW-1"]//span[contains(text(),"Сума пропозиції")]
+    ${price}  Get Text  ${proposal price selector}
+    ${price}  Evaluate  re.search(r'\\D+:\\s(?P<price>\\d.+)', '${price}').group('price')  re
+    ${price}  Evaluate  '${price}'.replace(" ", "")
+    ${price}  Evaluate  str(int(${price} / ${quantity}) * 0.9)
+    [Return]  ${price}
