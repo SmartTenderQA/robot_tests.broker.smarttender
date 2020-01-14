@@ -1264,11 +1264,24 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 ###############################################
 Отримати інформацію із угоди
 	[Arguments]  ${username}  ${agreement_uaid}  ${field_name}
-	${field_value}  run keyword  smarttender.сторінка_детальної_інформації_угоди отримати ${field_name}
+	${field_value}  smarttender._дописать сторінка_детальної_інформації_угоди отримати  ${username}  ${agreement_uaid}  ${field_name}
+#	${field_value}  run keyword  smarttender.сторінка_детальної_інформації_угоди отримати ${field_name}
 	[Return]  ${field_value}
+
+_дописать сторінка_детальної_інформації_угоди отримати
+	[Arguments]  ${username}  ${agreement_uaid}  ${field_name}
+	log to console  ${\n}smarttender.сторінка_детальної_інформації_угоди отримати {field_name}
+	log to console  ${field_name}
+	debug
+	[Return]  ${field_value}
+
+
 
 сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].rationaleType
 	no operation
+
+
+
 ###############################################
 ###############################################
 Отримати інформацію із тендера
