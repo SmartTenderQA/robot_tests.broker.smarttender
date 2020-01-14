@@ -4184,8 +4184,9 @@ _Дочекатись синхронізації
     comment  Розгорнути лот якщо id існує
     run keyword if  "${lot_id}" != "${Empty}"  _розгорнути лот по id  ${lot_id}
 
-    ${list for exit}  create list  open_competitive_dialogue
-    return from keyword if  "${mode}" in @{list for exit}
+    ${input}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
+    ${status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${input}/..
+    return from keyword if  not ${status}  Сума пропозиції не заповнюється
 
     comment  Якщо ESCO пропозиція_заповнити поле з ціною для ESCO та виходимо з кейворда пропозиція_заповнити поле з ціною
     run keyword if  "${mode}" == "open_esco"  run keywords
@@ -4201,7 +4202,6 @@ _Дочекатись синхронізації
     ${count_lot}  evaluate  ${count_lot} + 1
 
     comment  Ввести ціну пропозиції
-    ${input}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
     input text  ${input}  ${amount}
 
 
