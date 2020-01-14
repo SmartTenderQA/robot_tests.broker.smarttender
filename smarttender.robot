@@ -4856,6 +4856,49 @@ eds накласти ецп
     loading дочекатися зникнення елемента зі сторінки  (//*[@data-qa="eds-submit-sign"])[${index}]  200
 ############################################################
 ############################################################
+Встановити ціну за одиницю для контракту
+    [Arguments]  ${username}  ${tender_uaid}  ${award_data}
+    log to console  Встановити ціну за одиницю для контракту
+
+    comment  після негативного тесткейса залишилося вікно кваліфікації, закриваемо
+    run keyword and ignore error  click element   ${screen_root_selector}//*[@alt="Close"]
+
+    ${award_name}  set variable  ${award_data['data']['suppliers'][0]['name']}
+    ${unitPrices}  set variable  ${award_data['data']['unitPrices'][0]['value']['amount']}
+
+    вибрати переможця за ім'ям  ${award_name}
+    header натиснути на елемент за назвою  Заповнити ціни
+    Запонити поле з ціною за одиницю
+    header натиснути на елемент за назвою  OK
+
+
+Зареєструвати угоду
+    [Arguments]  ${username}  ${tender_uaid}  ${agreement_dates}
+    log to console  Зареєструвати угоду
+
+    ${startDate}  convert_date_from_smart_format  ${agreement_dates['startDate']}
+    ${startDate}  convert date  ${startDate}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S+02:00
+    ${endDate}  convert_date_from_smart_format  ${agreement_dates['endDate']}
+    ${endDate}  convert date  ${endDate}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S+02:00
+
+    знайти тендер у webclient  ${tender_uaid}
+    # Ждем окончания периода обжалования  5 мин == 5 дней
+    Sleep  5m
+    header натиснути на елемент за назвою  Коригувати рамкову угоду
+
+    ${id}  evaluate  random.randint(100000, 999999)  random
+    заповнити simple input  xpath=(//*[@data-type="TextBox"])[1]//input  ${id}
+    ${signDate}  Get Current Date  result_format=%d.%m.%Y
+    заповнити поле з датою  xpath=(//*[@data-type="DateEdit"])[1]//input  ${signDate}
+    заповнити поле з датою  xpath=(//*[@data-type="DateEdit"])[2]//input  ${startDate}
+    заповнити поле з датою  xpath=(//*[@data-type="DateEdit"])[3]//input  ${endDate}
+    header натиснути на елемент за назвою  OK
+    header натиснути на елемент за назвою  Заключить рамочное соглашение
+    dialog box заголовок повинен містити  Ви впевнені, що бажаєте перевести рамкову угоду
+	dialog box натиснути кнопку  Так
+    dialog box заголовок повинен містити  Накласти ЕЦП/КЕП
+	dialog box натиснути кнопку  Так
+	Підписати ЕЦП(webclient)
 
 
 
