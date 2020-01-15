@@ -1324,11 +1324,45 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 ###############################################
 Отримати інформацію із угоди
 	[Arguments]  ${username}  ${agreement_uaid}  ${field_name}
+	reload page
+	loading дочекатись закінчення загрузки сторінки
 	${field_value}  run keyword  smarttender.сторінка_детальної_інформації_угоди отримати ${field_name}
 	[Return]  ${field_value}
 
+
 сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].rationaleType
 	no operation
+	# как получить это значение в статусе "pending"?
+
+сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].rationale
+	no operation
+	# как получить это значение в статусе "pending"?
+
+сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].modifications[${modifications_index}].itemId
+	no operation
+	# как получить это значение в статусе "pending"?
+
+сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].modifications[${modifications_index}].addend
+	no operation
+	# как получить это значение в статусе "pending"?
+
+сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].status
+	# Сверху всегда отображается последние changes
+	${selector}  set variable  xpath=(//*[@data-qa="changes-block"])[${agreement_index}]//*[@data-qa="change-status-title"]
+	${field_value_in_smart_format}  get text  ${selector}
+	${field_value}  set variable if
+		...  "${field_value_in_smart_format}" == "Непідтверджена зміна"  pending
+		...  "${field_value_in_smart_format}" == "Скасована зміна"  cancelled
+		...  "${field_value_in_smart_format}" == "Підтверджена зміна"  active
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].modifications[${modifications_index}].factor
+	no operation
+	# как получить єто значение в статусе "pending"?
+
+
+
 ###############################################
 ###############################################
 Отримати інформацію із тендера
@@ -2736,9 +2770,14 @@ _перейти до сторінки вимоги_кваліфікація
     webclient.знайти тендер у webclient  ${tender_uaid}
     #  знаходимо потрібну вимогу
 	вибрати переможця за номером  ${award_index}+1
-    webclient.активувати вкладку  Звернення  index=2
+	run keyword if  "${mode}" == "openua"
+        ...  webclient.активувати вкладку  Оскарження рішення
+    ...  ELSE
+        ...  webclient.активувати вкладку  Звернення  index=2
     log to console  Відповісти на вимогу про виправлення визначення переможця
-	${complaintID_search_field}  set variable  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[2]//td//input)[1]
+	${complaintID_search_field}  set variable if
+		...  "${mode}" == "openua"  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[3]//td//input)[1]
+		...  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[2]//td//input)[1]
     loading дочекатися відображення елемента на сторінці  ${complaintID_search_field}
     clear input by JS  ${complaintID_search_field}
     Input Type Flex  ${complaintID_search_field}  ${complaintID}
@@ -4211,8 +4250,9 @@ _Дочекатись синхронізації
     comment  Розгорнути лот якщо id існує
     run keyword if  "${lot_id}" != "${Empty}"  _розгорнути лот по id  ${lot_id}
 
-    ${list for exit}  create list  open_competitive_dialogue
-    return from keyword if  "${mode}" in @{list for exit}
+    ${input}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
+    ${status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${input}/..
+    return from keyword if  not ${status}  Сума пропозиції не заповнюється
 
     comment  Якщо ESCO пропозиція_заповнити поле з ціною для ESCO та виходимо з кейворда пропозиція_заповнити поле з ціною
     run keyword if  "${mode}" == "open_esco"  run keywords
@@ -4228,7 +4268,6 @@ _Дочекатись синхронізації
     ${count_lot}  evaluate  ${count_lot} + 1
 
     comment  Ввести ціну пропозиції
-    ${input}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
     input text  ${input}  ${amount}
 
 
