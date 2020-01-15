@@ -2710,9 +2710,14 @@ _перейти до сторінки вимоги_кваліфікація
     webclient.знайти тендер у webclient  ${tender_uaid}
     #  знаходимо потрібну вимогу
 	вибрати переможця за номером  ${award_index}+1
-    webclient.активувати вкладку  Звернення  index=2
+	run keyword if  "${mode}" == "openua"
+        ...  webclient.активувати вкладку  Оскарження рішення
+    ...  ELSE
+        ...  webclient.активувати вкладку  Звернення  index=2
     log to console  Відповісти на вимогу про виправлення визначення переможця
-	${complaintID_search_field}  set variable  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[2]//td//input)[1]
+	${complaintID_search_field}  set variable if
+		...  "${mode}" == "openua"  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[3]//td//input)[1]
+		...  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[2]//td//input)[1]
     loading дочекатися відображення елемента на сторінці  ${complaintID_search_field}
     clear input by JS  ${complaintID_search_field}
     Input Type Flex  ${complaintID_search_field}  ${complaintID}
