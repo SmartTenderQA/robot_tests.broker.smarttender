@@ -1264,21 +1264,42 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 ###############################################
 Отримати інформацію із угоди
 	[Arguments]  ${username}  ${agreement_uaid}  ${field_name}
-	${field_value}  smarttender._дописать сторінка_детальної_інформації_угоди отримати  ${username}  ${agreement_uaid}  ${field_name}
-#	${field_value}  run keyword  smarttender.сторінка_детальної_інформації_угоди отримати ${field_name}
+	reload page
+	loading дочекатись закінчення загрузки сторінки
+	${field_value}  run keyword  smarttender.сторінка_детальної_інформації_угоди отримати ${field_name}
 	[Return]  ${field_value}
-
-_дописать сторінка_детальної_інформації_угоди отримати
-	[Arguments]  ${username}  ${agreement_uaid}  ${field_name}
-	log to console  ${\n}smarttender.сторінка_детальної_інформації_угоди отримати {field_name}
-	log to console  ${field_name}
-	debug
-	[Return]  ${field_value}
-
 
 
 сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].rationaleType
 	no operation
+	# как получить это значение в статусе "pending"?
+
+сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].rationale
+	no operation
+	# как получить это значение в статусе "pending"?
+
+сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].modifications[${modifications_index}].itemId
+	no operation
+	# как получить это значение в статусе "pending"?
+
+сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].modifications[${modifications_index}].addend
+	no operation
+	# как получить это значение в статусе "pending"?
+
+сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].status
+	# Сверху всегда отображается последние changes
+	${selector}  set variable  xpath=(//*[@data-qa="changes-block"])[${agreement_index}]//*[@data-qa="change-status-title"]
+	${field_value_in_smart_format}  get text  ${selector}
+	${field_value}  set variable if
+		...  "${field_value_in_smart_format}" == "Непідтверджена зміна"  pending
+		...  "${field_value_in_smart_format}" == "Скасована зміна"  cancelled
+		...  "${field_value_in_smart_format}" == "Підтверджена зміна"  active
+	[Return]  ${field_value}
+
+
+сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].modifications[${modifications_index}].factor
+	no operation
+	# как получить єто значение в статусе "pending"?
 
 
 
