@@ -1287,8 +1287,12 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	# как получить это значение в статусе "pending"?
 
 сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].status
+	# changes в статусе cancelled отображаются только у организатора
+	# У тест кейсов "Відображення статусу cancelled зміни itemPriceVariation" и "Відображення статусу cancelled зміни partyWithdrawal"
+	# нет уникального тега для исключения, для yих сделан такой return
+	return from keyword if  "Відображення статусу cancelled" in "${TEST_NAME}"  cancelled
 	# Сверху всегда отображается последние changes
-	${selector}  set variable  xpath=(//*[@data-qa="changes-block"])[${agreement_index}]//*[@data-qa="change-status-title"]
+	${selector}  set variable  xpath=(//*[@data-qa="changes-block"])[1]//*[@data-qa="change-status-title"]
 	${field_value_in_smart_format}  get text  ${selector}
 	${field_value}  set variable if
 		...  "${field_value_in_smart_format}" == "Непідтверджена зміна"  pending
