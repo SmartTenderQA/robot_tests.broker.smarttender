@@ -66,6 +66,7 @@ ${plan_item_title_input}            //*[@data-qa="nomenclature-Title"]//input
 ${plan_item_quantity_root}          //*[@data-qa="nomenclature-Quantity"]
 ${plan_item_unit_name_root}         //*[@data-qa="nomenclature-UnitId"]
 ${deliveryDate_root}                //*[@data-qa="nomenclature-delivery-date-to"]
+${agreement_cdb_number}
 ######################################
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
@@ -157,11 +158,70 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	...  fatal error  Тендер на створено!!!
 
 
+Створити тендер другого етапу
+    [Arguments]  ${username}  ${tender_data}
+	${tender_data}  get from dictionary  ${tender_data}  data
+	set global variable  ${tender_data}
+	${multilot}  set variable if  '${NUMBER_OF_LOTS}' != '0'  ${SPACE}multilot  ${EMPTY}
+	run keyword  Оголосити закупівлю ${mode}${multilot}  ${tender_data}
+	${tender_uaid}  webclient.отримати номер тендера
+	set global variable  ${tender_detail_page}  https://test.smarttender.biz/publichni-zakupivli-prozorro/${tender_uaid}/
+	[Return]  ${tender_uaid}
+	[Teardown]  Run Keyword If  "${KEYWORD STATUS}" == "FAIL"  run keywords
+	...  capture page screenshot        AND
+	...  fatal error  Тендер на створено!!!
+
+
 Отримати номер плану з артифакту
 	${file_path}  Get Variable Value  ${ARTIFACT_FILE}  artifact_plan.yaml
 	${ARTIFACT}  Load Data From  ${file_path}
 	${plan_uaid}  set variable  ${ARTIFACT['tender_uaid']}
 	[Return]  ${plan_uaid}
+
+
+Отримати номер тендера з артифакту
+	${file_path}  Get Variable Value  ${ARTIFACT_FILE}  artifact.yaml
+	${ARTIFACT}  Load Data From  ${file_path}
+	${tender_uaid}  set variable  ${ARTIFACT['tender_uaid']}
+	[Return]  ${tender_uaid}
+
+
+Оголосити закупівлю framework_selection multilot
+    [Arguments]  ${tender_data}
+    log to console  Оголосити закупівлю framework_selection multilot
+    # ОСНОВНІ ПОЛЯ
+    ${title}  set variable  ${tender_data['title']}
+    ${title_en}  set variable  ${tender_data['title_en']}
+    ${description}  set variable  ${tender_data['description']}
+    ${description_en}  set variable  ${tender_data['description_en']}
+
+    ${1st_agreement_tender_uaid}  Отримати номер тендера з артифакту
+    smarttender.Оголосити відбір framework_selection  ${1st_agreement_tender_uaid}  ${title}  ${title_en}
+
+    smart go to  http://test.smarttender.biz/webclient/?testmode=1&proj=it_uk&tz=3
+	webclient.робочий стіл натиснути на елемент за назвою  Рамкові угоди 2 етап(тестові)
+	webclient.header натиснути на елемент за назвою  Очистити
+	webclient.header натиснути на елемент за назвою  OK
+    webclient.пошук тендера по title  ${title}
+
+
+Оголосити відбір framework_selection
+    [Arguments]  ${1st_agreement_tender_uaid}  ${title}  ${title_en}
+    log to console  Оголосити відбір framework_selection
+    smarttender.Пошук угоди по ідентифікатору  owner  ${1st_agreement_tender_uaid}-a1
+    button type=button click by text  Коригувати угоду
+    button type=button click by text  Опублікувати запрошення на 2 етап
+
+    ${title_input}     set variable  xpath=//*[@data-qa="purchase-tab"]/div[2]//textarea
+    ${title_en_input}  set variable  xpath=//*[@data-qa="purchase-tab"]/div[3]//textarea
+    ${checkbox}        set variable  xpath=//*[@data-qa="purchase-tab"]/div[6]//*[@class="smt-checkbox-item"]
+    ${success_msg}     set variable  xpath=//*[.="Оголошення відправлено."]
+    заповнити simple input  ${title_input}     ${title}
+    заповнити simple input  ${title_en_input}  ${title_en}
+    click element  ${checkbox}
+    loading дочекатись закінчення загрузки сторінки
+    button type=button click by text  Підтвердити запрошення
+    loading дочекатися відображення елемента на сторінці  ${success_msg}
 
 
 Оголосити закупівлю belowThreshold		#Допорог
@@ -3115,7 +3175,7 @@ _закарити сповіщення про кваліфікацію за не
 
 Підтвердити підписання контракту continue
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
-    Відкрити вікно прикріплення договору  ${contract_num}
+    Відкрити вікно прикріплення договору  ${contract_num}  ${tender_uaid}
     #  Заповнюємо поля договору
 	${id}  evaluate  str(uuid.uuid4())  uuid
 	заповнити поле для угоди id  ${id}
@@ -3577,6 +3637,7 @@ _план_сторінка_детальної_інформації отрима�
 
 
 сторінка_детальної_інформації отримати agreements[${agreement_index}].agreementID
+    return from keyword if  "framework_selection" == "${mode}"  ${agreement_cdb_number}
 	${field_locator}  set variable  //*[@data-qa="agreement-cdb-number"]//*[@data-qa="value"]
 	${field_value}  get text  ${field_locator}
 	[Return]  ${field_value}
@@ -4060,8 +4121,10 @@ cтатус тендера повинен бути
 	log location
 
 	#  Зберігаємо id в ЦБД
-	${agreement_cdb_id}  get text  //*[@data-qa="agreement-idcdb"]
+	${agreement_cdb_id}      get text  //*[@data-qa="agreement-idcdb"]
+	${agreement_cdb_number}  get text  //*[@data-qa="agreement-cdbnumber"]
     set global variable  ${agreement_cdb_id}
+	set global variable  ${agreement_cdb_number}
 	log  agreement_cdb_id: ${agreement_cdb_id}  WARN
 
 
@@ -4191,14 +4254,14 @@ _Дочекатись синхронізації
     comment  Розгорнути лот якщо id існує
     run keyword if  "${lot_id}" != "${Empty}"  _розгорнути лот по id  ${lot_id}
 
-    ${input}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
-    ${status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${input}/..
-    return from keyword if  not ${status}  Сума пропозиції не заповнюється
-
     comment  Якщо ESCO пропозиція_заповнити поле з ціною для ESCO та виходимо з кейворда пропозиція_заповнити поле з ціною
     run keyword if  "${mode}" == "open_esco"  run keywords
     ...  пропозиція_заповнити поле з ціною для ESCO  ${lot_id}  ${bid}  AND
     ...  return from keyword
+
+    ${input}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
+    ${status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${input}/..
+    return from keyword if  not ${status}  Сума пропозиції не заповнюється
 
     comment  Отримуємо значення ціни пропозиції
     ${is_multiple}  set variable  ${bid['data'].get('lotValues')}
@@ -4349,7 +4412,7 @@ _розгорнути лот по id
     loading дочекатися відображення елемента на сторінці  xpath=${last_doc_type}
     click element  xpath=${last_doc_type}
 
-    loading дочекатися відображення елемента на сторінці  xpath=${item_in_list}
+#    loading дочекатися відображення елемента на сторінці  xpath=${item_in_list}
     wait until keyword succeeds  10  1  click element  xpath=${item_in_list}
     loading дочекатися зникнення елемента зі сторінки  ${item_in_list}
 
@@ -4368,7 +4431,7 @@ _розгорнути лот по id
     run keyword if  "${current_status}" != "${new_status}"  run keywords
     ...  click element  ${selector}/..              AND
     ...  sleep  1                                   AND
-    ...  пропозиція_встановити тип кофіденційності  ${new_status}  ${doc_id}
+    ...  пропозиція_встановити тип кофіденційності на  ${new_status}  ${doc_id}
 
 
 пропозиція_ввести текст причини конфіденційності документу
@@ -4942,7 +5005,6 @@ eds накласти ецп
     dialog box заголовок повинен містити  Накласти ЕЦП/КЕП
 	dialog box натиснути кнопку  Так
 	Підписати ЕЦП(webclient)
-
 
 
 
