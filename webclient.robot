@@ -691,7 +691,7 @@ _отримати статус відображення вікна ЕЦП(webcli
 
 
 Відкрити вікно прикріплення договору
-    [Arguments]  ${contract_num}
+    [Arguments]  ${contract_num}  ${tender_uaid}
     ${tab_name}  set variable if  '${NUMBER_OF_LOTS}' != '0'  Предложения (м)  Пропозиції
     ${status}  run keyword and return status  screen заголовок повинен містити  Вкладення договірних документів
     run keyword if  not ${status}  run keywords
