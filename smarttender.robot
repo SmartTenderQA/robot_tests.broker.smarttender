@@ -4364,7 +4364,7 @@ _розгорнути лот по id
     run keyword if  "${current_status}" != "${new_status}"  run keywords
     ...  click element  ${selector}/..              AND
     ...  sleep  1                                   AND
-    ...  пропозиція_встановити тип кофіденційності  ${new_status}  ${doc_id}
+    ...  пропозиція_встановити тип кофіденційності на  ${new_status}  ${doc_id}
 
 
 пропозиція_ввести текст причини конфіденційності документу
