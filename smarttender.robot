@@ -3171,7 +3171,7 @@ _закарити сповіщення про кваліфікацію за не
 
 Підтвердити підписання контракту continue
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
-    Відкрити вікно прикріплення договору  ${contract_num}
+    Відкрити вікно прикріплення договору  ${contract_num}  ${tender_uaid}
     #  Заповнюємо поля договору
 	${id}  evaluate  str(uuid.uuid4())  uuid
 	заповнити поле для угоди id  ${id}
