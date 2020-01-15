@@ -1264,11 +1264,24 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 ###############################################
 Отримати інформацію із угоди
 	[Arguments]  ${username}  ${agreement_uaid}  ${field_name}
-	${field_value}  run keyword  smarttender.сторінка_детальної_інформації_угоди отримати ${field_name}
+	${field_value}  smarttender._дописать сторінка_детальної_інформації_угоди отримати  ${username}  ${agreement_uaid}  ${field_name}
+#	${field_value}  run keyword  smarttender.сторінка_детальної_інформації_угоди отримати ${field_name}
 	[Return]  ${field_value}
+
+_дописать сторінка_детальної_інформації_угоди отримати
+	[Arguments]  ${username}  ${agreement_uaid}  ${field_name}
+	log to console  ${\n}smarttender.сторінка_детальної_інформації_угоди отримати {field_name}
+	log to console  ${field_name}
+	debug
+	[Return]  ${field_value}
+
+
 
 сторінка_детальної_інформації_угоди отримати changes[${agreement_index}].rationaleType
 	no operation
+
+
+
 ###############################################
 ###############################################
 Отримати інформацію із тендера
@@ -2671,42 +2684,6 @@ _перейти до сторінки вимоги_кваліфікація
 
 
 Відповісти на вимогу про виправлення визначення переможця
-    [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}  ${award_index}
-    [Documentation]  Відповісти на вимогу complaintID про виправлення визначення переможця під номером award_index для тендера tender_uaid, використовуючи при цьому дані answer_data.
-	run keyword if  "belowThreshold" == "${mode}"
-		...  Відповісти на вимогу про виправлення визначення переможця belowThreshold  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}  ${award_index}
-	...  ELSE
-		...  Відповісти на вимогу про виправлення визначення переможця default  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}  ${award_index}
-
-
-Відповісти на вимогу про виправлення визначення переможця belowThreshold
-    [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}  ${award_index}
-    [Documentation]  Відповісти на вимогу complaintID про виправлення визначення переможця під номером award_index для тендера tender_uaid, використовуючи при цьому дані answer_data.
-    webclient.знайти тендер у webclient  ${tender_uaid}
-    #  знаходимо потрібну вимогу
-	вибрати переможця за номером  ${award_index}+1
-    webclient.активувати вкладку  Звернення  index=2
-    log to console  Відповісти на вимогу про виправлення визначення переможця
-	${complaintID_search_field}  set variable  xpath=((//*[@data-placeid="BIDS"]//*[@data-type="GridView"])[2]//td//input)[1]
-    loading дочекатися відображення елемента на сторінці  ${complaintID_search_field}
-    clear input by JS  ${complaintID_search_field}
-    Input Type Flex  ${complaintID_search_field}  ${complaintID}
-	press key   ${complaintID_search_field}  \\13
-	loading дочекатись закінчення загрузки сторінки
-	#  вносимо відповідь на вимогу
-	webclient.header натиснути на елемент за назвою  Змінити
-	${resolutionType}          conver_resolutionType  ${answer_data['resolutionType']}
-	${resolution locator}      set variable  //*[@data-name="RESOLUTION"]//textarea
-	${resolutionType locator}  set variable  //*[@data-name="RESOLUTYPE"]//input[@class]
-	webclient.заповнити simple input                 ${resolution locator}      ${answer_data['resolution']}
-	webclient.вибрати значення з випадаючого списку  ${resolutionType locator}  ${resolutionType}
-	#  зберігаємо та відправляємо вимогу
-    webclient.header натиснути на елемент за назвою  Зберегти
-    dialog box заголовок повинен містити  Надіслати відповідь
-	dialog box натиснути кнопку  Так
-
-
-Відповісти на вимогу про виправлення визначення переможця default
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}  ${award_index}
     [Documentation]  Відповісти на вимогу complaintID про виправлення визначення переможця під номером award_index для тендера tender_uaid, використовуючи при цьому дані answer_data.
     webclient.знайти тендер у webclient  ${tender_uaid}
