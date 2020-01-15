@@ -4250,14 +4250,14 @@ _Дочекатись синхронізації
     comment  Розгорнути лот якщо id існує
     run keyword if  "${lot_id}" != "${Empty}"  _розгорнути лот по id  ${lot_id}
 
-    ${input}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
-    ${status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${input}/..
-    return from keyword if  not ${status}  Сума пропозиції не заповнюється
-
     comment  Якщо ESCO пропозиція_заповнити поле з ціною для ESCO та виходимо з кейворда пропозиція_заповнити поле з ціною
     run keyword if  "${mode}" == "open_esco"  run keywords
     ...  пропозиція_заповнити поле з ціною для ESCO  ${lot_id}  ${bid}  AND
     ...  return from keyword
+
+    ${input}  set variable  //*[@class="bid-card"][contains(., "${lot_id}")]//*[contains(@id, "lotAmount")]//input[1]
+    ${status}  run keyword and return status  loading дочекатися відображення елемента на сторінці  ${input}/..
+    return from keyword if  not ${status}  Сума пропозиції не заповнюється
 
     comment  Отримуємо значення ціни пропозиції
     ${is_multiple}  set variable  ${bid['data'].get('lotValues')}
