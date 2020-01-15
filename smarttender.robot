@@ -4423,7 +4423,7 @@ _розгорнути лот по id
     click element  xpath=${last_doc_type}
 
 #    loading дочекатися відображення елемента на сторінці  xpath=${item_in_list}
-    wait until keyword succeeds  10  1  click element  xpath=${item_in_list}
+    wait until keyword succeeds  10x  3s  click element  xpath=${item_in_list}
     loading дочекатися зникнення елемента зі сторінки  ${item_in_list}
 
 
