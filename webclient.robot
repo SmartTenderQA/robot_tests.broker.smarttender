@@ -287,7 +287,7 @@ ${sign btn}                         //*[@id="eds_placeholder"]//*[contains(@clas
 	[Arguments]  ${deliveryAddress.locality}
 	${locator}  set variable  //*[@data-name="CITY_KOD"]//input
 	clear input by JS  ${locator}
-	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${True}  input_methon=Input Type Flex
+	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  action_after_input=press_key
 
 
 заповнити поле для item deliveryDate.startDate
@@ -941,6 +941,15 @@ click screen header
 	run keyword and ignore error  click element  ${del_btn}
 	loading дочекатись закінчення загрузки сторінки
 	webclient.видалити всі лоти та предмети
+
+
+видалити всі лоти та предмети(виправленний)
+    [Arguments]  ${screen}=GRID_ITEMS_HIERARCHY  ${index}=1
+    ${count}  Get Matching Xpath Count  //*[@data-name="${screen}"]//tr[contains(@class,"Row")]
+	return from keyword if  ${count} == 0
+	run keyword and ignore error  click element  xpath=//*[@data-name="${screen}"]//*[@title="Видалити"][${index}]
+	loading дочекатись закінчення загрузки сторінки
+	webclient.видалити всі лоти та предмети  ${screen}  ${index}
 
 
 видалити item по id
