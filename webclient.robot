@@ -734,16 +734,18 @@ grid вибрати рядок за номером
 
 вибрати переможця за номером
     [Arguments]  ${award_num}
-    ${winners}  set variable
-    ...  //*[@data-placeid="BIDS"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//*[@data-placeid="BIDS"]//div[contains(text(),"Поста")]/ancestor::td[1]/preceding-sibling::*)][text()]
-    Wait Until Keyword Succeeds  10  2  Click Element  xpath=(${winners})[${award_num}]
+    ${winners1}  set variable  //div[@id="MainSted2TabPage_1_cp" or @id="MainSted2TabPage_2_cp"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//div[@id="MainSted2TabPage_1_cp" or @id="MainSted2TabPage_2_cp"]//div[text()="Постачальник"]/ancestor::td[1]/preceding-sibling::*)][text()]
+    ${winners2}  set variable  //div[@id="MainSted2TabPage_1_cp" or @id="MainSted2TabPage_2_cp"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//div[@id="MainSted2TabPage_1_cp" or @id="MainSted2TabPage_2_cp"]//div[text()="Постачальник"]/ancestor::td[1]/preceding-sibling::*)-2][text()]
+    ${try1}  run keyword and return status  Click Element  xpath=(${winners1})[${award_num}]
+    run keyword if  not ${try1}             Click Element  xpath=(${winners2})[${award_num}]
 
 
 вибрати переможця за ім'ям
     [Arguments]  ${award_name}
-     ${selector}  set variable
-     ...  //*[@data-placeid="BIDS"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//*[@data-placeid="BIDS"]//div[contains(text(),"Поста")]/ancestor::td[1]/preceding-sibling::*)][text()='${award_name}']
-    Wait Until Keyword Succeeds  10  2  Click Element  xpath=${selector}
+    ${selector1}  set variable  //div[@id="MainSted2TabPage_1_cp" or @id="MainSted2TabPage_2_cp"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//div[@id="MainSted2TabPage_1_cp" or @id="MainSted2TabPage_2_cp"]//div[text()="Постачальник"]/ancestor::td[1]/preceding-sibling::*)][text()='${award_name}']
+    ${selector2}  set variable  //div[@id="MainSted2TabPage_1_cp" or @id="MainSted2TabPage_2_cp"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//div[@id="MainSted2TabPage_1_cp" or @id="MainSted2TabPage_2_cp"]//div[text()="Постачальник"]/ancestor::td[1]/preceding-sibling::*)-2][text()='${award_name}']
+    ${try1}  run keyword and return status  Click Element  xpath=${selector1}
+    run keyword if  not ${try1}             Click Element  xpath=${selector2}
 
 
 вибрати учасника за номером
