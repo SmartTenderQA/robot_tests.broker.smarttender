@@ -287,7 +287,7 @@ ${sign btn}                         //*[@id="eds_placeholder"]//*[contains(@clas
 	[Arguments]  ${deliveryAddress.locality}
 	${locator}  set variable  //*[@data-name="CITY_KOD"]//input
 	clear input by JS  ${locator}
-	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  check=${True}  input_methon=Input Type Flex
+	заповнити autocomplete field  ${locator}  ${deliveryAddress.locality}  action_after_input=press_key
 
 
 заповнити поле для item deliveryDate.startDate

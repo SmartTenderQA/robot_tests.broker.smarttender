@@ -3287,6 +3287,8 @@ _закарити сповіщення про кваліфікацію за не
 	...  mid=Суб'єкт середнього підприємництва
 	...  not specified=Не субъект предпринимательства
 
+    # todo написать отдельный ввод для этого поля если еще раз упадет
+	заповнити simple input  //*[@data-name="AMOUNT"]//input  ${value.amount}  check=${False}
 	заповнити simple input  //*[@data-name="OKPO"]//input  ${identifier.id}
 	заповнити simple input  //*[@data-name="NORG_DOC"]//input  ${identifier.legalName}
 	заповнити autocomplete field  //*[@data-name="IDSCALE"]//input  ${scale_dict['${scale}']}
@@ -3297,8 +3299,6 @@ _закарити сповіщення про кваліфікацію за не
 	заповнити simple input  //*[@data-name="PIND"]//input  ${address.postalCode}
 	заповнити simple input  //*[@data-name="APOTR"]//input  ${address.streetAddress}
 	заповнити autocomplete field  //*[@data-name="CITY_KOD"]//input  ${address.locality}  check=${False}
-	# todo написать отдельный ввод для этого поля если еще раз упадет
-	заповнити simple input    //*[@data-name="AMOUNT"]//input  ${value.amount}  check=${False}
 	операція над чекбоксом  ${value.valueAddedTaxIncluded}  //*[@data-name="WITHVAT"]//input
 
     log to console  Створити постачальника, додати документацію і підтверди
