@@ -2771,6 +2771,9 @@ _перейти до сторінки вимоги_кваліфікація
 Відповісти на вимогу про виправлення визначення переможця
     [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}  ${award_index}
     [Documentation]  Відповісти на вимогу complaintID про виправлення визначення переможця під номером award_index для тендера tender_uaid, використовуючи при цьому дані answer_data.
+	# Есть один тесткейс в котором нужно принудительно перезайти в вебклиент, а в других кейсах так делать не стоит, ведь мы потеряем 20-30 секунд и не успеем в период
+	run keyword if  "відповісти і після того скасувати вимогу про виправлення визначення переможця" in "${TEST_NAME}"
+		...  smart go to  https://test.smarttender.biz/
     webclient.знайти тендер у webclient  ${tender_uaid}
     #  знаходимо потрібну вимогу
 	вибрати переможця за номером  ${award_index}+1
@@ -3173,11 +3176,17 @@ _закарити сповіщення про кваліфікацію за не
 
 
 Підтвердити підписання контракту
-    [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
+    [Arguments]  ${username}  ${tender_uaid}  ${award_num}
     [Documentation]  Перевести договір під номером contract_num до тендера tender_uaid в статус active.
     ${ignore_TK}  set variable  Неможливість укласти угоду для переговорної процедури поки не пройде stand-still період
     run keyword if  "${mode}" != "reporting" and "${ignore_TK}" != "${TEST_NAME}"  sleep  8m
-    smarttender.Підтвердити підписання контракту continue  ${username}  ${tender_uaid}  ${contract_num}
+
+    comment  из-за неправильного нэйминга теста, меняем индекс award согласно условия (действия должні віполянться для первого аварда https://prozorro.slack.com/archives/GRGH6Q8SG/p1579085479005400)
+	${mode_list}  create list  openua  open_competitive_dialogue
+	${award_num}  set variable if  ("Можливість укласти угоду для закупівлі" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")  ${award_num}-1
+    ...  ${award_num}
+
+    smarttender.Підтвердити підписання контракту continue  ${username}  ${tender_uaid}  ${award_num}
 
 
 Підтвердити підписання контракту continue
