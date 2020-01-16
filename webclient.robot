@@ -943,6 +943,15 @@ click screen header
 	webclient.видалити всі лоти та предмети
 
 
+видалити всі лоти та предмети(виправленний)
+    [Arguments]  ${screen}=GRID_ITEMS_HIERARCHY  ${index}=1
+    ${count}  Get Matching Xpath Count  //*[@data-name="${screen}"]//tr[contains(@class,"Row")]
+	return from keyword if  ${count} == 0
+	run keyword and ignore error  click element  xpath=//*[@data-name="${screen}"]//*[@title="Видалити"][${index}]
+	loading дочекатись закінчення загрузки сторінки
+	webclient.видалити всі лоти та предмети  ${screen}  ${index}
+
+
 видалити item по id
 	[Arguments]  ${item_id}  ${index}=1
 	#  Стати на комірку з потрібним предметом

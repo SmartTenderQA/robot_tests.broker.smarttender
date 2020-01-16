@@ -71,7 +71,7 @@ ${agreement_cdb_number}
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
-${hub}
+${hub}  123
 ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 
 
@@ -1121,6 +1121,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
     ${count_features}  set variable  1
 	:FOR  ${feature}  IN  @{features}
 	\  run keyword if  '${count_features}' == '1'  webclient.активувати вкладку  Якісні показники
+	\  run keyword if  '${count_features}' == '1' and '${mode}' == 'open_esco'  видалити всі лоти та предмети(виправленний)  GRID_CRITERIA
 	\  Заповнити якісні показники  ${feature}
 	\  ${count_features}  evaluate  ${count_features} + 1
 
