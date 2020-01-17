@@ -104,7 +104,7 @@ ${sign btn}                         //*[@id="eds_placeholder"]//*[contains(@clas
 заповнити поле cause_description
 	[Arguments]  ${text}
 	${locator}  set variable  //*[@data-name="REASONING"]//input
-	заповнити simple input  ${locator}  ${text}
+	заповнити autocomplete field  ${locator}  ${text}  action_after_input=press_key
 
 
 заповнити поле mainProcurementCategory

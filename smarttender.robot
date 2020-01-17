@@ -71,7 +71,7 @@ ${agreement_cdb_number}
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
-${hub}  123
+${hub}
 ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 
 
@@ -3073,10 +3073,8 @@ _надіслати вперед для отримання повідомлен�
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
 	header натиснути на елемент за назвою  Оновити
 
-	comment  из-за неправильного нэйминга теста, меняем индекс award согласно условия (действия должні віполянться для первого аварда https://prozorro.slack.com/archives/GRGH6Q8SG/p1579085479005400)
-	${mode_list}  create list  openua  open_competitive_dialogue
-	${award_num}  set variable if  ("для підтвердження другого постачальника" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")  ${award_num}-1
-    ...  ${award_num}
+	comment  из-за неправильного нэйминга теста, меняем индекс award
+	${award_num}  smarttender.Визначити необхідний award_num для кваліфікації  ${award_num}
 
 	вибрати переможця за номером  ${award_num}+1
 	header натиснути на елемент за назвою  Кваліфікація
@@ -3102,10 +3100,8 @@ _надіслати вперед для отримання повідомлен�
 	header натиснути на елемент за назвою  Оновити
 	log to console  Підтвердити постачальника
 
-    comment  из-за неправильного нэйминга теста, меняем индекс award согласно условия (действия должні віполянться для первого аварда https://prozorro.slack.com/archives/GRGH6Q8SG/p1579085479005400)
-	${mode_list}  create list  openua  open_competitive_dialogue
-	${award_num}  set variable if  ("підтвердити другого постачальника" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")  ${award_num}-1
-    ...  ${award_num}
+    comment  из-за неправильного нэйминга теста, меняем индекс award
+	${award_num}  smarttender.Визначити необхідний award_num для кваліфікації  ${award_num}
 
 	вибрати переможця за номером  ${award_num}+1
 	header натиснути на елемент за назвою  Кваліфікація
@@ -3128,6 +3124,17 @@ _надіслати вперед для отримання повідомлен�
 	Підписати ЕЦП(webclient)
 
 
+Визначити необхідний award_num для кваліфікації
+    [Arguments]  ${award_num}
+    ${mode_list}  create list  openua  openeu  open_competitive_dialogue  open_framework
+	${award_num}  set variable if
+	...  ("для підтвердження другого постачальника" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")       ${award_num}-1
+	...  ("для підтвердження третього постачальника" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")      ${award_num}-1
+	...  ("для підтвердження третього постачальника" in "${TEST_NAME}") and ("${mode}" == "open_esco")         ${award_num}-2
+	...  ("для підтвердження четвертого постачальника" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")    ${award_num}-1
+    ...  ${award_num}
+
+
 _закарити сповіщення про кваліфікацію за необхідністю
 	${notice_visible}  run keyword and return status  dialog box заголовок повинен містити  Увага!
 	run keyword if  ${notice_visible}
@@ -3148,6 +3155,12 @@ _закарити сповіщення про кваліфікацію за не
     header натиснути на елемент за назвою  Скасувати прийняте рішення
     dialog box заголовок повинен містити  Увага! Після натискання кнопки «Скасувати прийняте рішення»
 	dialog box натиснути кнопку  Так
+
+
+Затвердити постачальників
+     [Arguments]  ${username}  ${tender_uaid}
+     [Documentation]  Завершити розгляд учасників "Рамкова угода 1-й етап" (всі учасники мають бути переможцями)
+     smarttender.Затвердити остаточне рішення кваліфікації  ${username}  ${tender_uaid}
 
 
 Редагувати угоду
@@ -3257,7 +3270,6 @@ _закарити сповіщення про кваліфікацію за не
     [Arguments]  ${username}  ${tender_uaid}  ${award_num}
     [Documentation]  Перевести постачальника під номером award_num для тендера tender_uaid в статус unsuccessful.
 	log to console  Дискваліфікувати постачальника
-	debug
 
 
 Створити постачальника, додати документацію і підтвердити його
@@ -3292,14 +3304,14 @@ _закарити сповіщення про кваліфікацію за не
 	заповнити simple input  //*[@data-name="AMOUNT"]//input  ${value.amount}  check=${False}
 	заповнити simple input  //*[@data-name="OKPO"]//input  ${identifier.id}
 	заповнити simple input  //*[@data-name="NORG_DOC"]//input  ${identifier.legalName}
-	заповнити autocomplete field  //*[@data-name="IDSCALE"]//input  ${scale_dict['${scale}']}
+	заповнити autocomplete field  //*[@data-name="IDSCALE"]//input  ${scale_dict['${scale}']}  action_after_input=press_key
 	заповнити simple input  //*[@data-name="CONTACTPERSON"]//input  ${contactPoint.name}
-    заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}${space}${space}${space}
+    заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}${space}${space}${space}  input_methon=Input Type Flex
 	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}    check=${False}
 	заповнити simple input  //*[@data-name="URL"]//input  ${contactPoint.url}
 	заповнити simple input  //*[@data-name="PIND"]//input  ${address.postalCode}
 	заповнити simple input  //*[@data-name="APOTR"]//input  ${address.streetAddress}
-	заповнити autocomplete field  //*[@data-name="CITY_KOD"]//input  ${address.locality}  check=${False}
+	заповнити autocomplete field  //*[@data-name="CITY_KOD"]//input  ${address.locality}  ${False}  action_after_input=press_key
 	операція над чекбоксом  ${value.valueAddedTaxIncluded}  //*[@data-name="WITHVAT"]//input
 
     log to console  Створити постачальника, додати документацію і підтверди
