@@ -71,7 +71,7 @@ ${agreement_cdb_number}
 ${time_zone}                        +02:00
 ${tender_cdb_id}                    ${None}
 
-${hub}  123
+${hub}
 ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 
 
@@ -3292,14 +3292,14 @@ _закарити сповіщення про кваліфікацію за не
 	заповнити simple input  //*[@data-name="AMOUNT"]//input  ${value.amount}  check=${False}
 	заповнити simple input  //*[@data-name="OKPO"]//input  ${identifier.id}
 	заповнити simple input  //*[@data-name="NORG_DOC"]//input  ${identifier.legalName}
-	заповнити autocomplete field  //*[@data-name="IDSCALE"]//input  ${scale_dict['${scale}']}
+	заповнити autocomplete field  //*[@data-name="IDSCALE"]//input  ${scale_dict['${scale}']}  action_after_input=press_key
 	заповнити simple input  //*[@data-name="CONTACTPERSON"]//input  ${contactPoint.name}
-    заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}${space}${space}${space}
+    заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}${space}${space}${space}  input_methon=Input Type Flex
 	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}    check=${False}
 	заповнити simple input  //*[@data-name="URL"]//input  ${contactPoint.url}
 	заповнити simple input  //*[@data-name="PIND"]//input  ${address.postalCode}
 	заповнити simple input  //*[@data-name="APOTR"]//input  ${address.streetAddress}
-	заповнити autocomplete field  //*[@data-name="CITY_KOD"]//input  ${address.locality}  check=${False}
+	заповнити autocomplete field  //*[@data-name="CITY_KOD"]//input  ${address.locality}  ${False}  action_after_input=press_key
 	операція над чекбоксом  ${value.valueAddedTaxIncluded}  //*[@data-name="WITHVAT"]//input
 
     log to console  Створити постачальника, додати документацію і підтверди
