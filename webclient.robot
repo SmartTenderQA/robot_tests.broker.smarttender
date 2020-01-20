@@ -736,6 +736,9 @@ grid вибрати рядок за номером
     [Arguments]  ${award_num}
     ${winners1}  set variable  //div[@id="MainSted2TabPage_1_cp" or @id="MainSted2TabPage_2_cp"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//div[@id="MainSted2TabPage_1_cp" or @id="MainSted2TabPage_2_cp"]//div[text()="Постачальник"]/ancestor::td[1]/preceding-sibling::*)][text()]
     ${winners2}  set variable  //div[@id="MainSted2TabPage_1_cp" or @id="MainSted2TabPage_2_cp"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//div[@id="MainSted2TabPage_1_cp" or @id="MainSted2TabPage_2_cp"]//div[text()="Постачальник"]/ancestor::td[1]/preceding-sibling::*)-2][text()]
+    ${winners1}  set variable if
+    ...  "${mode}" == "negotiation"  //*[@data-placeid="BIDS"]//td[@class="gridViewRowHeader"]/following-sibling::td[count(//*[@data-placeid="BIDS"]//div[contains(text(),"Поста")]/ancestor::td[1]/preceding-sibling::*)][text()]
+    ...  ${winners1}
     ${try1}  run keyword and return status  Click Element  xpath=(${winners1})[${award_num}]
     run keyword if  not ${try1}             Click Element  xpath=(${winners2})[${award_num}]
 
