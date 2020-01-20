@@ -3358,7 +3358,7 @@ _закарити сповіщення про кваліфікацію за не
 	${procurementMethodType}  				get_en_procurement_method_type  ${procurementMethodType_en}
 	${tenderPeriod_startDate_not_formated}  set variable  					${tender_data['tender']['tenderPeriod']['startDate']}
 	${tender_start}          convert date  	${tenderPeriod_startDate_not_formated}  result_format=%Y  date_format=%Y-%m-%dT%H:%M:%S+02:00
-	${plan_strat}            convert date  	${tenderPeriod_startDate_not_formated}  result_format=%Y-%m  date_format=%Y-%m-%dT%H:%M:%S+02:00
+	${plan_strat}            convert date  	${tenderPeriod_startDate_not_formated}  result_format=%m.%Y  date_format=%Y-%m-%dT%H:%M:%S+02:00
 	${budget_description}  					set variable  					${tender_data['budget']['description']}
 	${budget_amount}  						convert_float_to_string         ${tender_data['budget']['amount']}
 	${budget_id}  							set variable  					${tender_data['classification']['id']}
@@ -4913,7 +4913,7 @@ plan edit додати номенклатуру
 	${unit_name}  			set variable  ${item['unit']['name']}
 	${quantity}  			convert_float_to_string  ${item['quantity']}  s=3
 	${deliveryDate}  		set variable  ${item['deliveryDate']['endDate']}
-	${deliveryDate}         convert date  ${deliveryDate}  result_format=%Y-%m-%d  date_format=%Y-%m-%dT%H:%M:%S+02:00
+	${deliveryDate}         convert date  ${deliveryDate}  result_format=%d.%m.%Y  date_format=%Y-%m-%dT%H:%M:%S+02:00
 
     plan edit вказати "Назва номенклатури"  ${description}   index=${field_number}
     plan edit заповнити "Од. вим."          ${unit_name}     index=${field_number}
