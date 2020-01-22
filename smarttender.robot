@@ -3197,7 +3197,7 @@ _закарити сповіщення про кваліфікацію за не
     run keyword if  "${mode}" != "reporting" and "${ignore_TK}" != "${TEST_NAME}"  sleep  8m
 
     comment  из-за неправильного нэйминга теста, меняем индекс award согласно условия (действия должні віполянться для первого аварда https://prozorro.slack.com/archives/GRGH6Q8SG/p1579085479005400)
-	${mode_list}  create list  openua  open_competitive_dialogue
+	${mode_list}  create list  openua  openeu  open_competitive_dialogue
 	${award_num}  set variable if  ("Можливість укласти угоду для закупівлі" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")  ${award_num}-1
     ...  ${award_num}
 
@@ -3280,6 +3280,7 @@ _закарити сповіщення про кваліфікацію за не
     header натиснути на елемент за назвою  Кваліфікація
 	smarttender._закарити сповіщення про кваліфікацію за необхідністю
 	click element  //*[contains(text(), "Відхилити пропозицію")]
+	Заповнити текст рішення квалиіфікації  Загрузка документа без кваліфікації учасника
 	${checkbox_1}  set variable  xpath=//td[contains(text(),"Не відповідає кваліфікаційним критеріям")]/preceding-sibling::td[1]
 	${is_visible}  run keyword and return status  loading дочекатися відображення елемента на сторінці   ${checkbox_1}  1
 	run keyword if  ${is_visible}  click element  ${checkbox_1}
