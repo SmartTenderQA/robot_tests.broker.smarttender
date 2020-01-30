@@ -3200,7 +3200,6 @@ _закарити сповіщення про кваліфікацію за не
 	${award_num}  set variable if
 	...  ("Можливість укласти угоду для закупівлі" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")  ${award_num}-1
 	...  "esco" in "${mode}"  0
-    ...  ${award_num}
 
     smarttender.Підтвердити підписання контракту continue  ${username}  ${tender_uaid}  ${award_num}
 
