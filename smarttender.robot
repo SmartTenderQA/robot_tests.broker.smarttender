@@ -3112,10 +3112,9 @@ _надіслати вперед для отримання повідомлен�
 	Кваліфікація. Відмітити чек-бокси для переможця за необхідністю
 	${list_of_file_args}  create_fake_doc
 	${file_path}  set variable  ${list_of_file_args[0]}
-	run keyword if  '${mode}' == 'belowThreshold'  run keywords
-	...  click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]  AND
-	...  loading дочекатись закінчення загрузки сторінки  AND
-	...  загрузити документ  ${file_path}
+	click element  //*[@data-name]//*[contains(text(), 'Перегляд...')]
+	loading дочекатись закінчення загрузки сторінки
+	загрузити документ  ${file_path}
 
 	${is_visible_save_btn}  run keyword and return status   header натиснути на елемент за назвою  Зберегти
 	run keyword if  "${is_visible_save_btn}" == "${False}"  header натиснути на елемент за назвою  Продовжити кваліфікацію
@@ -3130,7 +3129,7 @@ _надіслати вперед для отримання повідомлен�
 	${award_num}  set variable if
 	...  ("другого постачальника" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")       ${award_num}-1
 	...  ("третього постачальника" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")      ${award_num}-1
-	...  ("третього постачальника" in "${TEST_NAME}") and ("esco" in "${mode}")              ${award_num}-1
+	...  ("третього постачальника" in "${TEST_NAME}") and ("esco" in "${mode}")              ${award_num}-2
 	...  ("четвертого постачальника" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")    ${award_num}-1
     ...  ${award_num}
     [Return]  ${award_num}
@@ -3194,11 +3193,13 @@ _закарити сповіщення про кваліфікацію за не
     [Arguments]  ${username}  ${tender_uaid}  ${award_num}
     [Documentation]  Перевести договір під номером contract_num до тендера tender_uaid в статус active.
     ${ignore_TK}  set variable  Неможливість укласти угоду для переговорної процедури поки не пройде stand-still період
-    run keyword if  "${mode}" != "reporting" and "${ignore_TK}" != "${TEST_NAME}"  sleep  8m
+    #run keyword if  "${mode}" != "reporting" and "${ignore_TK}" != "${TEST_NAME}"  sleep  8m
 
     comment  из-за неправильного нэйминга теста, меняем индекс award согласно условия (действия должні віполянться для первого аварда https://prozorro.slack.com/archives/GRGH6Q8SG/p1579085479005400)
 	${mode_list}  create list  openua  openeu  open_competitive_dialogue
-	${award_num}  set variable if  ("Можливість укласти угоду для закупівлі" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")  ${award_num}-1
+	${award_num}  set variable if
+	...  ("Можливість укласти угоду для закупівлі" in "${TEST_NAME}") and ("${mode}" in "${mode_list}")  ${award_num}-1
+	...  "esco" in "${mode}"  0
     ...  ${award_num}
 
     smarttender.Підтвердити підписання контракту continue  ${username}  ${tender_uaid}  ${award_num}
@@ -3216,8 +3217,17 @@ _закарити сповіщення про кваліфікацію за не
 	заповнити поле для угоди date  ${date}
 	заповнити поле для угоди date from  ${date}
 	заповнити поле для угоди date to    ${date_to}
-	заповнити поле для угоди value.amountNet  ${contract value.amountNet}
-    заповнити поле для угоди value.amount     ${contract value.amount}
+
+    ${global_amount}     run keyword and return status  Variable Should Exist  ${contract value.amount}
+    run keyword if  ${global_amount}  заповнити поле для угоди value.amount     ${contract value.amount}
+
+	${global_amountNet}  run keyword and return status  Variable Should Exist  ${contract value.amountNet}
+	run keyword if  ${global_amountNet}  run keywords
+	...  операція над чекбоксом  ${True}  xpath=//*[@data-type="CheckBox"]//input
+	...  AND
+	...  заповнити поле для угоди value.amountNet  ${contract value.amountNet}
+    ...  ELSE  вказати суму без ПДВ залежно від чек-боксу (тендер з ПДВ чи без)
+
 	#  Додаємо документ
 	screen натиснути кнопку  Перегляд...
 	${list_of_file_args}  create_fake_doc
@@ -3232,6 +3242,18 @@ _закарити сповіщення про кваліфікацію за не
 	dialog box заголовок повинен містити  Ви дійсно хочете підписати договір?
 	dialog box натиснути кнопку  Так
 	Підписати ЕЦП(webclient)
+
+
+вказати суму без ПДВ залежно від чек-боксу (тендер з ПДВ чи без)
+    ${amount}            get element attribute  xpath=(//*[@data-type="SpinEdit"]//input)[1]@value
+    ${amount}            evaluate  '${amount}'.replace(' ', '')
+    ${amount minus 20%}  evaluate  "%.2f" % (${amount} / 1.2)
+    ${checkbox}         set variable  //*[@data-type="CheckBox" and contains(., "з ПДВ")]
+	${checkbox status}  get element attribute  ${checkbox}//span  class
+	${amount without tax}  set variable if
+	...  "Unchecked" in "${checkbox status}"  ${amount}
+	...  "Checked" in "${checkbox status}"    ${amount minus 20%}
+    заповнити поле для угоди value.amountNet  ${amount without tax}
 
 
 Перевести тендер на статус очікування обробки мостом
@@ -3270,20 +3292,26 @@ _закарити сповіщення про кваліфікацію за не
 Дискваліфікувати постачальника
     [Arguments]  ${username}  ${tender_uaid}  ${award_num}
     [Documentation]  Перевести постачальника під номером award_num для тендера tender_uaid в статус unsuccessful.
-	log to console  Дискваліфікувати постачальника
+	return from keyword if  "esco" in "${mode}"
 	знайти тендер у webclient  ${tender_uaid}
 	${tab_status}  run keyword and return status  активувати вкладку  Пропозиції
 	run keyword if  '${tab_status}' == 'False'    активувати вкладку  Предложения
 	header натиснути на елемент за назвою  Оновити
-	${award_num}  set variable if  "esco" in "${mode}"  ${award_num}-1  ${award_num}
+	#TODO убрать условие       ${award_num}  set variable if  "esco" in "${mode}"  ${award_num}-1  ${award_num}
     вибрати переможця за номером  ${award_num}+1
     header натиснути на елемент за назвою  Кваліфікація
 	smarttender._закарити сповіщення про кваліфікацію за необхідністю
 	click element  //*[contains(text(), "Відхилити пропозицію")]
+	loading дочекатись закінчення загрузки сторінки
 	Заповнити текст рішення квалиіфікації  Загрузка документа без кваліфікації учасника
 	${checkbox_1}  set variable  xpath=//td[contains(text(),"Не відповідає кваліфікаційним критеріям")]/preceding-sibling::td[1]
-	${is_visible}  run keyword and return status  loading дочекатися відображення елемента на сторінці   ${checkbox_1}  1
-	run keyword if  ${is_visible}  click element  ${checkbox_1}
+    click element  ${checkbox_1}
+
+    screen натиснути кнопку  Перегляд...
+	${list_of_file_args}  create_fake_doc
+	${file_path}  set variable  ${list_of_file_args[0]}
+	загрузити документ  ${file_path}
+
 	${is_visible_save_btn}  run keyword and return status   header натиснути на елемент за назвою  Зберегти
 	run keyword if  "${is_visible_save_btn}" == "${False}"  header натиснути на елемент за назвою  Продовжити кваліфікацію
 	dialog box заголовок повинен містити  Ви впевнені у своєму рішенні?

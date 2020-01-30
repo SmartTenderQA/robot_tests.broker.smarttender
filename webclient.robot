@@ -652,6 +652,10 @@ check for open screen
 Заповнити текст рішення квалиіфікації
 	[Arguments]  ${text}
 	input text  ${screen_root_selector}//textarea  ${text}
+	sleep  1
+	capture page screenshot
+    ${entered_text}  get element attribute  xpath=${screen_root_selector}//textarea@value
+    should be equal as strings  ${text}  ${entered_text}  msg=Ой! Не вдалося заповнити текст рішення.
 
 
 check for active tab
