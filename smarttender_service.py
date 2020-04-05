@@ -64,12 +64,12 @@ def strip_string(s):
 
 
 def adapt_data(tender_data):
-    tender_data.data.procuringEntity['name'] = u"PROZORRO. Продажі"
-    tender_data.data.procuringEntity['identifier']['legalName'] = u"PROZORRO. Продажі"
+    tender_data.data.procuringEntity['name'] = u"Демо организатор (государственные торги)"
+    tender_data.data.procuringEntity['identifier']['legalName'] = u"Демо организатор (государственные торги)"
     tender_data.data.procuringEntity['identifier']['id'] = u"111111111111111"
-    for item in tender_data.data['items']:
-        if item.unit['name'] == u"метри квадратні":
-            item.unit['name'] = u"м.кв."
+    # for item in tender_data.data['items']:
+    #     if item.unit['name'] == u"метри квадратні":
+    #         item.unit['name'] = u"м.кв."
     return tender_data
 
 
@@ -311,14 +311,14 @@ def convert_result(field, value):
         elif field == "value.valueAddedTaxIncluded":
             vat = search.group("VAT").replace(" ", "").replace(",", ".")
             ret = False if vat == u"без ПДВ" else True
-    elif "classification." in field:
-        search = re.search("^(?P<scheme>.+): (?P<id>[0-9]+-[0-9]+) . (?P<description>.+)$", value)
-        if "classification.id" in field:
-            ret = search.group("id")
-        elif "classification.scheme" in field:
-            ret = search.group("scheme")
-        elif "classification.description" in field:
-            ret = search.group("description")
+    # elif "classification." in field:
+    #     search = re.search("^(?P<scheme>.+): (?P<id>[0-9]+-[0-9]+) . (?P<description>.+)$", value)
+    #     if "classification.id" in field:
+    #         ret = search.group("id")
+    #     elif "classification.scheme" in field:
+    #         ret = search.group("scheme")
+    #     elif "classification.description" in field:
+    #         ret = search.group("description")
     elif field == "minimalStep.amount":
         search = re.search(u"^(?P<percent>[^%]+)% або (?P<amount>.+) грн", value)
         ret = float(search.group("amount").replace(" ", "").replace(",", "."))
